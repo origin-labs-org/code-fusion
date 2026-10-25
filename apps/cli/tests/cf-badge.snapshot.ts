@@ -85,14 +85,14 @@ describe('cf badge assembled snapshot', () => {
 
       - Local PNG: [\`cf-badge.png\`](cf-badge.png), 726×120 source image; render at 121×20
       - Shields.io image URL: \`https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square\`
-      - Project URL: \`https://github.com/origin-ai/code-fusion\`
+      - Project URL: \`https://github.com/origin-labs-ai/code-fusion\`
 
       ## Markdown
 
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+      [![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)
       \`\`\`
 
       If attribution should not be linked, use:
@@ -124,14 +124,14 @@ describe('cf badge assembled snapshot', () => {
 
       - Local PNG: [\`cf-badge.png\`](cf-badge.png), 726×120 source image; render at 121×20
       - Shields.io image URL: \`https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square\`
-      - Project URL: \`https://github.com/origin-ai/code-fusion\`
+      - Project URL: \`https://github.com/origin-labs-ai/code-fusion\`
 
       ## Markdown
 
       Use this linked badge in Markdown:
 
       \`\`\`markdown
-      [![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+      [![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)
       \`\`\`
 
       If attribution should not be linked, use:

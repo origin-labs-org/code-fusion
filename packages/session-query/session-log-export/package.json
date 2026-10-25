@@ -5,7 +5,7 @@
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/cf.git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
     "directory": "packages/session-query/session-log-export"
   },
   "type": "module",

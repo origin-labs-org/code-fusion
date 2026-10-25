@@ -226,7 +226,7 @@ describe('translation pairing switchers', () => {
       isTranslationPairSource: fixturePairSource,
       markdown: wrongMarkdown,
     }).links).toEqual([
-      'https://github.com/deepseek-ai/cf/blob/master/other/README.md',
+      'https://github.com/origin-labs-ai/code-fusion/blob/master/other/README.md',
     ])
   })
 
@@ -307,8 +307,8 @@ describe('translation scope discovery', () => {
     'packages/example/node_modules/dependency/README.md',
     'packages/example/lib/README.md',
     'coverage/report/README.md',
-    'python/sdk-runtime/src/deepseek_harness_runtime/runtime/cf-jsonrpc-agent-macos-arm64/README.md',
-    'python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/README.md',
+    'python/sdk-runtime/src/codefusion_runtime/runtime/cf-jsonrpc-agent-macos-arm64/README.md',
+    'python/sdk-runtime/src/codefusion_runtime/runtime/node/README.md',
   ])('excludes non-source or non-README path %s', (file) => {
     expect(isTranslationScopeFile(file)).toBe(false)
   })

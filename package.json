@@ -133,9 +133,6 @@
     "verify-module-graph": "tsx scripts/gen-module-graph.ts --check",
     "constraints": "tsx scripts/check-workspace-constraints.ts",
     "doc-sync": "tsx scripts/run-gates.ts doc-sync",
-    "rebrand:preview": "node scripts/rebrand-cf.mjs",
-    "rebrand:check": "node scripts/rebrand-cf.mjs --check",
-    "rebrand:apply": "node scripts/rebrand-cf.mjs --apply",
     "publish:npm-baseline": "tsx scripts/publish-npm-baseline.ts",
     "release:cf": "tsx scripts/release/bump.ts --family cf",
     "release:vendor": "tsx scripts/release/bump.ts --family vendor",
@@ -150,6 +147,10 @@
     "mock:llm": "node --import tsx packages/test-support/llm-mock-server/src/bin.ts",
     "dev:web": "tsx scripts/dev-web.ts --poll",
     "postinstall": "node scripts/apply-patches.mjs && node scripts/install-lefthook.mjs"
+  },
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@agentclientprotocol/sdk": "0.25.1",

@@ -7,7 +7,7 @@ import argparse
 import os
 from pathlib import Path
 
-from deepseek_harness import DeepSeekHarness
+from codefusion import CodeFusion
 
 
 CONFIG = Path(__file__).with_name("minimal.cordis.yml")
@@ -27,7 +27,7 @@ def main() -> None:
 
     workspace = args.workspace.resolve()
     session_root = args.session_root.resolve()
-    with DeepSeekHarness(
+    with CodeFusion(
         provider=args.provider,
         model=args.model,
         max_tokens=args.max_tokens,

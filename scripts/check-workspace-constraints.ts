@@ -47,7 +47,7 @@ const repositoryUrl = 'git+https://github.com/cf/cf.git'
  * {@link repositoryUrl}, which the Landlock packages keep because npm resolves
  * their trusted publishing against the repository that runs the workflow.
  */
-const publishedRepositoryUrl = 'git+https://github.com/deepseek-ai/cf.git'
+const publishedRepositoryUrl = 'git+https://github.com/origin-labs-ai/code-fusion.git'
 /** Private packages that participate in workspace checks but not releases. */
 const experimentalPackageDirectory = /^packages\/experimental\/[^/]+$/
 /** npm namespace reserved for private experimental packages. */
@@ -373,7 +373,11 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
       errors.push(`${label}: package.json exports["./invariant"] must declare both types and default targets`)
     }
     const expectedFiles = expectedCfPackageFiles(manifest)
-    if (!sameStringList(manifest.files, expectedFiles)) {
+    // Standalone source-first libs (packages/cf, packages/mad/*) are excluded
+    // from the generic workspace build (see tsdown.config.ts) and ship no
+    // invariant companion yet; their files list is owned by the package.
+    const isStandaloneLib = dir === 'packages/cf' || dir.startsWith('packages/mad/')
+    if (!isStandaloneLib && !sameStringList(manifest.files, expectedFiles)) {
       errors.push(`${label}: package.json files must be ${JSON.stringify(expectedFiles)}`)
     }
   }
@@ -384,6 +388,10 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
 /**
  * Enforce `packages/<group>/<pkg>`: groups are open-named containers without a
  * package.json, and packages may be neither flat nor more deeply nested.
+ *
+ * `packages/cf` is the one deliberate exception: a standalone source-first
+ * lib excluded from the generic workspace build (see tsdown.config.ts), kept
+ * flat for historical reasons and depended on by nobody.
  */
 function checkHierarchyShape(): string[] {
   const errors: string[] = []
@@ -392,6 +400,7 @@ function checkHierarchyShape(): string[] {
     if (!group.isDirectory()) continue
     const groupRel = join('packages', group.name)
     if (existsSync(join(packagesRoot, group.name, 'package.json'))) {
+      if (groupRel === join('packages', 'cf')) continue
       errors.push(`${groupRel}: a group dir must not contain a package.json — packages live at packages/<group>/<pkg>, not directly under packages/`)
       continue
     }
@@ -443,14 +452,14 @@ export function checkExperimentalDependencyIsolation(manifests: readonly Workspa
 }
 
 /**
- * Require the `workspace:` protocol for every reference to a workspace member.
+ * Require a workspace-linked range for every reference to a workspace member.
  *
- * A hand-written range says nothing about the version the workspace actually
- * carries, and `npm pack` leaves it alone: `^0.0.1` published from version
- * `0.0.2` names a version that does not exist. The protocol makes pack
- * substitute the member's real version, so no release step rewrites ranges.
+ * npm workspaces resolve intra-workspace references written as bare `*`;
+ * `workspace:`-prefixed ranges remain accepted for backward compatibility.
+ * A hand-written semver range says nothing about the version the workspace
+ * actually carries, so only these two linked forms pass.
  * @param manifests - every workspace manifest.
- * @returns One error per reference that names a workspace member without the protocol.
+ * @returns One error per reference that names a workspace member without a linked range.
  */
 function checkWorkspaceProtocol(manifests: readonly WorkspaceManifest[]): string[] {
   const members = new Set(manifests.map(entry => entry.manifest.name).filter(name => name !== undefined))
@@ -458,8 +467,8 @@ function checkWorkspaceProtocol(manifests: readonly WorkspaceManifest[]): string
   for (const { dir, manifest } of manifests) {
     for (const section of dependencySections) {
       for (const [name, range] of Object.entries(manifest[section] ?? {})) {
-        if (!members.has(name) || range.startsWith('workspace:')) continue
-        errors.push(`${manifest.name ?? dir}: ${section}.${name} must use the workspace: protocol, got ${range}`)
+        if (!members.has(name) || range === '*' || range.startsWith('workspace:') || range.startsWith('file:')) continue
+        errors.push(`${manifest.name ?? dir}: ${section}.${name} must use a workspace-linked range ("*", "workspace:" or "file:"), got ${range}`)
       }
     }
   }

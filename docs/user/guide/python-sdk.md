@@ -15,7 +15,7 @@ This tutorial is the programmatic alternative to the Web UI. It installs the pub
 Clone the repository for its runnable example, create a virtual environment, and install the SDK with its same-version bundled runtime:
 
 ```sh
-git clone https://github.com/deepseek-ai/cf.git
+git clone https://github.com/origin-labs-ai/code-fusion.git
 cd cf
 python -m venv .venv
 . .venv/bin/activate
@@ -54,13 +54,13 @@ The checked-in example is a thin wrapper around this SDK call:
 ```python
 from pathlib import Path
 
-from deepseek_harness import DeepSeekHarness
+from codefusion import CodeFusion
 
 config = Path("examples/jsonrpc-agent/minimal.cordis.yml").resolve()
 workspace = Path("/absolute/path/to/workspace").resolve()
 sessions = Path("/absolute/path/to/sessions").resolve()
 
-with DeepSeekHarness(
+with CodeFusion(
     provider="deepseek-official",
     model="deepseek-v4-flash",
     max_tokens=49_152,
@@ -76,7 +76,7 @@ with DeepSeekHarness(
 print(result.final_response)
 ```
 
-`DeepSeekHarness` starts the bundled runtime lazily and reuses it until the context manager exits. Reusing the same harness and session id preserves the session-owned Bash process, including its working directory, exported variables, and shell functions. Use a fresh session id for an independent task; reuse an id only when the next call should continue the same durable conversation.
+`CodeFusion` starts the bundled runtime lazily and reuses it until the context manager exits. Reusing the same harness and session id preserves the session-owned Bash process, including its working directory, exported variables, and shell functions. Use a fresh session id for an independent task; reuse an id only when the next call should continue the same durable conversation.
 
 ## Understand the example composition
 

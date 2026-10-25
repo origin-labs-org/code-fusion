@@ -29,7 +29,7 @@ import {
   type NormalizeContext,
 } from '@origin-ai/cf-acp-snapshot'
 import { resolveExampleLaunch } from '@origin-ai/cf-loader-smoke'
-import { DeepSeekHarness, type HarnessNotification, type RunResult } from '@origin-ai/cf-sdk-client'
+import { CodeFusion, type HarnessNotification, type RunResult } from '@origin-ai/cf-sdk-client'
 
 const testsDir = dirOf(import.meta.url)
 const snapshotsDir = join(testsDir, 'snapshots')
@@ -294,7 +294,7 @@ async function runScenario(scenario: SdkScenario): Promise<{
     ...scenario.environment,
   }
 
-  const harness = new DeepSeekHarness({
+  const harness = new CodeFusion({
     launch: {
       command: launch.command,
       args: launch.args,

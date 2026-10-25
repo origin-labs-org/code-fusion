@@ -280,7 +280,7 @@ xhee-harness-enhanced/
 │           └── mad.ts           # Original MAD implementation
 │
 ├── python/                      # Python SDK
-│   └── sdk/                    # DeepSeek Harness Python client
+│   └── sdk/                    # CodeFusion Python client
 │
 ├── native/                      # Native components
 │   └── landlock-run/           # Security sandbox

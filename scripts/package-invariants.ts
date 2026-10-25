@@ -96,18 +96,20 @@ function checkManifest(
     addViolation(violations, owner.manifestPath, 'files must publish lib/invariant.js')
   }
   if (owner.packageName === '@origin-ai/cf-invariants') return
-  if (manifest.peerDependencies?.['@origin-ai/cf-invariants'] !== 'workspace:^') {
+  const invariantPeer = manifest.peerDependencies?.['@origin-ai/cf-invariants']
+  if (invariantPeer !== 'workspace:^' && invariantPeer !== '*') {
     addViolation(
       violations,
       owner.manifestPath,
-      '@origin-ai/cf-invariants must be a workspace:^ peerDependency',
+      '@origin-ai/cf-invariants must be a workspace:^ (or npm "*") peerDependency',
     )
   }
-  if (manifest.devDependencies?.['@origin-ai/cf-invariants'] !== 'workspace:^') {
+  const invariantDev = manifest.devDependencies?.['@origin-ai/cf-invariants']
+  if (invariantDev !== 'workspace:^' && invariantDev !== '*') {
     addViolation(
       violations,
       owner.manifestPath,
-      '@origin-ai/cf-invariants must also be a workspace:^ devDependency',
+      '@origin-ai/cf-invariants must also be a workspace:^ (or npm "*") devDependency',
     )
   }
 }

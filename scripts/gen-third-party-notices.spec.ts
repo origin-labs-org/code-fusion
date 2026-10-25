@@ -126,7 +126,7 @@ describe('parsePyprojectRequirements', () => {
       'docs = ["sphinx>=7"]',
       '',
       '[tool.hatch.build.targets.wheel]',
-      'packages = ["src/deepseek_harness"]',
+      'packages = ["src/codefusion"]',
       '',
       '[tool.pytest.ini_options]',
       'testpaths = ["tests"]',
@@ -178,11 +178,11 @@ describe('parsePyprojectRequirements', () => {
 describe('collectPythonDependencies', () => {
   it('excludes normalized local project names without exempting a third-party prefix', () => {
     const pyprojects = [
-      '[project]\nname = "deepseek-harness-runtime-bin"\ndependencies = ["pydantic"]\n',
-      '[project]\nname = "deepseek-harness-sdk"\ndependencies = ["DeepSeek.Harness_Runtime-Bin", "deepseek-unrelated"]\n',
+      '[project]\nname = "cf-runtime-bin"\ndependencies = ["pydantic"]\n',
+      '[project]\nname = "cf-sdk"\ndependencies = ["CF.Runtime_Bin", "cf-runtime-bin-extra"]\n',
     ]
     expect(() => collectPythonDependencies(pyprojects)).toThrow(
-      'python dependency deepseek-unrelated is missing from PYTHON_METADATA',
+      'python dependency cf-runtime-bin-extra is missing from PYTHON_METADATA',
     )
   })
 })

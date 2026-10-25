@@ -93,4 +93,4 @@ Service names live in one flat namespace per application. Prefix or namespace yo
 
 Next: [Events](04-events.md) — communication without a shared service.
 
-[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)

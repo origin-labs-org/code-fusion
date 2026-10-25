@@ -5,7 +5,7 @@ runtime inherits normal CodeFusion environment variables such as
 `DEEPSEEK_BASE_URL` and `DEEPSEEK_API_KEY`, so callers can use real model
 endpoints directly or point those variables at a local proxy.
 
-Install the `cf-sdk` distribution from PyPI; the import module remains `deepseek_harness`:
+Install the `cf-sdk` distribution from PyPI; the import module remains `codefusion`:
 
 ```sh
 python -m pip install cf-sdk
@@ -14,20 +14,20 @@ python -m pip install cf-sdk
 Installing `cf-sdk` installs the exact same-version `cf-runtime-bin` platform wheel. The normal entry point therefore needs no executable argument:
 
 ```py
-from deepseek_harness import DeepSeekHarness
+from codefusion import CodeFusion
 
-with DeepSeekHarness() as harness:
+with CodeFusion() as harness:
     result = harness.run("Say hi.")
 ```
 
-`DeepSeekHarness` keeps its lazily started runtime subprocess for reuse across calls. Use it as a context manager, as above, or call `close()` explicitly when finished.
+`CodeFusion` keeps its lazily started runtime subprocess for reuse across calls. Use it as a context manager, as above, or call `close()` explicitly when finished.
 
 By default, the SDK launches the bundled single-file `cf-jsonrpc-agent` executable from the `cf-runtime-bin` package and injects that package's default configuration (the stdio JSON-RPC server, agent core, preloaded DeepSeek adapter, JSONL session persistence with an explicitly composed semantic checkpoint policy, local bash) via `CF_CORDIS_CONFIG`. To run a plugin composition of your own, keep the `@origin-ai/cf-sdk-jsonrpc-server` entry in the config and pass the Cordis config path.
 
 ```py
-from deepseek_harness import DeepSeekHarness
+from codefusion import CodeFusion
 
-with DeepSeekHarness(
+with CodeFusion(
     provider="deepseek-official",
     model="deepseek-v4-flash",
     max_tokens=49_152,

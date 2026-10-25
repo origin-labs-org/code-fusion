@@ -93,4 +93,4 @@ One ordering caveat: disposers start in reverse registration order, but multiple
 
 Next: [Services](03-services.md) — how plugins share capabilities.
 
-[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)

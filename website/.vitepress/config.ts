@@ -187,14 +187,14 @@ const sharedTheme: Pick<DefaultTheme.Config, 'search' | 'socialLinks' | 'editLin
     },
   },
   socialLinks: [
-    { icon: 'github', link: 'https://github.com/deepseek-ai/cf' },
+    { icon: 'github', link: 'https://github.com/origin-labs-ai/code-fusion' },
   ],
   editLink: {
     pattern: ({ frontmatter }: PageData) => {
       const data: unknown = frontmatter
       const editSource: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSource') : undefined
       if (typeof editSource !== 'string') throw new Error('Projected documentation page has no editSource frontmatter.')
-      return `https://github.com/deepseek-ai/cf/edit/master/${editSource}`
+      return `https://github.com/origin-labs-ai/code-fusion/edit/master/${editSource}`
     },
     text: '在 GitHub 上编辑此页',
   },

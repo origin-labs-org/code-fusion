@@ -90,4 +90,4 @@ One caveat worth knowing early: a config entry whose module cannot be **resolved
 
 Next: [Lifecycle and effects](02-lifecycle-and-effects.md) — what happens when a plugin unloads.
 
-[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)

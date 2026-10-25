@@ -12,7 +12,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
-import { DeepSeekHarness, type HarnessNotification } from '@origin-ai/cf-sdk-client'
+import { CodeFusion, type HarnessNotification } from '@origin-ai/cf-sdk-client'
 import type { ContentBlock } from '@origin-ai/cf-llm'
 import { SessionId, type SessionEvent, type TurnEndReason } from '@origin-ai/cf-session'
 import type { SubagentResult, SubagentRun, SubagentStartRequest, SubagentStopReason } from '@origin-ai/cf-subagent'
@@ -115,7 +115,7 @@ export async function startSdkRun(request: SubagentStartRequest, spec: SdkRunSpe
   // (minted below, private to the wire) exists only inside the child process.
   const id = SessionId(randomUUID())
 
-  const harness = new DeepSeekHarness({
+  const harness = new CodeFusion({
     launch: {
       command: spec.command,
       args: spec.args,

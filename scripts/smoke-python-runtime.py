@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from deepseek_harness import RunResult
+    from codefusion import RunResult
 
 
 EXPECTED_TEXT = "runtime smoke ok"
@@ -80,13 +80,13 @@ MINIMAL_SNAPSHOT_DIRECTORY = (
 MINIMAL_SNAPSHOT_FILENAMES = ("model-visible.json",)
 # The agent loop's dynamic runtime-context snapshot is the one model-visible message this
 # expected output cannot carry: the same composition emits it on macOS and not on Linux
-# (deepseek-harness#2488), and the file must replay on both. Everything else is compared.
+# (code-fusion#2488), and the file must replay on both. Everything else is compared.
 RUNTIME_CONTEXT_PREFIX = "Current runtime context"
 CUSTOM_CORDIS = """\
 - id: sdk-jsonrpc-server
-  name: '@deepseek-ai/cf-sdk-jsonrpc-server'
+  name: '@origin-ai/cf-sdk-jsonrpc-server'
 - id: agent-core
-  name: '@deepseek-ai/cf-agent-spine-demo'
+  name: '@origin-ai/cf-agent-spine-demo'
   config:
     workspaceContext: false
     skills:
@@ -95,38 +95,38 @@ CUSTOM_CORDIS = """\
     tools:
       mode: both
 - id: sessions
-  name: '@deepseek-ai/cf-session-persistence-jsonl'
+  name: '@origin-ai/cf-session-persistence-jsonl'
   config:
     root: !!js process.env.CF_SESSION_ROOT
     compression: 'none'
 - id: code-runtime
-  name: '@deepseek-ai/cf-code-runtime-worker-thread'
+  name: '@origin-ai/cf-code-runtime-worker-thread'
 - id: subagents
-  name: '@deepseek-ai/cf-subagent'
+  name: '@origin-ai/cf-subagent'
 - id: subagent-spawn-in-process
-  name: '@deepseek-ai/cf-subagent-spawn-in-process'
+  name: '@origin-ai/cf-subagent-spawn-in-process'
   config:
     providerName: spawn
 - id: subagent-tool
-  name: '@deepseek-ai/cf-tool-subagent'
+  name: '@origin-ai/cf-tool-subagent'
   config:
     provider: spawn
 - id: workflow-engine
-  name: '@deepseek-ai/cf-workflow-worker-thread'
+  name: '@origin-ai/cf-workflow-worker-thread'
   config:
     provider: spawn
 - id: workflow-tool
-  name: '@deepseek-ai/cf-tool-workflow'
+  name: '@origin-ai/cf-tool-workflow'
 - id: cordis-host-runner
-  name: '@deepseek-ai/cf-cordis-host-runner'
+  name: '@origin-ai/cf-cordis-host-runner'
 - id: cordis-tool
-  name: '@deepseek-ai/cf-tool-cordis'
+  name: '@origin-ai/cf-tool-cordis'
 """
 FS_SEARCH_CORDIS = """\
 - id: sdk-jsonrpc-server
-  name: '@deepseek-ai/cf-sdk-jsonrpc-server'
+  name: '@origin-ai/cf-sdk-jsonrpc-server'
 - id: agent-core
-  name: '@deepseek-ai/cf-agent-spine-demo'
+  name: '@origin-ai/cf-agent-spine-demo'
   config:
     workspaceContext: false
     skills:
@@ -134,14 +134,14 @@ FS_SEARCH_CORDIS = """\
     toolBash: false
     toolJobs: false
 - id: sessions
-  name: '@deepseek-ai/cf-session-persistence-jsonl'
+  name: '@origin-ai/cf-session-persistence-jsonl'
   config:
     root: !!js process.env.CF_SESSION_ROOT
     compression: 'none'
 - id: subprocess
-  name: '@deepseek-ai/cf-subprocess-local'
+  name: '@origin-ai/cf-subprocess-local'
 - id: fs-search
-  name: '@deepseek-ai/cf-tool-fs-search'
+  name: '@origin-ai/cf-tool-fs-search'
   config:
     sampleOverCapGlobResults: false
 """
@@ -228,11 +228,11 @@ def mcp_cordis(server_script: Path) -> str:
     return json.dumps([
         {
             "id": "sdk-jsonrpc-server",
-            "name": "@deepseek-ai/cf-sdk-jsonrpc-server",
+            "name": "@origin-ai/cf-sdk-jsonrpc-server",
         },
         {
             "id": "agent-core",
-            "name": "@deepseek-ai/cf-agent-spine-demo",
+            "name": "@origin-ai/cf-agent-spine-demo",
             "config": {
                 "workspaceContext": False,
                 "skills": {"enabled": False},
@@ -241,12 +241,12 @@ def mcp_cordis(server_script: Path) -> str:
         },
         {
             "id": "sessions",
-            "name": "@deepseek-ai/cf-session-persistence-jsonl",
+            "name": "@origin-ai/cf-session-persistence-jsonl",
             "config": {"root": "./sessions", "compression": "none"},
         },
         {
             "id": "mcp-fixture",
-            "name": "@deepseek-ai/cf-mcp-client",
+            "name": "@origin-ai/cf-mcp-client",
             "config": {
                 "serverName": "fixture",
                 "transport": "stdio",
@@ -718,12 +718,12 @@ def main() -> None:
 
 
 def smoke_sdk_default(base_url: str) -> None:
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     with tempfile.TemporaryDirectory(prefix="cf-sdk-default-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -738,14 +738,14 @@ def smoke_sdk_default(base_url: str) -> None:
 
 
 def smoke_sdk_custom(base_url: str, executable: Path) -> None:
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     with tempfile.TemporaryDirectory(prefix="cf-sdk-custom-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -767,7 +767,7 @@ def smoke_sdk_custom(base_url: str, executable: Path) -> None:
 
 def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -> None:
     """Exercise the checked-in minimal composition through the packaged executable."""
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     # One mock model serves every scenario of a run, so the snapshot takes this turn's slice.
     first_request = len(MockModelHandler.requests)
@@ -776,7 +776,7 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
         editor_path = root / "created.txt"
         prompt = f"{MINIMAL_PROMPT}\n{MINIMAL_EDITOR_PATH_PREFIX}{editor_path}"
         sessions = root / "sessions"
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -804,7 +804,7 @@ def smoke_sdk_minimal(base_url: str, executable: Path, update_snapshots: bool) -
 
 def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
     """Exercise real grep and glob spawns through the packaged executable."""
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     with tempfile.TemporaryDirectory(prefix="cf-sdk-fs-search-") as temporary:
         root = Path(temporary).resolve()
@@ -812,7 +812,7 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(FS_SEARCH_CORDIS)
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -831,7 +831,7 @@ def smoke_sdk_fs_search(base_url: str, executable: Path) -> None:
 
 def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
     """Discover and call an external stdio MCP tool through the packaged client."""
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     with tempfile.TemporaryDirectory(prefix="cf-sdk-mcp-") as temporary:
         root = Path(temporary).resolve()
@@ -841,7 +841,7 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
         cordis = root / "cordis.yml"
         cordis.write_text(mcp_cordis(server_script))
         discovery_log = server_script.with_suffix(".log")
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),
@@ -866,14 +866,14 @@ def smoke_sdk_mcp(base_url: str, executable: Path | None) -> None:
 
 def smoke_sdk_snapshot(base_url: str, executable: Path, update_snapshots: bool) -> None:
     """Drive and compare the advanced SDK/executable behavioral snapshot."""
-    from deepseek_harness import DeepSeekHarness
+    from codefusion import CodeFusion
 
     with tempfile.TemporaryDirectory(prefix="cf-sdk-snapshot-") as temporary:
         root = Path(temporary).resolve()
         sessions = root / "sessions"
         cordis = root / "cordis.yml"
         cordis.write_text(CUSTOM_CORDIS)
-        with DeepSeekHarness(
+        with CodeFusion(
             provider="deepseek-official",
             model="smoke-model",
             cwd=str(root),

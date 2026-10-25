@@ -10,9 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from deepseek_harness import DeepSeekHarness, HarnessClient, HarnessConfig
-from deepseek_harness.errors import TransportClosedError
-from deepseek_harness_runtime import resolve_bundled_launch_args
+from codefusion import CodeFusion, HarnessClient, HarnessConfig
+from codefusion.errors import TransportClosedError
+from codefusion_runtime import resolve_bundled_launch_args
 
 _MODES = ("exe", "node")
 _REPO_ROOT = Path(__file__).parents[3]
@@ -79,14 +79,14 @@ def test_bundled_runtime_boots_a_cordis_config(tmp_path: Path, mode: str) -> Non
         init = client.initialize(provider="deepseek-official", cwd=str(tmp_path), model="deepseek-v4-pro")
 
     assert init.serverInfo is not None
-    assert init.serverInfo.name == "deepseek-harness-sdk-runtime"
+    assert init.serverInfo.name == "cf-sdk-runtime"
 
 
 @pytest.mark.parametrize("mode", _MODES)
 def test_python_sdk_boots_minimal_jsonrpc_config(tmp_path: Path, mode: str) -> None:
     launch_args = _launch_args(mode)
     model = "minimal-environment-model"
-    harness = DeepSeekHarness(
+    harness = CodeFusion(
         model=model,
         cwd=str(tmp_path),
         session_root=str(tmp_path / "sessions"),
@@ -136,7 +136,7 @@ def test_zero_config_run_injects_bundled_default_cordis_config(
     else:
         monkeypatch.setenv("CF_CORDIS_CONFIG", ambient_config)
 
-    harness = DeepSeekHarness(
+    harness = CodeFusion(
         model="deepseek-v4-pro",
         cwd=str(tmp_path),
         session_root=str(tmp_path / "sessions"),

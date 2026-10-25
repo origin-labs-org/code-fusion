@@ -21,7 +21,7 @@ describe('APP_IDENTITY', () => {
     expect(APP_IDENTITY).toEqual({
       product: 'cf',
       version: manifest.version,
-      url: 'https://github.com/deepseek-ai/cf',
+      url: 'https://github.com/origin-labs-ai/code-fusion',
     })
   })
 })
@@ -29,7 +29,7 @@ describe('APP_IDENTITY', () => {
 describe('userAgent', () => {
   it('renders product/version with the +url comment', () => {
     expect(userAgent()).toBe(
-      `cf/${manifest.version} (+https://github.com/deepseek-ai/cf)`,
+      `cf/${manifest.version} (+https://github.com/origin-labs-ai/code-fusion)`,
     )
   })
 

@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/x-harness.git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
     "directory": "packages/mad/god-runtime"
   },
   "type": "module",

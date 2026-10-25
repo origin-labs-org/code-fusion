@@ -79,4 +79,4 @@ The loader used in this repo supports a `!!js` tag for config values that must b
 
 Next: [Composition and HMR](06-composition-and-hmr.md) — treating `cordis.yml` as the application.
 
-[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-ai/code-fusion)
+[![](https://img.shields.io/badge/powered_by-codefusion-4D6BFE?style=flat-square)](https://github.com/origin-labs-ai/code-fusion)

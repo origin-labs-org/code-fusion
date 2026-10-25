@@ -40,7 +40,7 @@ export interface AppIdentity {
 export const APP_IDENTITY: AppIdentity = {
   product: 'cf',
   version,
-  url: 'https://github.com/deepseek-ai/cf',
+  url: 'https://github.com/origin-labs-ai/code-fusion',
 }
 
 /**
