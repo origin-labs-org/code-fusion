@@ -39,7 +39,7 @@
   "dependencies": {
     "@origin-ai/xhe-host-directory-picker": "workspace:^",
     "@origin-ai/xhe-native-command": "workspace:^",
-    "koffi": "^3.1.0"
+    "koffi": "^3.3.1"
   },
   "peerDependencies": {
     "@origin-ai/xhe-invariants": "workspace:^",
