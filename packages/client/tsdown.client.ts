@@ -55,10 +55,11 @@ function styleInjectionModule(
 /**
  * Wire/type layers a client bundle may inline: browser-safe contracts
  * with no runtime identity to share (no Symbol/instanceof/singleton state).
- * Everything else under @deepseek-ai/* is either a module-table entry
+ * Everything else under the workspace scopes (@origin-ai/cf-*, plus the
+ * vendored @deepseek-ai/* libraries) is either a module-table entry
  * (external) or a leak the purity gate rejects.
  */
-export const INLINE_SAFE = /^@deepseek-ai\/cf-(host-apiproxy|file-reference|session|llm|tools|brand)(\/|$)/
+export const INLINE_SAFE = /^@origin-ai\/cf-(host-apiproxy|file-reference|session|llm|tools|brand)(\/|$)/
 
 /**
  * Vendored framework libraries: rescoped into @deepseek-ai, so the gate below
@@ -71,13 +72,13 @@ const VENDORED_LIBRARY = /^@deepseek-ai\/(cosmokit|schemastery)(\/|$)/
 /**
  * Generated descriptor/codec contribution with no shared runtime identity.
  *
- * The name is any `@deepseek-ai` workspace package, not only the `cf-` ones:
+ * The name is any workspace package, not only the `cf-` ones:
  * Typert generates a `/remote` contribution for every Host package that
  * declares `@Remote` services, and the vendored Cordis packages are Host
  * packages too (`packages/api/remotes` projects `cordis-host-runner`'s).
  * A specifier that no workspace package exports still fails resolution.
  */
-const GENERATED_REMOTE = /^@deepseek-ai\/[a-z0-9]+(?:-[a-z0-9]+)*\/remote$/
+const GENERATED_REMOTE = /^(?:@origin-ai\/cf-[a-z0-9]+(?:-[a-z0-9]+)*|@deepseek-ai\/[a-z0-9]+(?:-[a-z0-9]+)*)\/remote$/
 
 /**
  * Workspace mode replaces an empty config array with the root defaults. A
@@ -487,13 +488,13 @@ function clientConfig(id: string, entry: string): UserConfig {
     plugins: [{
       // Bundle purity gate (build-time mirror of the module-edge rules): the
       // baseline and package-specific requests stay external, inline-safe wire layers
-      // inline, and every other @deepseek-ai value import is a build error — a
+      // inline, and every other workspace value import is a build error — a
       // cross-plugin value import either inlines a duplicate runtime instance
       // or requires a specifier the module table cannot answer for this package.
       // Cross-plugin collaboration goes through cordis services instead.
       name: 'cf-client-bundle-purity',
       resolveId(source: string) {
-        if (!source.startsWith('@deepseek-ai/')) return null
+        if (!source.startsWith('@origin-ai/') && !source.startsWith('@deepseek-ai/')) return null
         if (isRequested(source)) return null // requested module-table row: external wins
         if (VENDORED_LIBRARY.test(source)) return null // vendored library: inline, no shared identity
         if (INLINE_SAFE.test(source) || GENERATED_REMOTE.test(source)) return null // wire contribution: inline is the point

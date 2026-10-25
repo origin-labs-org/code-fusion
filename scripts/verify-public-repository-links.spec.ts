@@ -31,7 +31,9 @@ describe('repository link policy', () => {
   })
 
   it('preserves frozen archived Agent Notes', () => {
-    const unavailableRepository = ['deepseek-ai', 'cf-sdk'].join('/')
+    const unavailableOwner = ['deepseek', 'ai'].join('-')
+    const unavailableName = ['deepseek', 'harness', 'sdk'].join('-')
+    const unavailableRepository = `${unavailableOwner}/${unavailableName}`
 
     expect(findUnavailableRepositoryReferences(
       '.agents/notes/archived/process/historical-record.md',
