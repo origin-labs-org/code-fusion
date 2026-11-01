@@ -1,41 +1,143 @@
-CLAUDE.local.md
-.env
+# ============================================================
+# code-fusion .gitignore
+# Written 2026-11-01 as part of CLEANUP_PLAN.md phase P2.
+# Rule: ignore anything regenerable, anything binary, anything
+# that is a copy of something else. Track source, not artifacts.
+# ============================================================
+
+# ---------- dependencies ----------
 node_modules/
-lib/
+**/node_modules/
+.pnp
+.pnp.*
+.yarn/cache
+.yarn/install-state.gz
+jspm_packages/
+
+# ---------- build output ----------
+dist/
+build/
+out/
+.next/
+.next-cli-build/
+.nuxt/
+.output/
+.turbo/
+.tsbuildinfo
 *.tsbuildinfo
-npm-debug.log*
-.npm/
-.cache/
-examples/*/*.jsonl
-.storages/
-.sessions/
-examples/*/.sessions/
-coverage/
-.doc-typecheck-*/
-.node-next-types-*/
-.oxlint-contract-*/
-.oxlintrc.contract-*.json
-oxlint-contract-*.ts
-.humanize/
-tmp/
-.claude/commands/
-.claude/launch.json
-.claude/settings.json
-.vscode/
-.DS_Store
-.idea
-mise.toml
-dist-exe/
-python/sdk-runtime/src/codefusion_runtime/runtime/cf-jsonrpc-agent-*
-python/sdk-runtime/src/codefusion_runtime/runtime/node/
-python/**/__pycache__/
-python/**/.pytest_cache/
-apps/web/dist/
-.artifacts/
 .cf-build/
-.playwright-mcp/
-.orig
-.worktrees/
-worktrees/
-.agents/worktrees/
-.typert-*/
+apps/*/dist/
+packages/*/dist/
+
+# ---------- test and coverage ----------
+coverage/
+.nyc_output/
+*.lcov
+playwright-report/
+test-results/
+.vitest/
+
+# ---------- caches ----------
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.tmp-*.log
+.cycle*.log
+
+# ---------- environment and secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+credentials.json
+.credentials/
+
+# ---------- electron packaged archives
+*.asar
+
+# ---------- the dead tree ----------
+# .dead/ is a pre-restructure reference copy. It is 1.43 GB and
+# 71,717 files, 89.6% of which is node_modules. It must never be
+# committed. See section 10 of CLEANUP_PLAN.md.
+.dead/
+
+# ---------- vendored binaries and installers ----------
+# These are large binaries that belong in releases, not in git.
+windows/codeix/merger/*.msix
+windows/codeix/merger/*.Msix
+windows/onyx/**/*.exe
+windows/onyx/**/*.dll
+windows/onyx/**/*.node
+*.exe
+*.msi
+*.msix
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.AppImage
+
+# ---------- archive formats ----------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.bundle
+
+# ---------- graphify artifacts ----------
+# Generated knowledge-graph output. 1.7 GB of derived data.
+graphify-out/
+*.graphml
+.graphify_*
+.graphifyignore
+
+# ---------- mimosa hook state ----------
+.mimosa/hook-state/
+.mimosa/hook-status/
+.mimosa/finding-ledger/
+
+# ---------- editor and OS ----------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- misc ----------
+*.orig
+*.rej
+tmp/
+temp/
+.sessions/
+# ---------- rust ----------
+target/
+**/target/
+Cargo.lock.bak
