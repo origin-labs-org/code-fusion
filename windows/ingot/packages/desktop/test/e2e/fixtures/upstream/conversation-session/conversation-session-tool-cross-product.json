@@ -1,0 +1,688 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-cross-product",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-cross-product.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-tool-cross-product-read-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Pin triggering of Read tool to verify interaction between completed tool history and compact/fork/goal."
+      },
+      "description": "Conversation tool cross product: Read tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_READ"],
+        "lastUserMessageExcludes": [
+          "E2E_TOOL_CROSS_PRODUCT_READ_SESSION_CONTEXT"
+        ],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_READ"],
+        "bodyExcludes": [
+          "E2E_TOOL_CROSS_PRODUCT_READ_SESSION_CONTEXT",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_read",
+          "name": "Read",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-cross-product/read-fixture.txt"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-write-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Pin triggering of Write tool to verify that file-writing tool history does not pollute the default workspace."
+      },
+      "description": "Conversation tool cross product: Write tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_WRITE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_WRITE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_write",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-cross-product/write-output.txt",
+            "content": "E2E_TOOL_RESULT_WRITE\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-edit-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Pin triggering of Edit tool to cover completed history entrypoints for writable tools."
+      },
+      "description": "Conversation tool cross product: Edit tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_EDIT"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_EDIT"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_edit",
+          "name": "Edit",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-cross-product/edit-output.txt",
+            "old_string": "",
+            "new_string": "E2E_TOOL_RESULT_EDIT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-bash-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Pin triggering of Bash tool to avoid real model command choices affecting tool cross-product stability."
+      },
+      "description": "Conversation tool cross product: Bash tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_BASH"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_BASH"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_bash",
+          "name": "Bash",
+          "input": {
+            "command": "printf 'E2E_TOOL_RESULT_BASH\\n'"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-glob-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the Glob tool to cover the completed history entry for file search tools."
+      },
+      "description": "Conversation tool cross product: Glob tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_GLOB"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_GLOB"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_glob",
+          "name": "Glob",
+          "input": {
+            "path": "{{e2eRuntimeRoot}}/conversation-session-tool-cross-product",
+            "pattern": "*.e2e"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-grep-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the Grep tool to cover the completed history entry for content search tools."
+      },
+      "description": "Conversation tool cross product: Grep tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_GREP"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_GREP"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_grep",
+          "name": "Grep",
+          "input": {
+            "path": "{{e2eRuntimeRoot}}/conversation-session-tool-cross-product",
+            "pattern": "E2E_TOOL_RESULT_GREP",
+            "output_mode": "content"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-webfetch-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of WebFetch to cover external request tool history."
+      },
+      "description": "Conversation tool cross product: WebFetch controlled fast-fail tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_WEBFETCH"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_WEBFETCH"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_webfetch",
+          "name": "WebFetch",
+          "input": {
+            "url": "http://127.0.0.1:9/cf-e2e-tool-cross-product",
+            "prompt": "Return E2E_TOOL_RESULT_WEBFETCH"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-todo-read-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the TodoRead tool; when an empty result yields no stably visible card, prove retention via provider-visible structured tool history."
+      },
+      "description": "Conversation tool cross product: TodoRead tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_TODO_READ"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_TODO_READ"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_todo_read",
+          "name": "TodoRead",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-todo-write-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the TodoWrite tool to cover tool history after writing todo state."
+      },
+      "description": "Conversation tool cross product: TodoWrite tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_TODO_WRITE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_TODO_WRITE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_todo_write",
+          "name": "TodoWrite",
+          "input": {
+            "todos": [
+              {
+                "content": "E2E_TOOL_RESULT_TODO_WRITE",
+                "status": "completed",
+                "priority": "low"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-goal-read-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the GoalRead tool to cover goal reading tool history."
+      },
+      "description": "Conversation tool cross product: GoalRead tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_GOAL_READ"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_GOAL_READ"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_goal_read",
+          "name": "GoalRead",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-enter-plan-mode-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the EnterPlanMode tool; when V4 hides internal mode-switch rows, prove retention via provider-visible structured tool history and switch back to Full access before goal."
+      },
+      "description": "Conversation tool cross product: EnterPlanMode tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_ENTER_PLAN_MODE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_ENTER_PLAN_MODE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_enter_plan_mode",
+          "name": "EnterPlanMode",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-exit-plan-mode-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the ExitPlanMode tool to cover tool history after exiting plan mode."
+      },
+      "description": "Conversation tool cross product: ExitPlanMode fast-fail tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_EXIT_PLAN_MODE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_EXIT_PLAN_MODE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_exit_plan_mode",
+          "name": "ExitPlanMode",
+          "input": {
+            "plan": "E2E_TOOL_RESULT_EXIT_PLAN_MODE"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-ask-user-question-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the AskUserQuestion tool to cover user inquiry blocking and auto-selection paths."
+      },
+      "description": "Conversation tool cross product: AskUserQuestion tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "toolu_e2e_tool_cross_product_ask_user_question"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_ask_user_question",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION: choose an answer?",
+                "header": "E2E",
+                "options": [
+                  {
+                    "label": "Use default",
+                    "description": "Continue the e2e run with the default answer."
+                  },
+                  {
+                    "label": "Use fallback",
+                    "description": "Continue the e2e run with the fallback answer."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-read-session-context-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of ReadSessionContext to cover session reading tool history."
+      },
+      "description": "Conversation tool cross product: ReadSessionContext tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_TOOL_CROSS_PRODUCT_READ_SESSION_CONTEXT"
+        ],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_READ_SESSION_CONTEXT"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_read_session_context",
+          "name": "ReadSessionContext",
+          "input": {
+            "sessionId": "sess_e2e_missing_tool_cross_product",
+            "query": "E2E_TOOL_RESULT_READ_SESSION_CONTEXT",
+            "strategy": "relevant"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-send-message-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of SendMessage to cover cross-agent message tool history."
+      },
+      "description": "Conversation tool cross product: SendMessage conditional tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_SEND_MESSAGE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_SEND_MESSAGE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_sendmessage",
+          "name": "SendMessage",
+          "input": {
+            "to": "agent_e2e_missing_tool_cross_product",
+            "summary": "E2E_TOOL_RESULT_SEND_MESSAGE",
+            "message": "E2E_TOOL_RESULT_SEND_MESSAGE"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-agent-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of Agent to cover sub-agent tool history."
+      },
+      "description": "Conversation tool cross product: Agent fast-fail tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_AGENT"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_AGENT"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_agent",
+          "name": "Agent",
+          "input": {
+            "description": "E2E fast fail",
+            "prompt": "E2E_TOOL_RESULT_AGENT",
+            "subagent_type": "Missing"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-skill-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of Skill to cover skill tool history."
+      },
+      "description": "Conversation tool cross product: Skill fast-fail tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_SKILL"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_SKILL"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_skill",
+          "name": "Skill",
+          "input": {
+            "skill": "cf-e2e-missing-skill"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-workflow-call",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger the expected failure path of Workflow to cover workflow tool history."
+      },
+      "description": "Conversation tool cross product: Workflow fast-fail tool_use.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_WORKFLOW"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_WORKFLOW"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_workflow",
+          "name": "Workflow",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-fork-probe-final",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Hidden tool rows and empty-result tools prove history was copied in the fork child via paired tool_use/tool_result in provider-visible continuation; child toolCallId is remapped according to the stable fork contract."
+      },
+      "description": "Conversation tool cross product: fork child history probe.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_FORK_PROBE"],
+        "bodyIncludes": [
+          "E2E_TOOL_CROSS_PRODUCT_FORK_PROBE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-compact-success",
+      "metadata": {
+        "kind": "compact",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Deterministically respond to the manual compact explicitly triggered by TX to avoid provider retries caused by missing replay fixtures."
+      },
+      "description": "Conversation tool cross product: summarize an explicitly requested manual compact after a completed tool turn.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_TOOL_CROSS_PRODUCT",
+          "toolu_e2e_tool_cross_product",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-tool-cross-product-compact-success",
+          "inputTokens": 256,
+          "outputTokens": 48,
+          "text": "<analysis>Summarized the completed tool turn.</analysis>\n\n<summary>E2E_TOOL_CROSS_PRODUCT completed a tool call and returned upstream-e2e-ok before the user requested manual compact.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-tool-final",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Stably conclude the current turn after backfilling tool results, ensuring real provider copy does not affect tool history assertions."
+      },
+      "description": "Conversation tool cross product: final text after any tool_result.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_CROSS_PRODUCT",
+          "toolu_e2e_tool_cross_product"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_TOOL_CROSS_PRODUCT_GOAL_OBJECTIVE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    },
+    {
+      "id": "upstream-tool-cross-product-goal-final",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "goal continuation only needs to complete stably; real provider copy does not affect goal state assertions."
+      },
+      "description": "Conversation tool cross product: final text for goal continuation.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_CROSS_PRODUCT_GOAL_OBJECTIVE"],
+        "bodyIncludes": ["E2E_TOOL_CROSS_PRODUCT_GOAL_OBJECTIVE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "student": {
+    "interests": "考生兴趣爱OK",
+    "family_situation": "家庭情况",
+    "career_direction": "就业方向",
+    "subject_scores": { "语Text": 125, "Count学": 138 },
+    "preferred_cities": ["Beijing", "上海"],
+    "notes": "Additional explanation"
+  },
+  "analysis": {
+    "intro": "来自 major_recommendation.intro",
+    "strategy": "来自 major_recommendation.strategy",
+    "major_directions": [
+      {
+        "icon": "🧑‍💻",
+        "title": "Professional方向Name",
+        "match_level": "Extra High",
+        "description": "方向Description"
+      }
+    ],
+    "school_strategy": "来自 school_recommendation.school_strategy"
+  },
+  "recommended_majors": [],
+  "recommended_schools": []
+}

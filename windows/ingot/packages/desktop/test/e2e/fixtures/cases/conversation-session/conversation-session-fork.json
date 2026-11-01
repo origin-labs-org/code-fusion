@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-fork",
+  "spec": "./test/e2e/conversation-session/conversation-session-fork.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-fork.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-fork-basic-source-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Basic fork case only needs to stably form completed assistant messages; real provider copy does not affect fork boundary semantics."
+    },
+    {
+      "id": "upstream-conversation-fork-goal-seed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Seed turn is only used to form stable forkable assistant history; subsequent goal target is injected via sqlite."
+    },
+    {
+      "id": "upstream-conversation-fork-goal-source-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core semantics of this case is that fork child inherits parent target without copying parent queue; source turn is only responsible for completing one snapshot sync, and real provider copy does not affect assertions."
+    },
+    {
+      "id": "upstream-conversation-fork-goal-held-queue-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Product semantics of this queued prompt is staying in parent session held queue without being copied by fork child; hitting this fixture at runtime indicates queue guard failure."
+    },
+    {
+      "id": "upstream-conversation-fork-edit-old-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Original branch is only used for subsequent edit/rewind; real provider copy does not affect active branch fork assertions."
+    },
+    {
+      "id": "upstream-conversation-fork-edit-active-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response only needs to reliably form the edited active assistant turn to prove that fork child does not duplicate the old branch."
+    }
+  ]
+}

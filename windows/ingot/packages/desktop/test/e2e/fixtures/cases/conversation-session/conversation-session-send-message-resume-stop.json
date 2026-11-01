@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-send-message-resume-stop",
+  "spec": "./test/e2e/conversation-session/conversation-session-send-message-resume-stop.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-send-message-resume-stop.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "send-message-resume-stop-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title generation is not part of SAT12 semantics; mocking the response prevents hidden request retries from blocking the main turn."
+    },
+    {
+      "id": "send-message-resume-stop-parent-agent",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Pin foreground Agent startup to prevent live models from altering the SAT12 precondition state."
+    },
+    {
+      "id": "send-message-resume-stop-foreground-child",
+      "kind": "subagent",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "稳定形成可由 SendMessage resume 的 terminal local agent。"
+    },
+    {
+      "id": "send-message-resume-stop-parent-foreground-idle",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Establish a stable idle boundary before SendMessage for E2E to solidify the original foreground identity."
+    },
+    {
+      "id": "send-message-resume-stop-parent-send-message",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Use the real agentId injected by replay to deterministically trigger terminal resume."
+    },
+    {
+      "id": "send-message-resume-stop-parent-idle",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the parent idle boundary after SendMessage succeeds to prevent live models from making extra TaskOutput calls."
+    },
+    {
+      "id": "send-message-resume-stop-stop-notification",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Provide a single completion barrier for the background completion notification turn after Stop."
+    },
+    {
+      "id": "send-message-resume-stop-foreground-compact",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "The E2E default model window compacts after foreground tool results; mock the summary to preserve the identity required by the second turn."
+    },
+    {
+      "id": "send-message-resume-stop-resume-pending-compact",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "SendMessage tool call/result is in the compacted retained section; summary only retains the current user request and original agent identity."
+    },
+    {
+      "id": "send-message-resume-stop-resumed-compact",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Compaction after the parent turn ends must retain the real SendMessage success result for the Stop notification turn to continue."
+    },
+    {
+      "id": "send-message-resume-stop-child-bash",
+      "kind": "subagent",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Pin the resumed child running window to verify Stop visibility and accepted cancel."
+    }
+  ]
+}

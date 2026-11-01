@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-composer-toolbar",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-composer-toolbar.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-composer-toolbar.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "~/.cf/commands/e2e-draft-catalog.md",
+      "source": "created-by-spec",
+      "description": "S02/S03 writes real user-scope custom commands to isolated E2E HOME to verify independent hydration from completed task → draft and workspace directory retention from draft → known completed task."
+    }
+  ],
+  "requests": [
+    {
+      "id": "v4-composer-toolbar-title",
+      "description": "Case-local title generation response for E2E_V4_COMPOSER_TOOLBAR_SEED initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_COMPOSER_TOOLBAR_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-composer-toolbar-seed",
+      "description": "M5 composer toolbar gate: First-round fixed reply to establish a session for switching models/modes (usage projection written with ModelComplete).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Toolbar switching only needs an existing session; first-round text is fixed."
+    }
+  ]
+}

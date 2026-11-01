@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-use-subagent-boundary",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-use-subagent-boundary.test.ts",
+  "fixtures": [
+    {
+      "id": "browser-subagent-boundary-title",
+      "description": "Fix asynchronous title responses for the Browser subagent boundary case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles do not belong to runtime scope boundaries; they only need to be isolated from parent/child requests."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_PARENT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"browser-subagent-boundary-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Browser Sub-agentBoundaries\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":64,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":8,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "browser-subagent-parent-init",
+      "description": "The main Agent initializes the Browser runtime, opens its own Tab, and writes parent-before.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The main Agent's Tab must be created using a real shared Node REPL and IAB guest, so the child can list it and it can be reverified after the child ends."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_PARENT",
+          "E2E_BROWSER_FIXTURE_URL:"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_browser_subagent_parent_init",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_subagent_parent_init",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "Main Agent caches Browser and Tab",
+            "code": "const browserPluginRoot = process.env.CF_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nif (!browserPluginRoot) throw new Error('Browser plugin root is unavailable in the node_repl host');\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nglobalThis.boundaryBrowserClientUrl = pathToFileURL(join(browserPluginRoot, 'scripts', 'browser-client.mjs')).href;\nconst browserClientModule = await import(boundaryBrowserClientUrl);\nglobalThis.boundarySetupBrowserRuntime = browserClientModule.setupBrowserRuntime;\nif (globalThis.agent?.browsers == null) await boundarySetupBrowserRuntime({ globals: globalThis });\nglobalThis.boundaryBrowser = await agent.browsers.get('iab');\nglobalThis.boundaryTab = await boundaryBrowser.tabs.new();\nawait boundaryTab.goto('{{browserFixtureUrl}}');\nawait boundaryTab.playwright.getByLabel('State').fill('parent-before');\nconst parentTabsBefore = await boundaryBrowser.tabs.list();\nglobalThis.boundaryParentTabId = boundaryTab.id;\n({ marker: parentTabsBefore.length === 1 && parentTabsBefore[0]?.id === boundaryParentTabId ? 'E2E_BROWSER_SUBAGENT_PARENT_INIT_OK' : 'E2E_BROWSER_SUBAGENT_PARENT_INIT_FAILED', tabId: boundaryParentTabId, tabs: parentTabsBefore });"
+          }
+        }
+      }
+    },
+    {
+      "id": "browser-subagent-parent-agent",
+      "description": "After receiving initialization results, the main Agent launches a foreground general-purpose child.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably generate runtime_scope=subagent requests in the shared Node REPL kernel."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_PARENT",
+          "toolu_e2e_browser_subagent_parent_init"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_SUBAGENT_PARENT_INIT_OK"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_subagent_agent",
+          "name": "Agent",
+          "input": {
+            "description": "Verify Browser Use in subagent",
+            "prompt": "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD: list the conversation's Browser tabs and open one more with Node REPL as instructed. Reply exactly E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD_DONE after the checks pass.",
+            "subagent_type": "general-purpose"
+          }
+        }
+      }
+    },
+    {
+      "id": "browser-subagent-child-browse",
+      "description": "Child sees the existing Tab in the conversation, opens a new Tab, and completes a form fill.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify that real MCP calls with runtime_scope=subagent associate tabs with the current conversation: it can list the main Agent's Tab, and newly opened tabs also belong to the same conversation."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD"
+        ],
+        "bodyIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD",
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_browser_subagent_child_check",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_subagent_child_check",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "Child opens Tab in conversation Browser",
+            "code": "const browserPluginRoot = process.env.CF_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nif (!browserPluginRoot) throw new Error('Browser plugin root is unavailable in the node_repl host');\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupBrowserRuntime } = await import(pathToFileURL(join(browserPluginRoot, 'scripts', 'browser-client.mjs')).href);\nif (globalThis.agent?.browsers == null) await setupBrowserRuntime({ globals: globalThis });\nconst ordinaryValue = 6 * 7;\nconst childBrowser = await agent.browsers.get('iab');\nconst tabsBefore = await childBrowser.tabs.list();\nconst seesParentTab = tabsBefore.some((tab) => tab.id === globalThis.boundaryParentTabId);\nconst childTab = await childBrowser.tabs.new();\nawait childTab.goto('{{browserFixtureUrl}}?child=1');\nawait childTab.playwright.getByLabel('State').fill('child-owned');\nconst childState = await childTab.playwright.getByRole('status').innerText();\nconst tabsAfter = await childBrowser.tabs.list();\nconst sharesConversationTabs = tabsAfter.some((tab) => tab.id === childTab.id) && tabsAfter.some((tab) => tab.id === globalThis.boundaryParentTabId);\n({ marker: ordinaryValue === 42 && seesParentTab && childState === 'child-owned' && sharesConversationTabs ? 'E2E_BROWSER_SUBAGENT_BOUNDARY_CHECKS_OK' : 'E2E_BROWSER_SUBAGENT_BOUNDARY_CHECKS_FAILED', ordinaryValue, seesParentTab, childState, childTabId: childTab.id, tabsAfter });"
+          }
+        }
+      }
+    },
+    {
+      "id": "browser-subagent-child-final",
+      "description": "Child 消费 Browser 检查结果并完成。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Child does not close tabs upon completion, allowing the parent Agent to reverify that both tabs are present after receiving the Agent tool_result."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD",
+          "toolu_e2e_browser_subagent_child_check"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_CHECKS_OK"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD_DONE"
+      }
+    },
+    {
+      "id": "browser-subagent-parent-resume",
+      "description": "After receiving child results, the main Agent reuses the original Tab and confirms that the tab opened by child is still in the conversation.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Prove that the child did not modify the main Agent's Tab, and tabs opened by the child are preserved in the current conversation after the subagent terminates."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_PARENT",
+          "toolu_e2e_browser_subagent_agent",
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_CHILD_DONE"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_browser_subagent_parent_resume",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_subagent_parent_resume",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "Main Agent reuses original Browser Tab",
+            "code": "const stateBeforeResume = await boundaryTab.playwright.getByRole('status').innerText();\nawait boundaryTab.playwright.getByLabel('State').fill('parent-after');\nconst parentTabsAfter = await boundaryBrowser.tabs.list();\nconst keepsParentTab = parentTabsAfter.some((tab) => tab.id === boundaryParentTabId) && boundaryTab.id === boundaryParentTabId;\nconst keepsChildTab = parentTabsAfter.some((tab) => tab.id !== boundaryParentTabId && String(tab.url ?? '').includes('child=1'));\n({ marker: stateBeforeResume === 'parent-before' && keepsParentTab && keepsChildTab ? 'E2E_BROWSER_SUBAGENT_PARENT_RESUME_OK' : 'E2E_BROWSER_SUBAGENT_PARENT_RESUME_FAILED', stateBeforeResume, tabId: boundaryTab.id, tabs: parentTabsAfter });"
+          }
+        }
+      }
+    },
+    {
+      "id": "browser-subagent-parent-final",
+      "description": "The main Agent consumes reuse results and completes normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Form a normal turn complete for E2E to reverify the same guest at the final boundary."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_SUBAGENT_BOUNDARY_PARENT",
+          "toolu_e2e_browser_subagent_parent_resume"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_SUBAGENT_PARENT_RESUME_OK"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_BROWSER_SUBAGENT_BOUNDARY_DONE"
+      }
+    }
+  ]
+}

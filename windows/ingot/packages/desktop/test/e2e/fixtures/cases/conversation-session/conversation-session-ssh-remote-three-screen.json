@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-three-screen",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-three-screen.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-three-screen.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-10 verifies the connection wizard and project opening; no model requests are sent.",
+  "requests": []
+}

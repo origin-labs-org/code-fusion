@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-turn-error-queue-preserved",
+  "spec": "./test/e2e/conversation-session/conversation-session-turn-error-queue-preserved.test.ts",
+  "fixtures": [
+    {
+      "id": "turn-error-queue-preserved-source-500",
+      "description": "N05：主 turn 在 queue 入队窗口后返回 500 JSON error。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Real provider 500 response time is uncontrollable; delayMs is only used to reliably create a running admission window and verify the queue retention contract in error final states."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TURN_ERROR_QUEUE_SOURCE"],
+        "bodyIncludes": ["E2E_TURN_ERROR_QUEUE_SOURCE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "delayMs": 3000,
+        "statusCode": 500,
+        "statusMessage": "Internal Server Error",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"error\":{\"message\":"synthetic provider failure","type":"provider_error","code":"e2e_turn_error"}}"
+      }
+    },
+    {
+      "id": "turn-error-queue-preserved-followup",
+      "description": "NQ: Post-error head input successfully consumed upon explicit continuation.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Recovery path requires a fixed assistant sentinel to prove the queue was not lost and was sent only after explicit continuation."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TURN_ERROR_QUEUE_FOLLOWUP"],
+        "bodyIncludes": ["E2E_TURN_ERROR_QUEUE_FOLLOWUP"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "turn-error-queue-preserved-followup",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "TURN_ERROR_QUEUE_RECOVERED"
+        }
+      }
+    }
+  ]
+}

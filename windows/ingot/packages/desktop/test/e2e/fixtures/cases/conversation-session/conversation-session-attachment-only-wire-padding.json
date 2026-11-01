@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-attachment-only-wire-padding",
+  "spec": "./test/e2e/conversation-session/conversation-session-attachment-only-wire-padding.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-attachment-only-wire-padding.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "attachment-only-wire-padding",
+      "description": "T06W: Empty user content padding for attachment-only provider wire.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Text attachment content targets the unique main request; network capture structurally asserts that user content parts contain exact wire whitespace."
+    }
+  ]
+}

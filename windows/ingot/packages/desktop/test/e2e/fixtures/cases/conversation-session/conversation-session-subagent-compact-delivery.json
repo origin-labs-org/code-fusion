@@ -1,0 +1,868 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-compact-delivery",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-compact-delivery.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-compact-delivery.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "delivery-title",
+      "description": "Auxiliary title",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-completion-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-child-1-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-child-2-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-final-notice",
+      "description": "child terminal state notification after proactive reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "manual-reply-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-completion-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-child-1-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-child-2-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-final-notice",
+      "description": "child terminal state notification after proactive reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "auto-reply-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-completion-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-compact-12",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-compact-1",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-compact-2",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-compact-0",
+      "description": "Summary only aggregates results actually visible in the request",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-child-1-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-child-2-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-final-notice",
+      "description": "child terminal state notification after proactive reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "reactive-reply-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-probe",
+      "description": "Independent request verifying both results after compaction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-arm",
+      "description": "Holds parent request before return enqueuing; enters compaction boundary once released",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-child-1-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-child-1",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-child-2-continued",
+      "description": "child resumes work after receiving RespondToCoordinator queued ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-child-2",
+      "description": "Controlled barrier before child return",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-final-notice",
+      "description": "child terminal state notification after proactive reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-delivery",
+      "description": "父模型实际消费一份或多份结果",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-continue",
+      "description": "Parent model resumes after compaction completes",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-launch-ack",
+      "description": "Launch ack for two real background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-launch",
+      "description": "Parent model launches two background Agents",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-seed-1",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    },
+    {
+      "id": "none-reply-seed-2",
+      "description": "建立可压缩的已完成历史",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixes the interleaving of compact and two real subagent returns via explicitly releasing HTTP streams; only controls model responses without altering runtime queues or product state."
+    }
+  ]
+}

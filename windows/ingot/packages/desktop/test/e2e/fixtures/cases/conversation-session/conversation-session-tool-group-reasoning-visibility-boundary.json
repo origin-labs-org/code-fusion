@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-group-reasoning-visibility-boundary",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-group-reasoning-visibility-boundary.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-group-reasoning-visibility-boundary.json"
+  ],
+  "fileFixtures": [
+    { "path": ".cf-e2e/conversation-session-tool-group-reasoning-visibility-boundary", "source": "created-by-spec", "description": "TGE04 Write/Edit 的 case-owned fixture。" }
+  ],
+  "requests": [
+    { "id": "tge04-execute-a", "kind": "main", "source": "synthetic", "timingPolicy": "recorded-stream", "syntheticReason": "Whether the real provider outputs reasoning before each tool continuation is non-deterministic; fixing the reasoning row is required to verify display setting boundaries." },
+    { "id": "tge04-execute-b", "kind": "main", "source": "synthetic", "timingPolicy": "recorded-stream", "syntheticReason": "The second reasoning row is used to verify merging when hidden and splitting when shown." },
+    { "id": "tge04-write", "kind": "main", "source": "synthetic", "timingPolicy": "recorded-stream", "syntheticReason": "Fix the reasoning + Write boundary to verify the same visibility contract for Changes." },
+    { "id": "tge04-edit", "kind": "main", "source": "synthetic", "timingPolicy": "recorded-stream", "syntheticReason": "Fix the second file-write reasoning row to split Changes after toggling display settings." },
+    { "id": "tge04-final", "kind": "main", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Fix terminal state to re-derive the same history rows according to settings after reload." }
+  ]
+}

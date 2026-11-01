@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-permission.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-permission.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-v4-permission/write-output.txt",
+      "source": "created-by-provider-tool",
+      "description": "Spec creates parent directory, fixture drives Write tool to create target file to complete permission approval round."
+    },
+    {
+      "path": ".cf-e2e/conversation-session-v4-permission/allow-feedback-output.txt",
+      "source": "created-by-provider-tool",
+      "description": "允许路径的 Write 工具输出；用于确认 Allow once 不携带反馈。"
+    },
+    {
+      "path": ".cf-e2e/conversation-session-v4-permission/deny-blank-output.txt",
+      "source": "created-by-provider-tool",
+      "description": "空白反馈拒绝路径的目标文件；应始终不存在。"
+    }
+  ],
+  "requests": [
+    {
+      "id": "v4-permission-title",
+      "description": "Case-local title generation response for E2E_V4_PERMISSION_WRITE initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_PERMISSION_WRITE initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-permission-write-call",
+      "description": "M4 resolveInteraction gate: Write tool_use, triggers permission popup in default mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Write is a destructive tool requiring approval, used to verify v4 forward resolveInteraction command resolves reverse permission request."
+    },
+    {
+      "id": "v4-permission-final",
+      "description": "M4 resolveInteraction gate: post-approval tool_result feed-back → final text.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Tool executes successfully after permission is granted, and model provides final text based on tool_result."
+    },
+    {
+      "id": "v4-permission-allow-feedback-title",
+      "description": "Allow once 携带反馈 case 的标题生成响应。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Independent prompt marker isolates allow path."
+    },
+    {
+      "id": "v4-permission-allow-feedback-call",
+      "description": "Write tool_use for Allow once with feedback case initial launch.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that providing feedback does not alter allow decision."
+    },
+    {
+      "id": "v4-permission-allow-feedback-final",
+      "description": "Allow once 携带反馈后的终态响应。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify allow path continues execution without backfilling feedback."
+    },
+    {
+      "id": "v4-permission-deny-title",
+      "description": "Deny with feedback case 的标题生成响应。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deny with feedback uses independent prompt marker to avoid reusing provider fixture with approval path."
+    },
+    {
+      "id": "v4-permission-deny-call",
+      "description": "Write tool_use for Deny with feedback case initial launch.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Write permission request is used to verify feedback rejection does not execute tool."
+    },
+    {
+      "id": "v4-permission-deny-final",
+      "description": "Deny with feedback 后 provider-visible denied tool_result 的收口响应。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "反馈必须与同一个 denied tool_result 一起进入 provider continuation。"
+    },
+    {
+      "id": "v4-permission-deny-blank-title",
+      "description": "空白反馈拒绝 case 的标题生成响应。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Independent prompt marker isolates blank-feedback path."
+    },
+    {
+      "id": "v4-permission-deny-blank-call",
+      "description": "Write tool_use for blank-feedback deny case initial launch.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that blank feedback falls back to base Deny text."
+    },
+    {
+      "id": "v4-permission-deny-blank-final",
+      "description": "Closing response with base Deny text after blank-feedback rejection.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "provider-visible tool_result should not contain feedback suffix."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-directory-resilience",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-directory-resilience.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-directory-resilience.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-directory-reconnect-title",
+      "description": "SSH directory resilience task title auxiliary response.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "ssh-directory-reconnect-main",
+      "description": "SSH directory resilience generic response for initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Use fixed replies to prepare and continue real remote history, with directory faults constructed via a dedicated SSH target."
+    }
+  ]
+}

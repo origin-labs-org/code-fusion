@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-automation-cron-update",
+  "spec": "./test/e2e/conversation-session/conversation-session-automation-cron-update.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-automation-cron-update.json"
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-automation-cron-update-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of CronUpdate product semantics; simply return stably."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-list-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real providers may not stably call CronList first; this response fixes the query order to verify passing real IDs."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-update-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Dynamic ID comes from actual CronList tool_result; fix patch to verify in-place update and detail echo."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-update-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "CronList output significantly increases context and triggers real auto-compact; fix the summary to reliably preserve facts needed by the final matcher."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-update-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "最终回复只用于结束 case，并验证不生成 text fenced code block。"
+    }
+  ]
+}

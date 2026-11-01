@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-cold-failed-edit",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-cold-failed-edit.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-cold-failed-edit.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-cold-failed-edit-before-first-token",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Must reliably trigger a provider failure before the first token to verify cold hydration messageId and canEdit/command target after CLI restart."
+    },
+    {
+      "id": "v4-cold-failed-edit-rerun-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Use a fixed reply to prove the edit command hits the transcript messageId and actually initiates a rerun."
+    }
+  ]
+}

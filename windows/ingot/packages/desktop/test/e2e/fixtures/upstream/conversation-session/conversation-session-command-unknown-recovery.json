@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-command-unknown-recovery",
+  "spec": "./test/e2e/conversation-session/conversation-session-command-unknown-recovery.test.ts",
+  "fixtures": [
+    {
+      "id": "command-unknown-recovery-title",
+      "description": "PV4-25U 前置 session 的 case-local 标题响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably create a normal session recoverable after renderer reload; the title is not an assertion target."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_COMMAND_UNKNOWN_RECOVERY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "command-unknown-recovery-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Command Unknown Recovery E2E"}"
+        }
+      }
+    },
+    {
+      "id": "command-unknown-recovery-turn",
+      "description": "PV4-25U establishes a completed session, then reconciles unknown commandId with real commands/query.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertion is that unknown is silently cleared after renderer reload; the provider is only responsible for stably creating the prerequisite session."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_COMMAND_UNKNOWN_RECOVERY"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "command-unknown-recovery-turn",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "COMMAND_UNKNOWN_RECOVERY_OK"
+        }
+      }
+    }
+  ]
+}

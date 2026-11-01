@@ -1,0 +1,519 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-running-guide-steer",
+  "spec": "./test/e2e/conversation-session/conversation-session-running-guide-steer.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-running-guide-timeline-restored",
+      "description": "P06 cold restore and model capability switch preserve guide history.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Switch endpoint capability after real Electron/CLI cold restore, verifying original guide reprojection without duplicate wrapping."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_GUIDE_TIMELINE_RESTORED"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "guide-timeline-restored-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-timeline-title",
+      "description": "P06 title request returns immediately without competing with the three main timeline requests.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not part of P06 steer sequence; it only needs to return stably to avoid background retries introducing noise into provider records and run logs."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_GUIDE_TIMELINE_BASE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-running-guide-timeline-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Guide Timeline E2E\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":64,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":12,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-running-guide-timeline-initial-read",
+      "description": "P06/GTB-01: delay the initial Read tool_use so guide-1 is admitted before the tool result batch.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "guide-1 must stably enter first-round active request and drain after Read tool result batch is fully submitted."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GUIDE_TIMELINE_BASE"
+        ],
+        "bodyExcludes": [
+          "E2E_GUIDE_TIMELINE_GUIDE_ONE",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_GUIDE_TIMELINE_BASE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 5000,
+        "toolUse": {
+          "id": "toolu_e2e_running_guide_timeline_read",
+          "messageId": "msg_e2e_running_guide_timeline_read",
+          "name": "Read",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/shared/readonly-tool.txt"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-timeline-middle-text",
+      "description": "P06/GTB-01: after Read result + guide-1, delay a text-only assistant so guide-2 can be admitted.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "guide-2 must stably enter text-only active request after guide-1 and drain after assistant wraps up normally. Verifies source prompt and non-user authorization boundaries."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GUIDE_TIMELINE_BASE",
+          "E2E_GUIDE_TIMELINE_GUIDE_ONE",
+          "E2E_READONLY_TOOL_FILE_CONTENT",
+          "The user sent a new message while you were working:",
+          "This is how CodeFusion surfaces messages the user sends mid-turn"
+        ],
+        "bodyExcludes": [
+          "E2E_GUIDE_TIMELINE_GUIDE_TWO",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_READONLY_TOOL_FILE_CONTENT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 5000,
+        "text": {
+          "id": "upstream-e2e-running-guide-timeline-middle",
+          "inputTokens": 180,
+          "outputTokens": 16,
+          "text": "E2E_GUIDE_TIMELINE_MIDDLE_ASSISTANT"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-timeline-final-text",
+      "description": "P06/GTB-04: text-only completion drains guide-2 and the same product turn returns its final assistant.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pin final body marker to directly assert live DOM total order of two guides, three work segments, and final assistant. Verifies source prompt and non-user authorization boundaries."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GUIDE_TIMELINE_GUIDE_TWO",
+          "E2E_GUIDE_TIMELINE_MIDDLE_ASSISTANT",
+          "This is how CodeFusion surfaces messages the user sends mid-turn"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_GUIDE_TIMELINE_GUIDE_TWO"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-running-guide-timeline-final",
+          "inputTokens": 200,
+          "outputTokens": 16,
+          "text": "guide-timeline-final-assistant-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-steer-base-slow-stream",
+      "description": "M06: guide 模式普通 running steer 的基础慢流。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "guide steer requires a stable running window; a real provider may finish too quickly."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SLOW_STREAM",
+          "E2E_RUNNING_GUIDE_STEER_BASE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_RUNNING_GUIDE_STEER_BASE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-running-guide-steer-base","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":120,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 250,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 700,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"deep"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 5000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"seek-e2e-ok"}}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 5100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "sequence": 5,
+            "offsetMs": 5200,
+            "text": "event: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":120,"output_tokens":12,"service_tier":"standard"}}\n\n"
+          },
+          {
+            "sequence": 6,
+            "offsetMs": 5300,
+            "text": "event: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-seed-active",
+      "description": "M06d: Establish a stable session before the active goal guide case.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The goal guide case only validates the target chain on an established session, preventing draft prewarm admission from mixing into the state window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_SEED_ACTIVE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_SEED_ACTIVE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-seed-active",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "running-guide-goal-seed-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-seed-verify",
+      "description": "H11: Establish a stable session before the goal verifier guide case.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The goal verifier guide case only validates the target chain on an established session, preventing draft prewarm admission from mixing into the state window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_SEED_VERIFY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_SEED_VERIFY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-seed-verify",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "running-guide-goal-seed-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-active-continuation-slow",
+      "description": "M06d: Continuation slow stream for active goal running in guide mode.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "active goal guide steer 需要稳定 active target running 窗口。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_ACTIVE",
+          "Continue working toward the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 5000,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-active",
+          "inputTokens": 140,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-verify-continuation",
+      "description": "H11: Goal continuation prior to the goal verifier queue case.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably ensure guide text enters the future queue during the goal verifier running window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_VERIFY",
+          "Continue working toward the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-verify-continuation",
+          "inputTokens": 140,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-verify-delayed",
+      "description": "H11: delayed goal verifier lets the user queue guide text.",
+      "metadata": {
+        "kind": "goal-verifier",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "The goal verifier queue requires a stable verifier running window; a real verifier may finish too quickly."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_VERIFY",
+          "Verify whether the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 60000,
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-running-guide-goal-verify-delayed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"passed\\\":true,\\\"reason\\\":\\\"Delayed verifier should be stopped by cleanup.\\\",\\\"nextAction\\\":\\\"\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":220,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-running-guide-steer-followup-drain",
+      "description": "M06: 基础 provider batch 完成后，guide follow-up 进入同一 active turn 的下一次请求。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Reliably observe guide draining from the steer queue into a real user row while preserving the subsequent running window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_STEER_BASE",
+          "E2E_RUNNING_GUIDE_STEER_FOLLOWUP"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_RUNNING_GUIDE_STEER_FOLLOWUP"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 60000,
+        "text": {
+          "id": "upstream-e2e-running-guide-steer-followup-drain",
+          "inputTokens": 150,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-steer-drain",
+      "description": "M06d: After the active goal continuation batch completes, guide steer continues running within the target pipeline.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Reliably observe active goal guide draining into a real user row while maintaining the active target and running chain."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_ACTIVE",
+          "E2E_RUNNING_GUIDE_GOAL_STEER"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_STEER"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 60000,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-steer-drain",
+          "inputTokens": 160,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-running-guide-goal-verify-queue-no-standalone-request",
+      "description": "H11: guide verifier queued text should not create a standalone normal provider request in this observed window.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "goal verifier is not a regular active turn; guide text should be retained in the future queue and not trigger an immediate provider request."
+      },
+      "maxMatches": 0,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RUNNING_GUIDE_GOAL_VERIFY_QUEUE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-running-guide-goal-verify-queue-should-not-send",
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

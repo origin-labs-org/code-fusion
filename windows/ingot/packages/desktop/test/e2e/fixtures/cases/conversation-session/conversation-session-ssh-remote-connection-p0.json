@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-connection-p0",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-connection-p0.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-connection-p0.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "SSH-P0-CONN-01/02 only verifies failures, retries, directory selection, identity/session, single-Host, and secret boundaries for real password SSH; no model requests are initiated.",
+  "requests": []
+}

@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-native-search-setting",
+  "spec": "./test/e2e/conversation-session/conversation-session-native-search-setting.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-native-search-setting.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "nse-enabled-initial-title",
+      "description": "Title response for Session with enhanced search enabled by default.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Isolate title requests using initial marker."
+    },
+    {
+      "id": "nse-enabled-initial-call",
+      "description": "Default-enabled Session executes real native search version check.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix read-only Bash command to verify actual bfs/ugrep/rg output."
+    },
+    {
+      "id": "nse-enabled-initial-final",
+      "description": "Default-enabled Session closes out after real version output.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only return final state after real versions of ugrep and rg enter tool result."
+    },
+    {
+      "id": "nse-enabled-active-call",
+      "description": "Active Session executes version check again after disabling setting.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reuse the same read-only command to prove active runtime does not hot reload."
+    },
+    {
+      "id": "nse-enabled-active-final",
+      "description": "Active Session closes out after still hitting ugrep.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that toggling settings does not overwrite materialized runtime."
+    },
+    {
+      "id": "nse-disabled-new-title",
+      "description": "Title response for new Session after disabling enhanced search.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Isolate title requests for second Session using initial marker."
+    },
+    {
+      "id": "nse-disabled-new-call",
+      "description": "New Session with enhanced search disabled executes system find/grep and rg.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix read-only Bash command to verify find/grep is not injected and rg is preserved."
+    },
+    {
+      "id": "nse-disabled-new-final",
+      "description": "Close out after real output from system find/grep and rg.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only return final state after non-function find/grep and rg versions enter tool result."
+    },
+    {
+      "id": "nse-enabled-cold-resume-call",
+      "description": "Restore old Session and read latest enabled value after App/Agent cold restart.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reuse version check command to prove cold resume re-materializes runtime."
+    },
+    {
+      "id": "nse-enabled-cold-resume-final",
+      "description": "Re-hit enhanced search and close out after cold resume.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that cold resume uses current global settings and does not restore old Session toggle snapshot."
+    },
+    {
+      "id": "nse-disabled-cold-resume-call",
+      "description": "Restore old Session and read latest disabled value after another cold restart.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reuse system find/grep command to prove cold resume's inverse setting toggle."
+    },
+    {
+      "id": "nse-disabled-cold-resume-final",
+      "description": "System find/grep and rg output close out after inverse cold resume.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that cold resume uses current disabled value and does not restore previous enabled runtime."
+    }
+  ]
+}

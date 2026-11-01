@@ -1,0 +1,547 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-goal-run-cases",
+  "spec": "./test/e2e/conversation-session/conversation-session-goal-run-cases.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-goal-run-title",
+      "description": "Fixed title generation response in Goal Run case to prevent title requests from entering product retries and interfering with subsequent runtime windows.",
+      "metadata": {
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return reliably and stay isolated from goal/main requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-goal-run-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Goal Run E2E\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":8,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-goal-run-high-usage-slow",
+      "description": "MR-GOAL-09/17 使用高 usage 慢响应稳定制造 running queue 和后续 auto compact。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "The real provider's token usage and response speed are uncontrollable, making it impossible to reliably establish a queue window before auto compact."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_GR_HIGH_USAGE_SLOW"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_GR_HIGH_USAGE_SLOW"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-goal-run-high-usage","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":190,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"deep"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 2500,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"seek-e2e-ok"}}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 2600,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":190,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":12,"service_tier":"standard"}}\n\n"
+          },
+          {
+            "sequence": 5,
+            "offsetMs": 2700,
+            "text": "event: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-goal-run-auto-compact-summary",
+      "description": "MR-GOAL-09/17 高 usage turn 后的 auto compact summary。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "固定有效 summary，避免真实模型返回无法通过 compact 校验的文本。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_GR_HIGH_USAGE_SLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-auto-compact",
+          "inputTokens": 210,
+          "outputTokens": 48,
+          "text": "<analysis>Summarized the goal queue setup.</analysis>\n\n<summary>E2E_GR_HIGH_USAGE_SLOW history and the queued goal remain available after automatic compaction.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-fast-goal-context-summary",
+      "description": "Auto summary when normal fast goal verifier exceeds small model context.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Goal Run spec uses a small context to verify auto compact; the verifier prompt may also genuinely exceed the threshold, so the fast goal marker must be retained for queue continuation after summarization."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Please provide your summary",
+          "E2E_GR_GOAL_FAST"
+        ],
+        "bodyExcludes": [
+          "E2E_GR_HIGH_USAGE_SLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-fast-goal-context-summary",
+          "inputTokens": 40,
+          "outputTokens": 24,
+          "text": "<analysis>Preserved completed fast goal context.</analysis>\n\n<summary>E2E_GR_GOAL_FAST history remains available after automatic compaction.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-slow-goal-context-summary",
+      "description": "Auto summary when normal slow goal exceeds small model context.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Retain the slow goal marker so that goal continuation after summarization still hits the controlled streaming fixture."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Please provide your summary",
+          "E2E_GR_GOAL_SLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-slow-goal-context-summary",
+          "inputTokens": 40,
+          "outputTokens": 24,
+          "text": "<analysis>Preserved slow goal context.</analysis>\n\n<summary>E2E_GR_GOAL_SLOW history remains available after automatic compaction.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-verifier-goal-context-summary",
+      "description": "Auto summary when verifier-blocking goal exceeds small model context.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Retain the verifier goal marker so that verifier/queue timing after summarization remains controlled by dedicated fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Please provide your summary",
+          "E2E_GR_GOAL_VERIFY_SLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-verifier-goal-context-summary",
+          "inputTokens": 40,
+          "outputTokens": 24,
+          "text": "<analysis>Preserved verifier goal context.</analysis>\n\n<summary>E2E_GR_GOAL_VERIFY_SLOW history remains available after automatic compaction.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-manual-compact-history",
+      "description": "Normal completed history for MR-GOAL-08/16/18.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Provide reproducible two-turn compactable history."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_GR_COMPACT_HISTORY"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_GR_COMPACT_HISTORY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-compact-history",
+          "inputTokens": 40,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-manual-compact-summary",
+      "description": "MR-GOAL-08/16/18 的 manual compact success。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "A 3-second window allows the GUI to submit future goals while compact is running."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_GR_COMPACT_HISTORY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 3000,
+        "text": {
+          "id": "upstream-e2e-goal-run-manual-compact",
+          "inputTokens": 210,
+          "outputTokens": 48,
+          "text": "<analysis>Summarized the manual compact setup.</analysis>\n\n<summary>E2E_GR_COMPACT_HISTORY remains available and future goal commands stay queued.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-verifier-slow-continuation",
+      "description": "MR-GOAL-13/14/22 快速结束 continuation，进入 verifier。",
+      "metadata": {
+        "kind": "goal-continuation",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Reliably advance to the verifier admission boundary."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_GOAL_VERIFY_SLOW",
+          "Continue working toward the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-verifier-continuation",
+          "inputTokens": 20,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-verifier-slow",
+      "description": "MR-GOAL-13/14/22 maintains verifier completion-blocking window.",
+      "metadata": {
+        "kind": "goal-verifier",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "The real verifier may complete before future inputs are queued."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_GOAL_VERIFY_SLOW",
+          "Verify whether the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-goal-run-verifier-slow","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 60000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"{\\\"passed\\\":true,\\\"reason\\\":\\\"fixture verifier pass\\\",\\\"nextAction\\\":\\\"\\\"}\"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 60100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":12,"service_tier":"standard"}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-goal-run-slow-goal-continuation",
+      "description": "MR-GOAL cases requiring an active goal output window.",
+      "metadata": {
+        "kind": "goal-continuation",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "Real continuation may complete before Stop, queue, or send-now actions."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_GOAL_SLOW",
+          "Continue working toward the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-goal-run-slow-goal","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"deep"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 60000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"seek-e2e-ok"}}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 60100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":12,"service_tier":"standard"}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-goal-run-fast-goal-continuation",
+      "description": "Continuation that naturally completes the goal.",
+      "metadata": {
+        "kind": "goal-continuation",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "A brief active window allows both UI assertions and rapid entry into the verifier."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_GOAL_FAST",
+          "Continue working toward the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 1000,
+        "text": {
+          "id": "upstream-e2e-goal-run-fast-goal",
+          "inputTokens": 20,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-goal-run-fast-goal-verifier",
+      "description": "Naturally completed verifier pass for goal.",
+      "metadata": {
+        "kind": "goal-verifier",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fix the passed result to reliably produce a completed goal."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_GR_GOAL_FAST",
+          "Verify whether the active session goal"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "body": "{\"id\":"upstream-e2e-goal-run-verifier-pass","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"passed\\\":true,\\\"reason\\\":\\\"fixture response matched objective\\\",\\\"nextAction\\\":\\\"\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":20,"output_tokens":12}}"
+      }
+    },
+    {
+      "id": "upstream-goal-run-ordinary-slow",
+      "description": "Standard running/held queue setup.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "Real regular responses may complete before goal queuing, editing, or send-now."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_GR_SLOW"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_GR_SLOW"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-goal-run-ordinary-slow","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"deep"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 60000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"seek-e2e-ok"}}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 60100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":12,"service_tier":"standard"}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-goal-run-ordinary-fast",
+      "description": "Normal completion, queued text send-now, and edit rerun.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "固定普通回复内容，避免真实模型文案影响 GUI 断言。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_GR_FAST"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_GR_FAST"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-goal-run-ordinary-fast",
+          "inputTokens": 20,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

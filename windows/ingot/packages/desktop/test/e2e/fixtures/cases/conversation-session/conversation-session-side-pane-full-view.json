@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-side-pane-full-view",
+  "spec": "./test/e2e/conversation-session/conversation-session-side-pane-full-view.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-side-pane-full-view.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-side-pane-full-view-first",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only a completed session is needed as the full view owner; reply content is not part of the assertions."
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-floating-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that the floating window input box and the main chat are the same instance; reply content is only used to confirm the message was processed by the agent."
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-ask",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Reliably produce a Q&A waiting state with a 4s delayed return to ensure the request arrives after the floating window is minimized, verifying automatic restore and card display."
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-ask-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only proves that the Q&A answer has been consumed by the agent; the core assertion is on the display and dismissal of the floating card."
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_SPFV_FIRST initial send triggers title sidecar; mock a case-local title to avoid sidecar 500 retries interfering with the session."
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-compact",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The small context window of manual-review automatically compacts between turns (history no longer contains the first marker after compact); compaction failure backs off, retries, and blocks subsequent input, so a stable summary is consistently provided here."
+    }
+  ]
+}

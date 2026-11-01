@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-pasted-image-path-edge-cases",
+  "spec": "./test/e2e/conversation-session/conversation-session-pasted-image-path-edge-cases.test.ts",
+  "fixtures": [
+    {
+      "id": "pasted-image-edge-title",
+      "description": "T16-T17 fixed title response for the first round.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title content is not part of T16-T17 semantics; simply isolate title sidecar from provider-visible functional requests."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_PASTED_IMAGE_EDGE_"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-pasted-image-edge-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Image Edge\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "pasted-image-edge-failure-seed",
+      "description": "T16 establishes completed image history before deleting artifacts.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Round 1 response only establishes completed history with durable image and derived path; T16 core assertion occurs during provider-free follow-up after deleting both file types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_PASTED_IMAGE_EDGE_FAILURE_SEED_"],
+        "bodyIncludes": [
+          "e2e-image-edge-vision-model",
+          "data:image/png;base64,",
+          "[Image: source:"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-pasted-image-edge-failure-seed","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-failure-seed","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{\"content\":"E2E_PASTED_IMAGE_EDGE_FAILURE_SEED_OK"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-failure-seed","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "pasted-image-edge-bmp-image",
+      "description": "T17 image-capable 模型接收 BMP 且没有派生 path。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Response only ensures stable closure; E2E packet capture asserts valid BMP retains image in image-capable models without appending unsupported cache path."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_PASTED_IMAGE_EDGE_BMP_IMAGE_"],
+        "bodyIncludes": ["e2e-image-edge-vision-model", "data:image/bmp;base64,"],
+        "bodyExcludes": ["[Image: source:", "Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-pasted-image-edge-bmp-image","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-bmp-image","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{\"content\":"E2E_PASTED_IMAGE_EDGE_BMP_IMAGE_OK"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-bmp-image","object":"chat.completion.chunk","created":0,"model":"e2e-image-edge-vision-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "pasted-image-edge-bmp-text",
+      "description": "T17 text-only 模型接收 omitted 且没有 BMP/path。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Response only ensures stable closure; E2E packet capture asserts the same BMP history switched to text-only retains only omitted text without image/path."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_PASTED_IMAGE_EDGE_BMP_TEXT_"],
+        "bodyIncludes": [
+          "deepseek-v4-flash",
+          "Media omitted from provider request because the selected model does not support image input."
+        ],
+        "bodyExcludes": ["data:image", "[Image: source:", "Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-pasted-image-edge-bmp-text","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-bmp-text","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"E2E_PASTED_IMAGE_EDGE_BMP_TEXT_OK"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-pasted-image-edge-bmp-text","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

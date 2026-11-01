@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-model-boundary",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-model-boundary.test.ts",
+  "fixtures": [
+    {
+      "id": "subagent-boundary-parent-agent",
+      "description": "父会话触发没有显式模型覆盖的 general-purpose child。",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Fixed Agent tool_use; model identity is asserted by actual runtime request." },
+      "maxMatches": 1,
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_MODEL_BOUNDARY_PARENT", "E2E_SUBAGENT_MODEL_BOUNDARY_CHILD"], "bodyExcludes": ["E2E_SUBAGENT_MODEL_BOUNDARY_CHILD_DONE", "Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "toolUse": { "id": "toolu_e2e_subagent_model_boundary", "name": "Agent", "input": { "description": "Run inherited child", "prompt": "E2E_SUBAGENT_MODEL_BOUNDARY_CHILD: reply exactly E2E_SUBAGENT_MODEL_BOUNDARY_CHILD_DONE and no other text.", "subagent_type": "general-purpose" } } }
+    },
+    {
+      "id": "subagent-boundary-child-delayed",
+      "description": "Delayed child response to provide an in-flight window for the parent session to switch models.",
+      "metadata": { "kind": "main", "timingPolicy": "delayed-text", "source": "synthetic", "syntheticReason": "Delay is only used to verify child execution snapshot and does not alter business results." },
+      "maxMatches": 1,
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_MODEL_BOUNDARY_CHILD"], "bodyExcludes": ["E2E_SUBAGENT_MODEL_BOUNDARY_CHILD_DONE", "Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "delayMs": 30000, "text": { "id": "subagent-boundary-child", "inputTokens": 40, "outputTokens": 8, "text": "E2E_SUBAGENT_MODEL_BOUNDARY_CHILD_DONE" } }
+    },
+    {
+      "id": "subagent-boundary-parent-final",
+      "description": "Parent session consumes child result and finishes.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "验证父 continuation 仍能完成。" },
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_MODEL_BOUNDARY_PARENT", "E2E_SUBAGENT_MODEL_BOUNDARY_CHILD_DONE"], "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "text": { "id": "subagent-boundary-parent-final", "inputTokens": 60, "outputTokens": 8, "text": "E2E_SUBAGENT_MODEL_BOUNDARY_PARENT_DONE" } }
+    },
+    {
+      "id": "subagent-nested-parent-agent",
+      "description": "Parent Agent tool_use for three-tier scenario.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Fixed first-tier child." },
+      "maxMatches": 1,
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_NESTED_PARENT", "E2E_SUBAGENT_NESTED_CHILD"], "bodyExcludes": ["E2E_SUBAGENT_NESTED_CHILD_DONE", "Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "toolUse": { "id": "toolu_e2e_subagent_nested_child", "name": "Agent", "input": { "description": "Run nested child", "prompt": "E2E_SUBAGENT_NESTED_CHILD: launch a grandchild Agent for E2E_SUBAGENT_NESTED_GRANDCHILD, then reply exactly E2E_SUBAGENT_NESTED_CHILD_DONE.", "subagent_type": "general-purpose" } } }
+    },
+    {
+      "id": "subagent-nested-child-agent",
+      "description": "Second-tier child continues to trigger grandchild.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Fixed second-tier Agent tool_use." },
+      "maxMatches": 1,
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_NESTED_CHILD", "E2E_SUBAGENT_NESTED_GRANDCHILD"], "bodyExcludes": ["E2E_SUBAGENT_NESTED_GRANDCHILD_DONE", "Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "toolUse": { "id": "toolu_e2e_subagent_nested_grandchild", "name": "Agent", "input": { "description": "Run nested grandchild", "prompt": "E2E_SUBAGENT_NESTED_GRANDCHILD: reply exactly E2E_SUBAGENT_NESTED_GRANDCHILD_DONE and no other text.", "subagent_type": "general-purpose" } } }
+    },
+    {
+      "id": "subagent-nested-grandchild-final",
+      "description": "Fixed reply for third-tier grandchild.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Verify that third-tier request actually uses inherited identity." },
+      "maxMatches": 1,
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_NESTED_GRANDCHILD"], "bodyExcludes": ["E2E_SUBAGENT_NESTED_GRANDCHILD_DONE", "Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "text": { "id": "subagent-nested-grandchild", "inputTokens": 32, "outputTokens": 8, "text": "E2E_SUBAGENT_NESTED_GRANDCHILD_DONE" } }
+    },
+    {
+      "id": "subagent-nested-child-final",
+      "description": "Second-tier child consumes grandchild result.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Verify that immediate parent receives grandchild tool_result." },
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_NESTED_CHILD", "E2E_SUBAGENT_NESTED_GRANDCHILD_DONE"], "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "text": { "id": "subagent-nested-child-final", "inputTokens": 48, "outputTokens": 8, "text": "E2E_SUBAGENT_NESTED_CHILD_DONE" } }
+    },
+    {
+      "id": "subagent-nested-parent-final",
+      "description": "Parent session consumes second-tier child result.",
+      "metadata": { "kind": "main", "timingPolicy": "fast-text", "source": "synthetic", "syntheticReason": "Verify that three-tier call ultimately completes." },
+      "match": { "method": "POST", "pathIncludes": "/messages", "bodyIncludes": ["E2E_SUBAGENT_NESTED_PARENT", "E2E_SUBAGENT_NESTED_CHILD_DONE"], "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"] },
+      "response": { "statusCode": 200, "text": { "id": "subagent-nested-parent-final", "inputTokens": 56, "outputTokens": 8, "text": "E2E_SUBAGENT_NESTED_PARENT_DONE" } }
+    }
+  ]
+}

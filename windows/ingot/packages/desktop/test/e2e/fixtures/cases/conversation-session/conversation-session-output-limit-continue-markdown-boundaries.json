@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-markdown-boundaries",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-markdown-boundaries.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-output-limit-continue-markdown-boundaries.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/continue-markdown/cross-seam.svg",
+      "source": "created-by-spec",
+      "description": "OTC09 writes fixed SVG to verify that workspace-relative images spanning a Continue in the middle of a Markdown token are still ultimately loaded by fileService."
+    }
+  ],
+  "requests": [
+    {
+      "id": "output-limit-continue-markdown-title",
+      "description": "OTC09 标题 sidecar 固定响应。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are not the product semantics for the Continue Markdown boundary probe; fixed response avoids interfering with the four main requests."
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p1",
+      "description": "The first main request is truncated by max_tokens in the middle of the task bullet's strong external link label.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically make the task bullet, strong, and external link tokens span the first Continue seam simultaneously."
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p2",
+      "description": "The second main request closes the strong external link, contains multiple newlines, and truncates again in the middle of the ordered item's emphasis/strikethrough image alt.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically cover multiple newlines within the Continue partial, and make ordered item, emphasis, strikethrough, and local image tokens span the second seam simultaneously."
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p3",
+      "description": "The third main request closes the local image, writes a table and horizontal rule, and truncates a third time after the newline at the end of the fenced code line.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically place the third seam precisely on the unclosed TypeScript fenced code end-of-line newline."
+    },
+    {
+      "id": "output-limit-continue-markdown-final-p4",
+      "description": "The fourth main request continues and closes fenced code, appending blockquotes, hard breaks, math formulas, Mermaid, and autolinks before ending normally.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Normally end the cumulative Markdown of up to three Continues and provide final DOM evidence for remaining supported structures."
+    }
+  ]
+}

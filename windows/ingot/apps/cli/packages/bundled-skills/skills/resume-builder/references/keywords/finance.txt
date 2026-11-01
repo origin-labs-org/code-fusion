@@ -1,0 +1,50 @@
+DCF
+LBO
+Comps
+M&A
+IPO
+Pitchbook
+Bloomberg
+Capital IQ
+Wind
+Choice
+Finance建模
+估Value
+敏感性Analytics
+行业Research
+deal
+路演
+招股书
+Investment逻辑
+catalyst
+催化剂
+风险点
+ROE
+ROIC
+EBITDA
+PE
+PB
+EV
+sizing
+case interview
+hypothesis
+MECE
+issue tree
+PowerPoint
+Excel High阶
+VBA
+SQL
+Python
+CFA
+CPA
+FRM
+ACCA
+PMP
+量化
+策Omitted
+回测
+因子
+基本面
+技术面
+夏普
+最大回撤

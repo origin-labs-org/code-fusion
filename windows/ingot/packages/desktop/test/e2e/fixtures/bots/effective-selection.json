@@ -1,0 +1,6 @@
+{
+  "caseId": "BOT-E2E-SR87",
+  "classification": "synthetic",
+  "syntheticReason": "Verify Bot menu, original intent protection, first task dispatch, and bound Session selection consumption boundaries; controlled target selection service provides valid/invalid snapshots without accessing real Feishu or model APIs and does not replace real Worker request evidence.",
+  "timing": "fast-text"
+}

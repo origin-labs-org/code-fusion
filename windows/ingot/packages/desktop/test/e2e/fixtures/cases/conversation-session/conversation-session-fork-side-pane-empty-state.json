@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-fork-side-pane-empty-state",
+  "spec": "./test/e2e/conversation-session/conversation-session-fork-side-pane-empty-state.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-fork-side-pane-empty-state.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "fork-side-pane-empty-state-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of this case's product semantics; fixed response avoids strict case-local replay depending on shared fallback."
+    },
+    {
+      "id": "fork-side-pane-empty-state-parent-turn",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is Side Pane visibility after switching fork task; provider only needs to stably form completed assistant."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-turn-error-history-activity",
+  "spec": "./test/e2e/conversation-session/conversation-session-turn-error-history-activity.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-turn-error-history-activity.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "turn-error-history-activity-source-500",
+      "description": "Primary turn 500 response for cold restore opening historical task after TurnError.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "稳定制造 accepted future queue 和可观测的冷恢复清理窗口。"
+    },
+    {
+      "id": "turn-error-history-activity-followup",
+      "description": "Post-error head input remains in the persisted queue and is cleaned up by the runtime during cold recovery.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Provide complete provider routing for abnormal turns to avoid tests being affected by unmatched requests at runtime."
+    }
+  ]
+}

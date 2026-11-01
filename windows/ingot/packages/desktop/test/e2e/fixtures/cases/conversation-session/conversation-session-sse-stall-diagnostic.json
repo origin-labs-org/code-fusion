@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-sse-stall-diagnostic",
+  "spec": "./test/e2e/conversation-session/conversation-session-sse-stall-diagnostic.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-sse-stall-diagnostic.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "ensureReadonlyToolFixtureFile writes fixed content, and SSE-ST-05/06 uses actual successful Read results to verify tool commit boundaries and ensure stall recovery does not re-execute."
+    }
+  ],
+  "requests": [
+    {
+      "id": "sse-stall-diagnostic-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题生成不是本 diagnostic 的验证目标，只需稳定收口。"
+    },
+    {
+      "id": "sse-stall-prelude-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Trigger an actual SSE stall at the retry-safe prelude boundary."
+    },
+    {
+      "id": "sse-stall-prelude-recovered",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that the retry-safe prelude can settle via an actual second provider request."
+    },
+    {
+      "id": "sse-stall-thinking-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Trigger an actual SSE stall at the reasoning-only visible boundary."
+    },
+    {
+      "id": "sse-stall-thinking-recovered",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify the actual Desktop recovery request for S02-R1."
+    },
+    {
+      "id": "sse-stall-text-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Trigger an actual SSE stall at the user-visible body boundary to sample S03's current behavior."
+    },
+    {
+      "id": "sse-stall-text-recovered",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Allow the diagnostic to distinguish whether the current implementation recovers or transitions directly to terminal."
+    },
+    {
+      "id": "sse-stall-tool-input-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Verify that uncommitted tool inputs are not executed during stall/recovery."
+    },
+    {
+      "id": "sse-stall-tool-input-recovered",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "证明未提交工具不会阻止安全恢复。"
+    },
+    {
+      "id": "sse-stall-tool-committed-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Trigger a stall at the boundary where the tool content block is complete but the message is not terminal, diagnosing execution, recovery, and duplication."
+    },
+    {
+      "id": "sse-stall-tool-committed-continuation",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that content_block_stop commits and executes the tool, the successful result becomes the recovery anchor, and the same tool is not replayed."
+    },
+    {
+      "id": "sse-stall-post-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Construct an actual prerequisite state where the tool has successfully executed and tool_result has entered the next model request."
+    },
+    {
+      "id": "sse-stall-post-tool-continuation-stalled",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Place the stall after a successfully executed tool to verify that recovery does not replay the tool."
+    },
+    {
+      "id": "sse-stall-post-tool-continuation-recovered",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "证明 post-tool continuation 只重试模型请求，不重复执行工具。"
+    }
+  ]
+}

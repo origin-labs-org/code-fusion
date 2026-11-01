@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-gpt-openai-compatible-reasoning-effort",
+  "spec": "./test/e2e/conversation-session/conversation-session-gpt-openai-compatible-reasoning-effort.test.ts",
+  "fixtures": [
+    {
+      "id": "gpt-openai-compatible-reasoning-title",
+      "description": "Fixed response for title generation in the GPT OpenAI-compatible reasoning effort case, avoiding strict case-local replay dependency on other cases.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching low/xhigh business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-title","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-title","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"GPT OpenAI-compatible Reasoning\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-title","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":64,"completion_tokens":8,"total_tokens":72}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "gpt-openai-compatible-reasoning-low-main",
+      "description": "Fixed final reply for the initial normal text after selecting the low reasoning effort in I17 GPT OpenAI-compatible, paired with packet capture to assert OpenAI-compatible request fields.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertions focus on provider/model identity, OpenAI-compatible transport, and the GPT OpenAI-compatible low request body; the response only needs to complete reliably with the expected text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GPT_OPENAI_REASONING_LOW"],
+        "bodyIncludes": ["E2E_GPT_OPENAI_REASONING_LOW", "upstream-e2e-ok", "gpt-5"],
+        "bodyExcludes": ["Generate a concise title", "extra_body"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-low","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-low","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-low","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140,"completion_tokens_details":{\"reasoning_tokens\":0}}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "gpt-openai-compatible-reasoning-xhigh-main",
+      "description": "Fixed final reply for subsequent normal text after switching from low to xhigh in I17 GPT OpenAI-compatible, paired with packet capture to assert request fields after the depth switch.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertions focus on the GPT OpenAI-compatible request body after subsequent requests switch to xhigh under the same provider/model; the response only needs to complete reliably with the expected text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GPT_OPENAI_REASONING_XHIGH"],
+        "bodyIncludes": ["E2E_GPT_OPENAI_REASONING_XHIGH", "upstream-e2e-ok", "gpt-5"],
+        "bodyExcludes": ["Generate a concise title", "extra_body"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-xhigh","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-xhigh","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-gpt-openai-compatible-reasoning-xhigh","object":"chat.completion.chunk","created":0,"model":"gpt-5","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":132,"completion_tokens":12,"total_tokens":144,"completion_tokens_details":{\"reasoning_tokens\":0}}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

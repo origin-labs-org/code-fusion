@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-video-preview",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-video-preview.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-video-preview.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-video-preview-send",
+      "description": "VI06/VI07: initial request with empty body, one image, and four video attachments.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Five media filenames appear simultaneously, constraining both images and videos to enter media capability projections in shared gallery scenarios."
+    },
+    {
+      "id": "v4-video-preview-edit",
+      "description": "VI06: branch-cut request retaining image and remaining three videos after deleting the first video.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "bodyIncludes 剩余图片与三个 video 且排除被删除 video，约束 branch-cut 后的附件投影。"
+    }
+  ]
+}

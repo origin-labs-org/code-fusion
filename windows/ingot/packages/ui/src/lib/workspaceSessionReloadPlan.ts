@@ -1,0 +1,55 @@
+import type { CfProvider, CfError } from "@origin-ai/cf-shared";
+import { buildWorkspacePrepareUiError } from "@/lib/chatPrepareError.js";
+
+export const WORKSPACE_SESSION_RELOAD_DEBOUNCE_MS = 1200;
+
+interface WorkspaceSessionReloadPlan {
+  resumeTaskId: string | undefined;
+  shouldPrepareWorkspace: boolean;
+}
+
+interface WorkspaceSessionReloadDraftErrorContext {
+  workspacePath: string;
+  provider: CfProvider;
+}
+
+export function buildWorkspaceSessionReloadPlan(activeTaskId: string | null): WorkspaceSessionReloadPlan {
+  const resumeTaskId = activeTaskId?.trim();
+
+  if (!resumeTaskId) {
+    return {
+      resumeTaskId: undefined,
+      shouldPrepareWorkspace: true,
+    };
+  }
+
+  return {
+    resumeTaskId,
+    shouldPrepareWorkspace: false,
+  };
+}
+
+export function buildWorkspaceSessionReloadDraftError(
+  err: unknown,
+  context: WorkspaceSessionReloadDraftErrorContext,
+): CfError & { detail?: string } {
+  return buildWorkspacePrepareUiError(err, {
+    workspacePath: context.workspacePath,
+    provider: context.provider,
+    reason: "reload-session",
+    attempt: 1,
+    maxAttempts: 1,
+  });
+}
+
+export function shouldDebounceWorkspaceSessionReload(
+  lastTriggeredAt: number | null,
+  now: number,
+  debounceWindowMs: number = WORKSPACE_SESSION_RELOAD_DEBOUNCE_MS,
+): boolean {
+  if (lastTriggeredAt === null) {
+    return false;
+  }
+
+  return now - lastTriggeredAt < debounceWindowMs;
+}

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-composer-toolbar",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-composer-toolbar.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-composer-toolbar-title",
+      "description": "Case-local title generation response for E2E_V4_COMPOSER_TOOLBAR_SEED initial send.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_COMPOSER_TOOLBAR_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_COMPOSER_TOOLBAR_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-composer-toolbar-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Composer Toolbar E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-composer-toolbar-seed",
+      "description": "M5 composer toolbar gate: First-round fixed reply to establish a session for switching models/modes (usage projection written with ModelComplete).",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Toolbar switching only needs an existing session; first-round text is fixed."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_COMPOSER_TOOLBAR_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-composer-toolbar-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_COMPOSER_TOOLBAR_SEED_OK"
+        }
+      }
+    }
+  ]
+}

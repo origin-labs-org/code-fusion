@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-ui",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-ui.test.ts",
+  "fixtures": [
+    {
+      "id": "output-limit-continue-ui-title",
+      "description": "Fixed response for OTC08 title sidecar.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not part of the product semantics for the Continue UI status probe; fixed response avoids interfering with the three main requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_OUTPUT_LIMIT_CONTINUE_UI"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "output-limit-continue-ui-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Continue UI Probe"}"
+        }
+      }
+    },
+    {
+      "id": "output-limit-continue-ui-partial-p1",
+      "description": "First main request returns p1 mid-sentence within the same paragraph, truncated by max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically generates mid-sentence truncated text in the first paragraph without titles or paragraph breaks to observe Desktop projection after Continue."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_UI"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-ui-partial-p1","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":12,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"当One个Answer因为Output上限被截断时，User真正关心的并不Yes底层又发From了几次Model request，而Yes阅读体验能否保持连贯。理想情况下，System会Retain已经生成的inner容，在本轮inner部SupplementOne条ContinuePoint to令，并让Model从刚才停下的Location直接往后写；从User视角看，这One切应该仍然YesOne段Natural展开的Description，Even if the underlying system has already"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":12,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "output-limit-continue-ui-partial-p2",
+      "description": "Second main request directly continues p1 and truncates again via max_tokens mid-sentence within the same paragraph.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically generates mid-sentence truncated text directly continuing p1 without titles or paragraph breaks to observe Desktop chunking across adjacent partials."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_UI"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-ui-partial-p2","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"发From了New的 provider Request，Pages也不应该出现重NewQuestion候、重复Summaryor额outer的 Continue Notice，而应该无缝接上前面的主语and谓语，Continue解释Remaining部分。为了确认这种连续性在多次触顶时也成立，这个Tests还会让Second timeOutputContinue写One段，然后故意在另One个尚Ongoing的短语Medium停住，For example, let the sentence stop here at"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":20,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "output-limit-continue-ui-final-p3",
+      "description": "Third main request directly continues p2, completes the same paragraph, and ends turn normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Normally terminates the recovery chain with text directly continuing p2 without titles or paragraph breaks, allowing Desktop to display the final assistant paragraph."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_UI"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-ui-final-p3","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":28,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"an incomplete position，最后One次Request则从这个宾语StartComplete句意，并Natural收束整个Answer。若FinalPages读From来仍像One次Full output，而不YesThree次独立Reply，就Description Continue 已经被正确限制在 agent loop inner部，outer部只需感知One条持续增Long的 assistant inner容。"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":28,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    }
+  ]
+}

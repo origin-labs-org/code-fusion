@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-delete",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-delete.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-delete-title",
+      "description": "Case-local title generation response for E2E_V4_DELETE_SEED initial send.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_DELETE_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_DELETE_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-delete-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Delete E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-delete-seed",
+      "description": "M4 deleteSession gate: First-round fixed reply to establish a deletable session.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deletion only requires an existing session; first-round text is fixed."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_DELETE_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-delete-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_DELETE_SEED_OK"
+        }
+      }
+    }
+  ]
+}

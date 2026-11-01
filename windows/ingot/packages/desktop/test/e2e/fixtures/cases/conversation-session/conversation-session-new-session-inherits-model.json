@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-new-session-inherits-model",
+  "spec": "./test/e2e/conversation-session/conversation-session-new-session-inherits-model.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-new-session-inherits-model.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "new-session-inherits-model-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from mistakenly hitting initial send business fixtures."
+    },
+    {
+      "id": "new-session-inherits-model-main-a",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover inherited source request body/model/thought and UI reply; response only needs to complete stably with the agreed text."
+    },
+    {
+      "id": "new-session-inherits-model-main-b",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover new draft toolbar inheritance, request body/model/thought, and UI reply; response only needs to complete stably with the agreed text."
+    }
+  ]
+}

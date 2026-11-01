@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-custom-enter-multi-question",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-custom-enter-multi-question.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-custom-enter-multi-question.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-multi-question-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion multi-question waiting state to reproduce that custom input Enter cannot prematurely submit the entire Q&A."
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-multi-question-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response only proves multi-question answers have been consumed by the agent; the core assertion is whether Enter erroneously submits prematurely."
+    }
+  ]
+}

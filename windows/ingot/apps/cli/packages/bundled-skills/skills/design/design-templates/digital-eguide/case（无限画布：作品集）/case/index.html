@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>周晴 — VisualDesign师 · Portfolio 2026</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #0a0a0c;
+    --ink: #eae6df;
+    --ink-soft: #6e6a63;
+    --ink-mid: #9e9a92;
+    --line: #222020;
+    --line-soft: #181716;
+    --pill: #eae6df;
+    --pill-ink: #0a0a0c;
+    /* Liquid Glass accent */
+    --glass-bg: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.18);
+    --glass-highlight: rgba(255,255,255,0.25);
+    --glass-shadow: rgba(0,0,0,0.4);
+    --glass-blur: 20px;
+    --accent: #c9a87c;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    width:100%;height:100%;
+    overflow:hidden;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Inter","PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size:13px;
+    letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;
+    user-select:none;
+  }
+  body{ cursor: grab; }
+  body.dragging{ cursor: grabbing; }
+
+  /* ===== Liquid Glass Button System ===== */
+  .liquid-glass{
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.12) 0%,
+      rgba(255,255,255,0.05) 40%,
+      rgba(255,255,255,0.08) 60%,
+      rgba(255,255,255,0.14) 100%
+    );
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow:
+      0 8px 32px -8px var(--glass-shadow),
+      inset 0 1px 0 0 var(--glass-highlight),
+      inset 0 -1px 0 0 rgba(255,255,255,0.05);
+    overflow: hidden;
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
+  }
+  .liquid-glass::before{
+    content:"";
+    position:absolute;
+    top:0;left:-50%;right:-50%;bottom:50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255,255,255,0.2) 0%,
+      rgba(255,255,255,0.0) 100%
+    );
+    border-radius: 999px 999px 50% 50%;
+    pointer-events:none;
+    transition: opacity .3s ease;
+  }
+  .liquid-glass::after{
+    content:"";
+    position:absolute;
+    inset: -2px;
+    border-radius: 999px;
+    background: radial-gradient(
+      ellipse at 30% 20%,
+      rgba(255,255,255,0.15) 0%,
+      transparent 50%
+    );
+    pointer-events:none;
+    opacity:0;
+    transition: opacity .4s ease;
+  }
+  .liquid-glass:hover{
+    transform: scale(1.04) translateY(-1px);
+    box-shadow:
+      0 12px 40px -8px var(--glass-shadow),
+      inset 0 1px 0 0 rgba(255,255,255,0.3),
+      inset 0 -1px 0 0 rgba(255,255,255,0.08),
+      0 0 20px rgba(201,168,124,0.15);
+  }
+  .liquid-glass:hover::after{
+    opacity:1;
+  }
+  .liquid-glass:active{
+    transform: scale(0.98);
+    box-shadow:
+      0 4px 16px -4px var(--glass-shadow),
+      inset 0 1px 0 0 rgba(255,255,255,0.15);
+  }
+
+  /* Liquid glass with accent glow */
+  .liquid-glass.accent-glow{
+    box-shadow:
+      0 8px 32px -8px var(--glass-shadow),
+      inset 0 1px 0 0 var(--glass-highlight),
+      0 0 30px rgba(201,168,124,0.1);
+  }
+  .liquid-glass.accent-glow:hover{
+    box-shadow:
+      0 12px 40px -8px var(--glass-shadow),
+      inset 0 1px 0 0 rgba(255,255,255,0.3),
+      0 0 40px rgba(201,168,124,0.25);
+  }
+
+  /* Liquid glass pill (smaller, for tabs/filters) */
+  .liquid-glass.sm{
+    --glass-blur: 14px;
+  }
+
+  /* Liquid glass icon button */
+  .liquid-glass.icon-only{
+    padding: 0;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+  }
+
+  /* Liquid glass content layer (for overlay close etc.) */
+  .liquid-glass .btn-content{
+    position: relative;
+    z-index: 2;
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: none;
+  }
+
+  /* Ambient floating orbs for immersion */
+  .ambient-orb{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+    animation: orbFloat 20s ease-in-out infinite;
+  }
+  .ambient-orb:nth-child(1){
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(201,168,124,0.3), transparent 70%);
+    top: -10%; left: -5%;
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+  .ambient-orb:nth-child(2){
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(120,100,160,0.25), transparent 70%);
+    bottom: -15%; right: -5%;
+    animation-delay: -8s;
+    animation-duration: 22s;
+  }
+  .ambient-orb:nth-child(3){
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(100,140,180,0.2), transparent 70%);
+    top: 40%; right: 20%;
+    animation-delay: -14s;
+    animation-duration: 28s;
+  }
+  @keyframes orbFloat{
+    0%, 100%{ transform: translate(0, 0) scale(1); }
+    25%{ transform: translate(30px, -40px) scale(1.05); }
+    50%{ transform: translate(-20px, 20px) scale(0.95); }
+    75%{ transform: translate(15px, 30px) scale(1.02); }
+  }
+
+  /* —— 顶栏 —— */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:22px 26px 16px;
+    z-index:150;
+    pointer-events:none;
+    font-family:"JetBrains Mono","Noto Serif SC", monospace;
+    font-size:11px;
+    letter-spacing:.03em;
+    color:var(--ink);
+    transition: opacity .3s ease;
+  }
+  body.overlay-open .topbar{ opacity:0; pointer-events:none; }
+  body.overlay-open .topbar > *{ pointer-events:none; }
+  .topbar::before{
+    content:""; position:absolute; left:0;right:0;top:0;height:120px;
+    background:linear-gradient(to bottom, rgba(10,10,12,.75), rgba(10,10,12,0));
+    pointer-events:none; z-index:-1;
+  }
+  .topbar > *{ pointer-events:auto; }
+
+  .brand-block{ display:flex; align-items:center; gap:18px; }
+  .logo{
+    width:48px;height:48px;
+    background: linear-gradient(135deg, rgba(201,168,124,0.2), rgba(201,168,124,0.05));
+    border: 1px solid rgba(201,168,124,0.3);
+    display:grid; place-items:center;
+    border-radius:10px;
+    cursor:pointer;
+    overflow:hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+    box-shadow: 0 4px 14px -6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+  }
+  .logo:hover{ transform: rotate(-3deg) scale(1.05); box-shadow: 0 6px 20px -6px rgba(201,168,124,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+  .logo svg{ display:block; width:34px; height:34px; }
+
+  .tagline{
+    max-width:340px;
+    color:var(--ink);
+    line-height:1.55;
+    font-family:"Noto Serif SC","PingFang SC", serif;
+    font-size:12.5px;
+    font-weight:400;
+    padding-top:6px;
+  }
+
+  .col-meta, .col-times{
+    line-height:1.7;
+    color:var(--ink);
+    font-family:"Noto Serif SC", serif;
+    font-size:12px;
+    padding-top:8px;
+  }
+  .col-times{ font-family:"JetBrains Mono", monospace; font-size:11px; }
+  .col-meta .row{ display:flex; align-items:center; gap:8px; }
+  .loc-dot{
+    display:inline-block;width:7px;height:7px;border-radius:50%;
+  }
+  .loc-dot.live{ background:var(--accent); box-shadow:0 0 8px rgba(201,168,124,.7); }
+  .loc-dot.night{ background:transparent; border:1px solid var(--ink-soft); }
+
+  /* CTA button — liquid glass */
+  .cta{
+    background: linear-gradient(135deg, rgba(201,168,124,0.25), rgba(201,168,124,0.08));
+    border: 1px solid rgba(201,168,124,0.35);
+    border-radius:999px;
+    padding:14px 28px;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px; font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow:
+      0 8px 32px -8px rgba(0,0,0,.5),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      0 0 20px rgba(201,168,124,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .cta::before{
+    content:"";
+    position:absolute;
+    top:0;left:-30%;right:-30%;bottom:55%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    border-radius:999px 999px 50% 50%;
+    pointer-events:none;
+  }
+  .cta:hover{
+    transform:scale(1.04) translateY(-1px);
+    box-shadow:
+      0 12px 40px -8px rgba(0,0,0,.5),
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      0 0 30px rgba(201,168,124,0.2);
+  }
+  .cta:active{ transform:scale(0.98); }
+
+  /* —— 底栏 —— */
+  .bottombar{
+    position:fixed; bottom:22px; left:26px; right:26px;
+    display:flex; justify-content:center; align-items:center;
+    z-index:150;
+    pointer-events:none;
+  }
+  .bottombar .filter-pill{
+    position:absolute; right:0; bottom:0;
+  }
+  .bottombar::before{
+    content:""; position:fixed; left:0;right:0;bottom:0;height:120px;
+    background:linear-gradient(to top, rgba(10,10,12,.65), rgba(10,10,12,0));
+    pointer-events:none; z-index:-1;
+  }
+  .bottombar > *{ pointer-events:auto; }
+
+  .icon-group, .tabs, .filter-pill{
+    border-radius:999px;
+    padding:6px;
+    display:flex; gap:2px;
+    pointer-events:auto;
+  }
+  /* Tabs — liquid glass */
+  .tabs{
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+      0 8px 32px -8px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+    position: relative;
+    overflow: hidden;
+  }
+  .tabs::before{
+    content:"";
+    position:absolute;
+    top:0;left:-20%;right:-20%;bottom:55%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+    border-radius:999px 999px 50% 50%;
+    pointer-events:none;
+  }
+
+  .icon-btn{
+    background:transparent; border:none;
+    width:36px; height:36px;
+    border-radius:999px;
+    display:grid; place-items:center;
+    cursor:pointer;
+    color:var(--pill-ink);
+    opacity:.45;
+    pointer-events:auto;
+    transition: opacity .2s, background .2s, transform .2s;
+  }
+  .icon-btn:hover{ opacity:1; background:rgba(255,255,255,.08); transform:scale(1.06); }
+  .icon-btn.active{ opacity:1; background:rgba(255,255,255,.1); }
+
+  .tab{
+    background:transparent; border:none;
+    padding:10px 26px;
+    border-radius:999px;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px; font-weight:500;
+    color:rgba(234,230,223,.5);
+    cursor:pointer;
+    pointer-events:auto;
+    transition: background .25s, color .25s, box-shadow .25s;
+    position: relative;
+    z-index: 2;
+  }
+  .tab:hover{ color:var(--ink); background:rgba(255,255,255,.06); }
+  .tab.active{
+    background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+    color:var(--ink);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+
+  /* Filter pill — liquid glass */
+  .filter-pill{
+    padding:14px 26px;
+    border:none;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px; font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    align-items:center; gap:8px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+      0 8px 32px -8px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+    position: relative;
+    overflow: hidden;
+  }
+  .filter-pill::before{
+    content:"";
+    position:absolute;
+    top:0;left:-30%;right:-30%;bottom:55%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+    border-radius:999px 999px 50% 50%;
+    pointer-events:none;
+  }
+  .filter-pill:hover{
+    transform:scale(1.03);
+    box-shadow:
+      0 10px 36px -8px var(--glass-shadow),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      0 0 20px rgba(201,168,124,0.1);
+  }
+
+  /* —— 视口 / 球面 —— */
+  .viewport{
+    position:fixed; inset:0; overflow:hidden; z-index:10;
+    perspective: 1500px;
+    perspective-origin: 50% 50%;
+  }
+  .viewport::after{
+    content:""; position:fixed; inset:0;
+    pointer-events:none; z-index:50;
+    background:
+      radial-gradient(ellipse 80% 70% at center,
+        transparent 40%,
+        rgba(10,10,12,0.45) 76%,
+        rgba(10,10,12,0.94) 100%);
+  }
+  .sphere{
+    position:absolute;
+    left:50%; top:50%;
+    width:0; height:0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* —— Portfolio格子 —— */
+  .work{
+    position:absolute;
+    left:0; top:0;
+    width:  var(--cell, 320px);
+    height: var(--cell, 320px);
+    margin-left: calc(var(--cell, 320px) * -0.5);
+    margin-top:  calc(var(--cell, 320px) * -0.5);
+    transform-style: preserve-3d;
+    will-change: transform;
+    cursor: pointer;
+    backface-visibility: hidden;
+  }
+  .frame{
+    position:absolute; inset:0;
+    overflow:hidden;
+    background:#1a1816;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.04);
+    transition: filter .25s ease, box-shadow .25s ease;
+  }
+  .work:hover .frame{
+    filter: brightness(1.08);
+    box-shadow:
+      inset 0 0 0 1px rgba(201,168,124,.2),
+      0 0 20px rgba(201,168,124,0.08);
+  }
+  .frame img{
+    display:block; width:100%; height:100%;
+    object-fit:cover;
+    pointer-events:none;
+    -webkit-user-drag:none;
+    transition: transform .4s ease;
+  }
+  .work:hover .frame img{ transform: scale(1.04); }
+  .frame .num{
+    position:absolute; top:14px; left:18px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:10px; letter-spacing:.12em;
+    color:rgba(234,230,223,.85);
+    background:rgba(10,10,12,.5);
+    padding:3px 8px;
+    border-radius:3px;
+    backdrop-filter: blur(6px);
+    z-index:6;
+  }
+  .cell-head, .cell-foot{
+    position:absolute; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 20px;
+    z-index:5;
+    pointer-events:none;
+    height:auto;
+  }
+  .cell-head{
+    top:0;
+    background: linear-gradient(to bottom, rgba(10,10,12,.55), rgba(10,10,12,0));
+  }
+  .cell-foot{
+    bottom:0;
+    background: linear-gradient(to top, rgba(10,10,12,.65), rgba(10,10,12,0));
+  }
+  .cell-head .brand{
+    color:rgba(234,230,223,.92);
+    font-family:"JetBrains Mono", monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    text-shadow: 0 1px 4px rgba(0,0,0,.6);
+  }
+  .cell-head .proj{
+    color:#fff;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.04em;
+    text-shadow: 0 1px 6px rgba(0,0,0,.7);
+  }
+  .cell-foot .year{
+    color:#fff;
+    font-family:"JetBrains Mono", monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-shadow: 0 1px 4px rgba(0,0,0,.6);
+  }
+  .cell-foot .tags{ display:flex; gap:4px; }
+  .cell-foot .tags em{
+    font-style:normal;
+    display:inline-block;
+    border:1px solid rgba(234,230,223,.32);
+    border-radius:999px;
+    padding:2px 9px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:9px; letter-spacing:.12em;
+    color:rgba(234,230,223,.92);
+    text-transform:uppercase;
+    background: rgba(10,10,12,.32);
+    backdrop-filter: blur(4px);
+  }
+
+  /* HUD */
+  .hud{
+    position:fixed; left:26px; bottom:80px;
+    z-index:55;
+    font-family:"JetBrains Mono", monospace;
+    font-size:9.5px; color:var(--ink-soft);
+    letter-spacing:.04em; line-height:1.7;
+    pointer-events:none;
+    text-transform:uppercase;
+  }
+  .hud span{ color:var(--ink); }
+
+  .tile{ animation: fadeIn .55s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+
+  .splash{
+    position:fixed; inset:0; z-index:200;
+    background:var(--bg);
+    transition: opacity .6s, visibility .6s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .splash-inner{
+    text-align:center;
+  }
+  .splash-name{
+    font-family:"Noto Serif SC", serif;
+    font-size:48px; font-weight:600;
+    color:var(--ink);
+    letter-spacing:.08em;
+    margin-bottom:12px;
+    opacity:0;
+    animation: splashIn .8s .2s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .splash-sub{
+    font-family:"JetBrains Mono", monospace;
+    font-size:12px; letter-spacing:.2em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    opacity:0;
+    animation: splashIn .8s .5s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes splashIn{
+    from{ opacity:0; transform:translateY(20px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .splash.hide{ opacity:0; visibility:hidden; }
+
+  /* —— Two级Pages / Overlay —— */
+  .overlay{
+    position:fixed; inset:0;
+    background:var(--bg);
+    z-index:120;
+    overflow-y:auto;
+    overflow-x:hidden;
+    opacity:0;
+    visibility:hidden;
+    transition: opacity .35s ease, visibility .35s ease;
+    cursor:auto;
+  }
+  .overlay.show{ opacity:1; visibility:visible; }
+
+  /* Overlay close — liquid glass */
+  .overlay-close{
+    position:fixed; top:22px; right:26px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+    border: 1px solid var(--glass-border);
+    border-radius:999px;
+    padding:12px 22px;
+    font-family:"Noto Serif SC", serif;
+    font-size:13px; font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+    z-index:160;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow:
+      0 8px 32px -8px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+    display:flex; align-items:center; gap:8px;
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
+    overflow: hidden;
+    position: relative;
+  }
+  .overlay-close::before{
+    content:"";
+    position:absolute;
+    top:0;left:-30%;right:-30%;bottom:55%;
+    background:linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+    border-radius:999px 999px 50% 50%;
+    pointer-events:none;
+  }
+  .overlay-close:hover{
+    transform:scale(1.04) translateY(-1px);
+    box-shadow:
+      0 12px 40px -8px var(--glass-shadow),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      0 0 20px rgba(201,168,124,0.1);
+  }
+
+  /* Detail page */
+  .detail{ padding: 80px 60px 120px; max-width: 1400px; margin: 0 auto; }
+  .detail-num{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:.12em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom: 14px;
+  }
+  .detail-brand{
+    font-family:"JetBrains Mono", monospace;
+    font-size:12px; letter-spacing:.1em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom: 18px;
+  }
+  .detail-title{
+    font-family:"Noto Serif SC", serif;
+    font-size:72px; line-height:1.05; font-weight:600;
+    color:var(--ink);
+    letter-spacing:.01em;
+    margin-bottom: 24px;
+  }
+  .detail-tags{
+    display:flex; gap:6px; flex-wrap:wrap;
+    margin-bottom:60px;
+  }
+  .detail-tags em{
+    font-style:normal;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 14px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:10px; letter-spacing:.12em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .detail-hero{
+    width:100%;
+    aspect-ratio: 16 / 10;
+    background:#1a1816;
+    overflow:hidden;
+    margin-bottom:80px;
+    border-radius: 8px;
+  }
+  .detail-hero img{ display:block;width:100%;height:100%;object-fit:cover; }
+  .detail-body{
+    display:grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 80px;
+    margin-bottom:100px;
+  }
+  .detail-desc{
+    font-family:"Noto Serif SC","PingFang SC", serif;
+    font-size:17px; line-height:1.85;
+    color:var(--ink);
+    font-weight:400;
+    white-space:pre-line;
+  }
+  .detail-spec{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:.06em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    line-height:1.85;
+  }
+  .detail-spec .row{
+    display:flex; justify-content:space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .detail-spec .row .v{ color:var(--ink); }
+  .detail-gallery{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 100px;
+  }
+  .detail-gallery div{
+    background:#1a1816;
+    aspect-ratio: 4 / 3;
+    overflow:hidden;
+    border-radius: 6px;
+  }
+  .detail-gallery img{ display:block;width:100%;height:100%;object-fit:cover; }
+  .detail-nav{
+    display:flex; justify-content:space-between;
+    border-top: 1px solid var(--line);
+    padding-top: 30px;
+  }
+  .detail-nav a{
+    color:var(--ink-soft);
+    text-decoration:none;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px;
+    display:flex; flex-direction:column; gap:4px;
+    cursor:pointer;
+    transition: color .2s;
+  }
+  .detail-nav a:hover{ color:var(--ink); }
+  .detail-nav .label{
+    font-family:"JetBrains Mono", monospace;
+    font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .detail-nav .next{ text-align:right; align-items:flex-end; }
+
+  /* Generic info overlay */
+  .info-pane{ padding:100px 60px 120px; max-width: 1100px; margin:0 auto; }
+  .info-eyebrow{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:.14em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .info-title{
+    font-family:"Noto Serif SC", serif;
+    font-size:80px; line-height:1; font-weight:600;
+    color:var(--ink);
+    margin-bottom:60px;
+    letter-spacing:.02em;
+  }
+  .info-body{
+    font-family:"Noto Serif SC","PingFang SC", serif;
+    font-size:18px; line-height:1.85;
+    color:var(--ink);
+    max-width:760px;
+    margin-bottom:80px;
+    white-space:pre-line;
+  }
+  .info-section{ margin-bottom:60px; }
+  .info-section h3{
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:.14em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom:20px;
+    font-weight:500;
+  }
+  .info-list{
+    display:grid;
+    grid-template-columns: 140px 1fr;
+    gap: 8px 30px;
+    font-family:"Noto Serif SC", serif;
+    font-size:15px; line-height:1.8;
+    color:var(--ink);
+  }
+  .info-list .y{
+    color:var(--ink-soft);
+    font-family:"JetBrains Mono", monospace;
+    font-size:12px; letter-spacing:.06em;
+  }
+  .contact-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px 60px;
+  }
+  .contact-cell h4{
+    font-family:"JetBrains Mono", monospace;
+    font-size:10.5px; letter-spacing:.14em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    font-weight:500;
+    margin-bottom:10px;
+  }
+  .contact-cell p{
+    font-family:"Noto Serif SC", serif;
+    font-size:18px; line-height:1.6;
+    color:var(--ink);
+  }
+  .contact-cell a{ color:var(--ink); text-decoration:underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+  .contact-cell a:hover{ text-decoration-color: var(--accent); }
+
+  /* Filter pane */
+  .filter-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:50px;
+  }
+  .filter-grid h4{
+    font-family:"JetBrains Mono", monospace;
+    font-size:10.5px; letter-spacing:.14em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    font-weight:500;
+    margin-bottom:18px;
+  }
+  .filter-grid label{
+    display:flex; align-items:center; gap:10px;
+    font-family:"Noto Serif SC", serif;
+    font-size:14px;
+    color:var(--ink);
+    padding: 7px 0;
+    cursor:pointer;
+  }
+  .filter-grid label input{ accent-color: var(--accent); }
+
+  /* Skill tags in about */
+  .skill-tags{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top: 20px;
+  }
+  .skill-tag{
+    display:inline-block;
+    background: linear-gradient(135deg, rgba(201,168,124,0.15), rgba(201,168,124,0.05));
+    border: 1px solid rgba(201,168,124,0.25);
+    border-radius:999px;
+    padding:6px 16px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:11px; letter-spacing:.06em;
+    color:var(--accent);
+    backdrop-filter: blur(8px);
+  }
+
+  @media (max-width: 900px){
+    .tagline{ display:none; }
+    .col-meta, .col-times{ font-size:10.5px; }
+    .detail-title{ font-size:48px; }
+    .detail-body{ grid-template-columns:1fr; gap:40px; }
+    .info-title{ font-size:48px; }
+    .filter-grid, .contact-grid{ grid-template-columns:1fr; }
+    .detail{ padding:80px 28px 100px; }
+    .info-pane{ padding:100px 28px 120px; }
+    .splash-name{ font-size:32px; }
+  }
+</style>
+
+</head>
+<body>
+
+<!-- Ambient floating orbs for immersion -->
+<div class="ambient-orb"></div>
+<div class="ambient-orb"></div>
+<div class="ambient-orb"></div>
+
+<div class="splash" id="splash">
+  <div class="splash-inner">
+    <div class="splash-name">周晴</div>
+    <div class="splash-sub">Visual Designer · Portfolio</div>
+  </div>
+</div>
+
+
+<header class="topbar">
+  <div class="brand-block">
+    <div class="logo" data-nav="home" title="Back首页">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <filter id="ink" x="-15%" y="-15%" width="130%" height="130%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="6" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8"/>
+          </filter>
+        </defs>
+        <g filter="url(#ink)" fill="#c9a87c" stroke="#c9a87c">
+          <path d="M 12 10 L 68 8 L 70 70 L 14 72 Z" fill="none" stroke-width="2.5" stroke-linejoin="round"/>
+          <text x="40" y="52" text-anchor="middle" font-family="Noto Serif SC" font-size="32" font-weight="600" fill="#c9a87c" stroke="none">晴</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="tagline">
+    6年Brand与CountCharacter产品VisualDesign经验，<br>
+    从策Omitted拆解到Visual落地的全流程Design。
+  </div>
+
+  <div class="col-meta">
+    <div class="row"><span class="loc-dot live"></span>Medium国 · 上海</div>
+  </div>
+
+  <div class="col-times">
+    <div>Beijing时间 UTC+8</div>
+    <div id="time1">12:00</div>
+  </div>
+
+  <button class="cta" data-nav="contact">联系我</button>
+</header>
+
+
+<div class="viewport" id="viewport">
+  <div class="sphere" id="sphere"></div>
+</div>
+
+<div class="hud">
+  POS  <span id="pos">0°, 0°</span><br>
+  ZOOM <span id="zoom">1.00×</span> · 拖拽旋转 / 滚轮Zoom / <span>0</span> 回Medium心 / 点击View
+</div>
+
+
+<div class="bottombar">
+  <div class="tabs">
+    <button class="tab active" data-nav="home">Portfolio</button>
+    <button class="tab" data-nav="about">关于</button>
+    <button class="tab" data-nav="cv">履历</button>
+  </div>
+
+  <button class="filter-pill" data-nav="filter">
+    <svg width="11" height="11" viewBox="0 0 11 11" style="opacity:.55"><path d="M0.5 1.5h10M2 5.5h7M3.5 9.5h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    筛选
+  </button>
+</div>
+
+
+<!-- ============ Two级Pages ============ -->
+
+<div class="overlay" id="overlay-detail">
+  <button class="overlay-close" data-nav="home">← Back</button>
+  <div class="detail" id="detail-content"></div>
+</div>
+
+
+<div class="overlay" id="overlay-about">
+  <button class="overlay-close" data-nav="home">← Back</button>
+
+  <div class="info-pane">
+    <div class="info-eyebrow">关于 · About</div>
+    <h1 class="info-title">在Brand与<br>Visual之间，<br>构造Conversion。</h1>
+    <div class="info-body">我Yes周晴，One名VisualDesign师，6年来专注于BrandVisual体系与CountCharacter产品VisualDesign。我ELetterOkayDesign不只YesOK看——它需要在策Omitted与审美之间找到Exact的落点，然后被Complete地execute出来。
+
+从Brand主Visual到Marketing落地页，从H5专题到移动端UI，我习惯于从业务Target出发，用Visual语言回应真实Issue。多Project并行时，我依靠规范与组件化思维保持风格统One与High质量Deliver。</div>
+
+    <div class="info-section">
+      <h3>核心Skills</h3>
+      <div class="skill-tags">
+        <span class="skill-tag">BrandVisual体系</span>
+        <span class="skill-tag">Marketing海报</span>
+        <span class="skill-tag">H5 / 专题页</span>
+        <span class="skill-tag">移动端 UI</span>
+        <span class="skill-tag">Figma</span>
+        <span class="skill-tag">Photoshop</span>
+        <span class="skill-tag">Illustrator</span>
+        <span class="skill-tag">After Effects</span>
+        <span class="skill-tag">Design规范搭建</span>
+        <span class="skill-tag">组件化思维</span>
+        <span class="skill-tag">Visual走查</span>
+        <span class="skill-tag">跨Team沟通</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>Design方法</h3>
+      <div class="info-list">
+        <span class="y">01</span><span>策Omitted拆解 → Visual语言Conversion</span>
+        <span class="y">02</span><span>Design规范搭建与组件化Deliver</span>
+        <span class="y">03</span><span>Visual走查保障还原度 95%+</span>
+        <span class="y">04</span><span>与产品、Operations、Frontend协同推进</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="overlay-cv">
+  <button class="overlay-close" data-nav="home">← Back</button>
+
+  <div class="info-pane">
+    <div class="info-eyebrow">履历 · Resume</div>
+    <h1 class="info-title">2019 — 2026<br>七年的工作。</h1>
+    <div class="info-body">从轻舟Network到星帆互动，从E-commerce大促到Brand焕New，每One段经历都在打磨从策Omitted到落地的全链路Capabilities。</div>
+
+    <div class="info-section">
+      <h3>工作经历</h3>
+      <div class="info-list">
+        <span class="y">2022—至今</span><span>星帆互动Tech有限公司 · PremiumVisualDesign师</span>
+        <span class="y">2019—2022</span><span>轻舟Network · VisualDesign师</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>代表Project</h3>
+      <div class="info-list">
+        <span class="y">2025</span><span>Brand焕New project — Brand色、Font与版式规范，覆盖 30+ 场景</span>
+        <span class="y">2024</span><span>Double 11整合Marketing专题 — KV 到落地页Visual全案，UV 与Conversion双提升</span>
+        <span class="y">2024</span><span>BrandAnnualVisualUpgrade — 主VisualTemplate与物料规范</span>
+        <span class="y">2023</span><span>大型MarketingEventsPages — Conversion率提升About 18%</span>
+        <span class="y">2022</span><span>E-commerce大促主Visual与投放AssetsDesign</span>
+        <span class="y">2021</span><span>Brand手册更New — 图形、配色与Font应用规范</span>
+        <span class="y">2020</span><span>banner 与Details页Visual层级优化 — 点击率提升About 20%</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>Education背景</h3>
+      <div class="info-list">
+        <span class="y">2015—2019</span><span>Medium国美术学院 · Visual传达Design · 本科</span>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>荣誉与奖项</h3>
+      <div class="info-list">
+        <span class="y">2024</span><span>金投赏商业Creative奖（Visual类）入围</span>
+        <span class="y">2023</span><span>站酷AnnualDesignPortfolio精选</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="overlay-contact">
+  <button class="overlay-close" data-nav="home">← Back</button>
+
+  <div class="info-pane">
+    <div class="info-eyebrow">联系 · Get in touch</div>
+    <h1 class="info-title">OneFrom<br>做点什么。</h1>
+    <div class="info-body">如果你In progress寻找One位能从策Omitted拆解到Visual落地的Design师，欢迎联系我。</div>
+
+    <div class="contact-grid">
+      <div class="contact-cell">
+        <h4>邮箱</h4>
+        <p><a href="mailto:zhouqing.design@email.com">zhouqing.design@email.com</a></p>
+      </div>
+      <div class="contact-cell">
+        <h4>电话</h4>
+        <p>139-0000-0000</p>
+      </div>
+      <div class="contact-cell">
+        <h4>Portfolio集</h4>
+        <p><a href="https://www.zqdesign.co" target="_blank">www.zqdesign.co</a></p>
+      </div>
+      <div class="contact-cell">
+        <h4>所在City</h4>
+        <p>Medium国 · 上海</p>
+      </div>
+      <div class="contact-cell">
+        <h4>社交</h4>
+        <p><a href="#">站酷 · 周晴</a><br><a href="#">Behance · Zhou Qing</a></p>
+      </div>
+      <div class="contact-cell">
+        <h4>合作意向</h4>
+        <p>BrandVisual · MarketingDesign<br>UI Visual · Events专题</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="overlay-filter">
+  <button class="overlay-close" data-nav="home">← Back</button>
+
+  <div class="info-pane">
+    <div class="info-eyebrow">筛选 · Filter</div>
+    <h1 class="info-title">FindPortfolio。</h1>
+
+    <div class="filter-grid">
+      <div>
+        <h4>Category</h4>
+        <label><input type="checkbox" checked> BrandVisual</label>
+        <label><input type="checkbox" checked> Marketing海报</label>
+        <label><input type="checkbox" checked> H5 / 专题页</label>
+        <label><input type="checkbox" checked> UI Visual</label>
+        <label><input type="checkbox" checked> Brand焕New</label>
+        <label><input type="checkbox" checked> Visual规范</label>
+      </div>
+      <div>
+        <h4>年份</h4>
+        <label><input type="checkbox" checked> 2025</label>
+        <label><input type="checkbox" checked> 2024</label>
+        <label><input type="checkbox" checked> 2023</label>
+        <label><input type="checkbox" checked> 2022</label>
+        <label><input type="checkbox"> 2021 及更早</label>
+      </div>
+      <div>
+        <h4>Project类型</h4>
+        <label><input type="checkbox" checked> BrandProject</label>
+        <label><input type="checkbox" checked> MarketingEvents</label>
+        <label><input type="checkbox" checked> E-commerce大促</label>
+        <label><input type="checkbox" checked> UI 协作</label>
+        <label><input type="checkbox"> Personal创作</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ====== PortfolioData ======
+const WORKS = [
+  {
+    id:'01', brand:'星帆互动', title:'Brand焕New 2025', year:2025,
+    tags:['Identity','System','Brand'],
+    img:'images/p-07-gradient.jpg',
+    hero:'images/p-07-gradient.jpg',
+    g1:'images/p-13-risograph.jpg',
+    g2:'images/p-05-brand-flatlay.jpg',
+    desc:'Brand色、Font与版式规范全面Upgrade，覆盖线上线下 30+ 场景。',
+    long:'2025 年Brand焕New projectYes我主导的Annual核心Project。从Brand色、Font到版式规范，Output了One套Complete的Visual语言System，覆盖线上线下 30+ 场景。\n\nNewSystem在保持Brand辨识度的同时，大幅提升了Design产出的One致性与效率。规范Documentation被Team作为日常Design工作的Label准参考。',
+    spec:[['Client','星帆互动'],['Year','2025'],['Scope','BrandVisual体系'],['Coverage','30+ 场景']]
+  },
+  {
+    id:'02', brand:'星帆互动', title:'Double 11整合Marketing', year:2024,
+    tags:['Campaign','Marketing','KV'],
+    img:'images/p-05-brand-flatlay.jpg',
+    hero:'images/p-05-brand-flatlay.jpg',
+    g1:'images/p-07-gradient.jpg',
+    g2:'images/p-13-risograph.jpg',
+    desc:'从 KV 到落地页Visual全案Design，推动Events UV 与Conversion双提升。',
+    long:'2024 年Double 11整合Marketing专题，从主Visual KV 到落地页Visual全案Design。VisualOption围绕"品质狂欢"Theme，在Letter息密度与Visual冲击之间找到平衡。\n\nFinal推动Events UV 与Conversion率双提升，Yes当年Conversion效果最OkayMarketing专题之One。',
+    spec:[['Client','星帆互动'],['Year','2024'],['Scope','KV · 落地页 · 全案'],['Result','UV + Conversion双提升']]
+  },
+  {
+    id:'03', brand:'星帆互动', title:'AnnualVisualUpgrade', year:2024,
+    tags:['Identity','Template','System'],
+    img:'images/p-13-risograph.jpg',
+    hero:'images/p-13-risograph.jpg',
+    g1:'images/p-05-brand-flatlay.jpg',
+    g2:'images/p-07-gradient.jpg',
+    desc:'建立主VisualTemplate与物料规范，提升Design产出One致性。',
+    long:'负责BrandAnnualVisualUpgrade，建立主VisualTemplate与物料规范。PassedSystem化的TemplateDesign，k日常Design产出的One致性提升到NewHigh度。\n\nTemplate覆盖了社交媒体、线下物料、EventsPages等全渠道场景，让Team在保持Brand调性的同时大幅提升效率。',
+    spec:[['Client','星帆互动'],['Year','2024'],['Scope','主Visual · Template规范'],['Channels','全渠道']]
+  },
+  {
+    id:'04', brand:'星帆互动', title:'MarketingEvents专题', year:2023,
+    tags:['Campaign','H5','Conversion'],
+    img:'images/p-16-interior.jpg',
+    hero:'images/p-16-interior.jpg',
+    g1:'images/p-05-brand-flatlay.jpg',
+    g2:'images/p-07-gradient.jpg',
+    desc:'大型MarketingEventsPagesVisualOption，Events期PagesConversion率提升About 18%。',
+    long:'主导大型MarketingEventsPagesVisualOption，从Concepts到落地全程把控。VisualDesign围绕UserConversion路径优化，在关键触点强化VisualOnboarding。\n\nEvents期间PagesConversion率提升About 18%，验证了"VisualService于Conversion"的Design策Omitted。',
+    spec:[['Client','星帆互动'],['Year','2023'],['Scope','Events页 · H5'],['Result','Conversion率 +18%']]
+  },
+  {
+    id:'05', brand:'星帆互动', title:'组件库规范', year:2024,
+    tags:['System','Component','Frontend'],
+    img:'images/p-17-color-block.jpg',
+    hero:'images/p-17-color-block.jpg',
+    g1:'images/p-07-gradient.jpg',
+    g2:'images/p-05-brand-flatlay.jpg',
+    desc:'与Frontend协同沉淀组件库规范，核心PagesDesign还原度 95% 以上。',
+    long:'与FrontendTeam深度协同，沉淀出One套组件库规范。从Design稿到代码Implementation，建立了清晰的DeliverLabel准与走查流程。\n\n核心Pages的Design还原度维持在 95% 以上，大幅减少了返工与沟通成本。',
+    spec:[['Client','星帆互动'],['Year','2024'],['Scope','组件库 · 走查规范'],['Result','还原度 95%+']]
+  },
+  {
+    id:'06', brand:'轻舟Network', title:'E-commerce大促主Visual', year:2022,
+    tags:['Campaign','E-commerce','Visual'],
+    img:'images/p-10-urban.jpg',
+    hero:'images/p-10-urban.jpg',
+    g1:'images/p-13-risograph.jpg',
+    g2:'images/p-05-brand-flatlay.jpg',
+    desc:'E-commerce大促主Visual与站innerouter投放AssetsDesign，支持多业务线并行上线。',
+    long:'在轻舟Network期间，承担E-commerce大促主Visual与站innerouter投放AssetsDesign。需要在短时间inner为多个业务线产出High质量VisualOption，并保持Brand调性统One。\n\n这段经历锻炼了我在High压环Context下的Fast产出Capabilities与多Project并行ManageCapabilities。',
+    spec:[['Client','轻舟Network'],['Year','2022'],['Scope','主Visual · 投放Assets'],['Channels','站inner + 站outer']]
+  },
+  {
+    id:'07', brand:'轻舟Network', title:'Banner Visual优化', year:2021,
+    tags:['Optimization','CRO','Detail'],
+    img:'images/p-01-color-macro.jpg',
+    hero:'images/p-01-color-macro.jpg',
+    g1:'images/p-10-urban.jpg',
+    g2:'images/p-05-brand-flatlay.jpg',
+    desc:'优化 banner 与Details页Visual层级，推动重点Events点击率提升About 20%。',
+    long:'PassedSystem性的Visual层级优化，重New梳理 banner 与Details页的Letter息架构与Visual节奏。让User在第One时间捕捉到核心Letter息，降Low认知负荷。\n\n优化后重点Events点击率提升About 20%，证明了Visual层级对User行为的直接影响。',
+    spec:[['Client','轻舟Network'],['Year','2021'],['Scope','Banner · Details页'],['Result','点击率 +20%']]
+  },
+  {
+    id:'08', brand:'轻舟Network', title:'Brand手册更New', year:2021,
+    tags:['Guideline','Brand','Print'],
+    img:'images/p-09-ceramic.jpg',
+    hero:'images/p-09-ceramic.jpg',
+    g1:'images/p-01-color-macro.jpg',
+    g2:'images/p-10-urban.jpg',
+    desc:'完善图形、配色与Font应用规范，统OneBrandVisual语言。',
+    long:'参与Brand手册更New，完善图形、配色与Font应用规范。从零散的Visual资产Medium提炼出System化的Design原则，让BrandVisual语言有据可依。\n\n更New后的Brand手册成为Team日常Design的核心参考Documentation。',
+    spec:[['Client','轻舟Network'],['Year','2021'],['Scope','Brand手册 · Visual规范'],['Scope','图形 · 配色 · Font']]
+  },
+  {
+    id:'09', brand:'Personal project', title:'Visual实验 · 色', year:2025,
+    tags:['Experiment','Color','Personal'],
+    img:'images/p-04-paint-stroke.jpg',
+    hero:'images/p-04-paint-stroke.jpg',
+    g1:'images/p-09-ceramic.jpg',
+    g2:'images/p-12-botanical.jpg',
+    desc:'关于色彩与情绪的PersonalVisual实验，explore颜色如何影响感知。',
+    long:'This isOne组关于色彩与情绪关系的PersonalVisual实验。PassedSystem性地调整色E、饱and度与明度，观察同One种构图在不同色彩Option下传递的情绪Variance。\n\n实验产出了 24 组对比Option，部分已应用于商业Project的色彩策Omitted制定Medium。',
+    spec:[['Client','Personal project'],['Year','2025'],['Scope','24 组色彩实验'],['Status','持续更New']]
+  },
+  {
+    id:'10', brand:'Personal project', title:'Font排印笔记', year:2024,
+    tags:['Typography','Note','Personal'],
+    img:'images/p-12-botanical.jpg',
+    hero:'images/p-12-botanical.jpg',
+    g1:'images/p-04-paint-stroke.jpg',
+    g2:'images/p-09-ceramic.jpg',
+    desc:'日常Font排印练习与笔记，记录ChineseFont的节奏与呼吸。',
+    long:'《Font排印笔记》Yes我在 2024 年Start的日常练习Project。每天花 30 分钟exploreOne种ChineseFont的排印可能性——Character距、行距、断行与留白。\n\n这些练习Help我在商业ProjectMedium更精准地控制TextCharacter的Visual节奏。',
+    spec:[['Client','Personal project'],['Year','2024'],['Scope','日课 · 排印练习'],['Material','CountCharacter · 印刷']]
+  },
+  {
+    id:'11', brand:'星帆互动', title:'H5 互动专题', year:2023,
+    tags:['H5','Interactive','Campaign'],
+    img:'images/p-03-packaging.jpg',
+    hero:'images/p-03-packaging.jpg',
+    g1:'images/p-16-interior.jpg',
+    g2:'images/p-07-gradient.jpg',
+    desc:'Brand H5 互动专题页Design，在沉浸体验与ConversionTarget间找到平衡。',
+    long:'为BrandEventsDesign的 H5 互动专题页。在保证沉浸式Visual体验的同时，不忘记ConversionTarget——每One个交互节点都Settings了清晰的VisualOnboarding。\n\nPages平均停留Duration超过行业基准 40%，分享率提升 25%。',
+    spec:[['Client','星帆互动'],['Year','2023'],['Scope','H5 互动专题'],['Result','停留Duration +40%']]
+  },
+  {
+    id:'12', brand:'星帆互动', title:'移动端 UI Visual', year:2024,
+    tags:['UI','Mobile','Visual'],
+    img:'images/p-08-editorial.jpg',
+    hero:'images/p-08-editorial.jpg',
+    g1:'images/p-18-magazine.jpg',
+    g2:'images/p-14-gallery-wall.jpg',
+    desc:'移动端产品 UI VisualDesign协作，保障VisualOne致性与User体验。',
+    long:'参与移动端产品的 UI VisualDesign协作。在产品经理定义的交互框架下，用Visual语言强化Letter息层级与操作Onboarding。\n\n与Frontend紧密配合，确保Design还原度，FinalDeliver的Visual质量获得UserOK评。',
+    spec:[['Client','星帆互动'],['Year','2024'],['Scope','移动端 UI Visual'],['Platform','iOS · Android']]
+  },
+  {
+    id:'13', brand:'轻舟Network', title:'投放Assets体系', year:2022,
+    tags:['Ad','Material','System'],
+    img:'images/p-02-typography.jpg',
+    hero:'images/p-02-typography.jpg',
+    g1:'images/p-06-studio-portrait.jpg',
+    g2:'images/p-15-light-motion.jpg',
+    desc:'站innerouter投放Assets的体系化Design，支持多业务线多渠道并行。',
+    long:'建立了One套投放Assets的体系化Design流程。从AssetsTemplate到产出规范，让Team在保证质量的前提下Fast响应多业务线的投放需求。\n\nAssets点击率稳定High于行业平均水平 15%。',
+    spec:[['Client','轻舟Network'],['Year','2022'],['Scope','投放Assets体系'],['Result','CTR +15%']]
+  },
+  {
+    id:'14', brand:'Personal project', title:'海报实验', year:2024,
+    tags:['Poster','Experiment','Print'],
+    img:'images/p-06-studio-portrait.jpg',
+    hero:'images/p-06-studio-portrait.jpg',
+    g1:'images/p-02-typography.jpg',
+    g2:'images/p-15-light-motion.jpg',
+    desc:'Personal海报Design实验，exploreMinimalist与Letter息密度的Boundaries。',
+    long:'One组Personal海报Design实验，explore在MinimalistVisual语言下如何传递Rich的Letter息。每张海报只用One个核心Visual元素and最少量的TextCharacter。\n\n这组实验Help我重New理解了"少即Yes多"在Design实践Medium的真正含义。',
+    spec:[['Client','Personal project'],['Year','2024'],['Scope','12 张海报'],['Status','自出版']]
+  },
+  {
+    id:'15', brand:'星帆互动', title:'Brand物料Design', year:2023,
+    tags:['Brand','Material','Print'],
+    img:'images/p-15-light-motion.jpg',
+    hero:'images/p-15-light-motion.jpg',
+    g1:'images/p-06-studio-portrait.jpg',
+    g2:'images/p-02-typography.jpg',
+    desc:'Brand全渠道物料Design，从线上到线下保持VisualOne致性。',
+    long:'负责Brand全渠道物料Design，包括社交媒体配图、线下展架、Events物料等。在统One的Visual框架下，为不同渠道and场景适配最佳VisualOption。\n\n物料覆盖了 15+ 场景，BrandVisualOne致性显著提升。',
+    spec:[['Client','星帆互动'],['Year','2023'],['Scope','全渠道物料'],['Coverage','15+ 场景']]
+  },
+  {
+    id:'16', brand:'Personal project', title:'摄影与构图', year:2023,
+    tags:['Photography','Composition','Personal'],
+    img:'images/p-14-gallery-wall.jpg',
+    hero:'images/p-14-gallery-wall.jpg',
+    g1:'images/p-11-ink-paper.jpg',
+    g2:'images/p-08-editorial.jpg',
+    desc:'日常摄影练习，训练构图眼光与Visual敏感度。',
+    long:'摄影Yes我训练Visual敏感度的方式。Passed日常拍摄，我练习在真实场景Medium捕捉光线、色彩与构图的瞬间。\n\n这些练习直接反哺了我的Design工作——让我在商业ProjectMedium更敏锐地判断Visual重心与画面节奏。',
+    spec:[['Client','Personal project'],['Year','2023'],['Scope','日常摄影'],['Tool','Fuji X100V']]
+  },
+  {
+    id:'17', brand:'轻舟Network', title:'Details页重构', year:2020,
+    tags:['E-commerce','Redesign','CRO'],
+    img:'images/p-11-ink-paper.jpg',
+    hero:'images/p-11-ink-paper.jpg',
+    g1:'images/p-14-gallery-wall.jpg',
+    g2:'images/p-18-magazine.jpg',
+    desc:'E-commerceDetails页Visual重构，优化Letter息层级与BuyConversion路径。',
+    long:'对E-commerceDetails页进行System性的Visual重构。重New梳理Letter息层级，优化BuyConversion路径上的VisualOnboarding，让User更Natural地Completed决策。\n\n重构后Details页跳出率降Low 12%，加购率提升 8%。',
+    spec:[['Client','轻舟Network'],['Year','2020'],['Scope','Details页重构'],['Result','加购率 +8%']]
+  },
+  {
+    id:'18', brand:'Personal project', title:'BrandConcepts稿', year:2025,
+    tags:['Concept','Brand','Identity'],
+    img:'images/p-18-magazine.jpg',
+    hero:'images/p-18-magazine.jpg',
+    g1:'images/p-08-editorial.jpg',
+    g2:'images/p-11-ink-paper.jpg',
+    desc:'虚构Brand的ConceptsVisualDesign，练习从零构建BrandVisual语言。',
+    long:'为虚构Brand"MONOLITH"Design的ConceptsVisual。从Brand命名、定位到VisualSystem，Complete模拟了One次BrandDesignProject的全流程。\n\n这个练习让我保持对BrandDesign全链路的敏感度，也YesexploreNewVisual风格的实验场。',
+    spec:[['Client','Personal project'],['Year','2025'],['Scope','ConceptsBrand · 全案'],['Status','ConceptsPhase']]
+  },
+];
+
+// ====== 球面投影 ======
+(() => {
+  const SPHERE_R   = 1700;
+  const STEP_DEG   = 11;
+  const STEP_RAD   = STEP_DEG * Math.PI / 180;
+  const CELL       = Math.round(SPHERE_R * STEP_RAD);
+  const TOTAL_COLS = Math.round(360 / STEP_DEG);
+  const ROW_HALF   = 6;
+  const ROW_MIN    = -ROW_HALF, ROW_MAX = ROW_HALF;
+
+  document.documentElement.style.setProperty('--cell', CELL + 'px');
+
+  const viewport = document.getElementById('viewport');
+  const sphere   = document.getElementById('sphere');
+  const posEl    = document.getElementById('pos');
+  const zoomEl   = document.getElementById('zoom');
+
+  let camLon = 0, camLat = 0, camZoom = 1;
+  const MIN_Z = 0.6, MAX_Z = 1.8;
+
+  const TILT_Y_AMP = 6;
+  const TILT_X_AMP = 4;
+  let tiltY = 0, tiltX = 0;
+  let tiltTargetY = 0, tiltTargetX = 0;
+  let tiltAnimating = false;
+
+  const cellEls = new Map();
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+  function tagHTML(tags){ return tags.map(t => `<em>${t}</em>`).join(''); }
+
+  function workFor(col, row){
+    const colN = ((col % TOTAL_COLS) + TOTAL_COLS) % TOTAL_COLS;
+    const rowN = row + ROW_HALF;
+    const idx  = (colN * 7 + rowN * 13) % WORKS.length;
+    return WORKS[idx];
+  }
+
+  function ensureCell(col, row){
+    const key = col + ',' + row;
+    let el = cellEls.get(key);
+    if(el) return el;
+    const w = workFor(col, row);
+    el = document.createElement('div');
+    el.className = 'work';
+    el.dataset.id  = w.id;
+    el.dataset.col = col;
+    el.dataset.row = row;
+    el.innerHTML = `
+      <div class="cell-head"><span class="brand">${w.brand}</span><span class="proj">${w.title}</span></div>
+      <div class="frame"><span class="num">${w.id}</span>
+        <img src="${w.img}" alt="${w.title}" loading="lazy">
+      </div>
+      <div class="cell-foot"><span class="year">${w.year}</span>
+        <span class="tags">${tagHTML(w.tags)}</span>
+      </div>`;
+    sphere.appendChild(el);
+    cellEls.set(key, el);
+    return el;
+  }
+
+  function placeCell(el, col, row){
+    const lonDeg = col * STEP_DEG - camLon;
+    const yPos   = (row * STEP_DEG - camLat) / STEP_DEG * CELL;
+    el.style.transform =
+      `rotateY(${-lonDeg}deg) translateZ(${-SPHERE_R}px) translateY(${yPos}px) scale(1.008)`;
+  }
+
+  function visibleRange(){
+    const halfH = (Math.atan2(window.innerWidth / 2, 1500) * 180 / Math.PI) / camZoom + STEP_DEG;
+    const halfV = (Math.atan2(window.innerHeight / 2, 1500) * 180 / Math.PI) / camZoom + STEP_DEG;
+    const c0 = Math.floor((camLon - halfH) / STEP_DEG);
+    const c1 = Math.ceil ((camLon + halfH) / STEP_DEG);
+    const r0 = Math.max(ROW_MIN, Math.floor((camLat - halfV) / STEP_DEG));
+    const r1 = Math.min(ROW_MAX, Math.ceil ((camLat + halfV) / STEP_DEG));
+    return [c0, c1, r0, r1];
+  }
+
+  function render(){
+    const [c0, c1, r0, r1] = visibleRange();
+    const need = new Set();
+    for(let col = c0; col <= c1; col++){
+      for(let row = r0; row <= r1; row++){
+        const key = col + ',' + row;
+        need.add(key);
+        const el = ensureCell(col, row);
+        placeCell(el, col, row);
+      }
+    }
+    for(const [key, el] of cellEls){
+      if(!need.has(key)){ el.remove(); cellEls.delete(key); }
+    }
+    sphere.style.transform = `translate(-50%, -50%) rotateY(${tiltY}deg) rotateX(${tiltX}deg) scale(${camZoom})`;
+    if(posEl)  posEl.textContent  = `${Math.round(((camLon % 360) + 360) % 360)}°, ${Math.round(camLat)}°`;
+    if(zoomEl) zoomEl.textContent = camZoom.toFixed(2) + '×';
+  }
+
+  function recenter(){
+    camLon = 0; camLat = 0; camZoom = 1;
+    render();
+  }
+
+  recenter();
+  window.addEventListener('resize', render);
+
+  // —— 拖拽 / 点击 ——
+  let isDown = false, sx = 0, sy = 0, oLon = 0, oLat = 0;
+  let vx = 0, vy = 0, lastX = 0, lastY = 0, lastT = 0;
+  let dragMoved = 0, downTarget = null;
+
+  const SENS = STEP_DEG / 80;
+
+  function down(x, y, target){
+    isDown = true; sx = x; sy = y; oLon = camLon; oLat = camLat;
+    lastX = x; lastY = y; lastT = performance.now();
+    vx = vy = 0; dragMoved = 0; downTarget = target;
+    document.body.classList.add('dragging');
+  }
+  function move(x, y){
+    if(!isDown) return;
+    camLon = oLon - (x - sx) * SENS / camZoom;
+    camLat = clamp(oLat + (y - sy) * SENS / camZoom, ROW_MIN * STEP_DEG, ROW_MAX * STEP_DEG);
+    dragMoved += Math.abs(x - lastX) + Math.abs(y - lastY);
+    render();
+    const now = performance.now();
+    const dt = Math.max(1, now - lastT);
+    vx = (x - lastX) / dt;
+    vy = (y - lastY) / dt;
+    lastX = x; lastY = y; lastT = now;
+  }
+  function up(){
+    if(!isDown) return;
+    isDown = false;
+    document.body.classList.remove('dragging');
+    if(dragMoved < 8 && downTarget){
+      const work = downTarget.closest('.work');
+      if(work){
+        const id = work.dataset.id;
+        if(id){ location.hash = '#work/' + id; }
+      }
+    }
+    // 惯性
+    const decay = 0.93, minV = 0.02;
+    function step(){
+      if(Math.abs(vx) < minV && Math.abs(vy) < minV) return;
+      camLon -= vx * 16 * SENS / camZoom;
+      camLat = clamp(camLat + vy * 16 * SENS / camZoom, ROW_MIN * STEP_DEG, ROW_MAX * STEP_DEG);
+      vx *= decay; vy *= decay;
+      render();
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  viewport.addEventListener('mousedown', e => { if(e.button !== 0) return; down(e.clientX, e.clientY, e.target); });
+  window.addEventListener('mousemove',  e => {
+    move(e.clientX, e.clientY);
+    if(!isDown) setMouseTilt(e.clientX, e.clientY);
+  });
+  window.addEventListener('mouseup', up);
+
+  function setMouseTilt(x, y){
+    const nx = (x / window.innerWidth  - 0.5) * 2;
+    const ny = (y / window.innerHeight - 0.5) * 2;
+    tiltTargetY =  nx * TILT_Y_AMP;
+    tiltTargetX = -ny * TILT_X_AMP;
+    if(!tiltAnimating){ tiltAnimating = true; requestAnimationFrame(tickTilt); }
+  }
+  function tickTilt(){
+    tiltY += (tiltTargetY - tiltY) * 0.08;
+    tiltX += (tiltTargetX - tiltX) * 0.08;
+    render();
+    if(Math.abs(tiltTargetY - tiltY) > 0.02 || Math.abs(tiltTargetX - tiltX) > 0.02){
+      requestAnimationFrame(tickTilt);
+    } else {
+      tiltAnimating = false;
+    }
+  }
+
+  viewport.addEventListener('touchstart', e => { if(e.touches.length === 1) down(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
+  window.addEventListener('touchmove',  e => { if(e.touches.length === 1) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchend', up);
+
+  viewport.addEventListener('wheel', e => {
+    e.preventDefault();
+    if(e.ctrlKey || e.metaKey){
+      camZoom = clamp(camZoom * Math.exp(-e.deltaY * 0.01), MIN_Z, MAX_Z);
+      render();
+    } else {
+      const isTrackpad = (Math.abs(e.deltaY) < 50 && !Number.isInteger(e.deltaY)) || Math.abs(e.deltaX) > 0;
+      if(isTrackpad){
+        camLon += e.deltaX * SENS / camZoom;
+        camLat = clamp(camLat + e.deltaY * SENS / camZoom, ROW_MIN * STEP_DEG, ROW_MAX * STEP_DEG);
+        render();
+      } else {
+        camZoom = clamp(camZoom * Math.exp(-e.deltaY * 0.0015), MIN_Z, MAX_Z);
+        render();
+      }
+    }
+  }, { passive: false });
+
+  window.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){ if(location.hash){ location.hash = ''; } return; }
+    if(location.hash) return;
+    if(e.key === '0' || e.key === 'r' || e.key === 'R'){ recenter(); return; }
+    if(e.key === '+' || e.key === '='){ camZoom = clamp(camZoom * 1.15, MIN_Z, MAX_Z); render(); return; }
+    if(e.key === '-' || e.key === '_'){ camZoom = clamp(camZoom * 0.87, MIN_Z, MAX_Z); render(); return; }
+    const K = STEP_DEG;
+    if(e.key === 'ArrowLeft'){  camLon -= K; render(); }
+    if(e.key === 'ArrowRight'){ camLon += K; render(); }
+    if(e.key === 'ArrowUp'){    camLat = clamp(camLat - K, ROW_MIN * STEP_DEG, ROW_MAX * STEP_DEG); render(); }
+    if(e.key === 'ArrowDown'){  camLat = clamp(camLat + K, ROW_MIN * STEP_DEG, ROW_MAX * STEP_DEG); render(); }
+  });
+
+  // 入场动画
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(() => {
+      const start = performance.now();
+      const dur = 1400;
+      const dLon = -8, dLat = -3;
+      const startLon = camLon, startLat = camLat;
+      camLon = startLon - dLon; camLat = startLat - dLat;
+      function tick(t){
+        const k = Math.min(1, (t - start) / dur);
+        const ee = 1 - Math.pow(1 - k, 3);
+        camLon = startLon - dLon * (1 - ee);
+        camLat = startLat - dLat * (1 - ee);
+        render();
+        if(k < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, 200);
+  }, 1200);
+})();
+
+// ====== 时钟 ======
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const t1 = document.getElementById('time1');
+  if(t1) t1.textContent = `${h}:${m}`;
+}
+updateClock(); setInterval(updateClock, 30000);
+
+// ====== Two级Pages / 路由 ======
+const overlays = {
+  about:   document.getElementById('overlay-about'),
+  cv:      document.getElementById('overlay-cv'),
+  contact: document.getElementById('overlay-contact'),
+  filter:  document.getElementById('overlay-filter'),
+  detail:  document.getElementById('overlay-detail'),
+};
+const detailContent = document.getElementById('detail-content');
+
+function specHTML(spec){ return spec.map(([k,v])=>`<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join(''); }
+function detailTagsHTML(tags){ return tags.map(t=>`<em>${t}</em>`).join(''); }
+
+function renderDetail(id){
+  const idx = WORKS.findIndex(w => w.id === id);
+  if(idx === -1) return false;
+  const w = WORKS[idx];
+  const prev = WORKS[(idx - 1 + WORKS.length) % WORKS.length];
+  const next = WORKS[(idx + 1) % WORKS.length];
+  detailContent.innerHTML = `
+    <div class="detail-num">Portfolio ${w.id} · ${w.year}</div>
+    <div class="detail-brand">${w.brand}</div>
+    <h1 class="detail-title">${w.title}</h1>
+    <div class="detail-tags">${detailTagsHTML(w.tags)}</div>
+    <div class="detail-hero"><img src="${w.hero}" alt="${w.title}"></div>
+    <div class="detail-body">
+      <div class="detail-desc">${w.long.replace(/\n/g,'<br><br>')}</div>
+      <div class="detail-spec">${specHTML(w.spec)}</div>
+    </div>
+    <div class="detail-gallery">
+      <div><img src="${w.g1}" alt=""></div>
+      <div><img src="${w.g2}" alt=""></div>
+    </div>
+    <div class="detail-nav">
+      <a data-nav-to="work/${prev.id}">
+        <span class="label">← 上One件</span>
+        <span>${prev.title}</span>
+      </a>
+      <a data-nav-to="work/${next.id}" class="next">
+        <span class="label">下One件 →</span>
+        <span>${next.title}</span>
+      </a>
+    </div>`;
+  detailContent.querySelectorAll('[data-nav-to]').forEach(a => {
+    a.addEventListener('click', () => { location.hash = '#' + a.dataset.navTo; });
+  });
+  return true;
+}
+
+function showOverlay(name){
+  for(const k in overlays) overlays[k].classList.remove('show');
+  if(overlays[name]) overlays[name].classList.add('show');
+  document.body.classList.toggle('overlay-open', !!name);
+  document.body.style.overflow = name ? 'hidden' : '';
+}
+
+function applyRoute(){
+  const h = location.hash.replace(/^#/, '');
+  const m = h.match(/^work\/(.+)$/);
+  if(m){
+    if(renderDetail(m[1])){ showOverlay('detail'); window.scrollTo(0,0); }
+    else showOverlay(null);
+    setActiveTab(null);
+    return;
+  }
+  if(['about','cv','contact','filter'].includes(h)){
+    showOverlay(h);
+    setActiveTab(h);
+    return;
+  }
+  showOverlay(null);
+  setActiveTab('home');
+}
+
+function setActiveTab(name){
+  document.querySelectorAll('.tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.nav === name);
+  });
+}
+
+window.addEventListener('hashchange', applyRoute);
+
+document.querySelectorAll('[data-nav]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    const target = el.dataset.nav;
+    if(target === 'home' || target === 'list'){
+      if(location.hash) { location.hash = ''; }
+    } else {
+      location.hash = '#' + target;
+    }
+  });
+});
+
+applyRoute();
+</script>
+
+</body>
+</html>

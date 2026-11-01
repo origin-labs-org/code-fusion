@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-stale-generation",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-stale-generation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-stale-generation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-stale-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-stale-slow",
+      "description": "Explicitly complete old connection after withholding; final marker can only be recovered via new generation",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Use gate to place Source completion while old connection is still withheld, avoiding only holding heartbeat or relying on 45s race."
+    },
+    {
+      "id": "r3-stale-next",
+      "description": "请求体为 Model B 的回合",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Observe model field in request body"
+    },
+    {
+      "id": "r3-stale-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch/fork/edit"
+    }
+  ]
+}

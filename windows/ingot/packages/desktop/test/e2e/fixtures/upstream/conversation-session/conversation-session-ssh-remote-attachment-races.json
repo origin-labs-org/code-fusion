@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-attachment-races",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-attachment-races.test.ts",
+  "fixtures": [
+    {
+      "id": "ssh-attachment-races-title",
+      "description": "SSH directory resilience task title auxiliary response.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题不属于冷恢复断言。"
+      },
+      "maxMatches": 20,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_SSH_ATTACHMENT_RACES"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"ssh-account-title","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"SSH directory resilience\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"ssh-account-title","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "ssh-attachment-races-main",
+      "description": "SSH directory resilience generic response for initial and follow-up turns.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Create an actual remote session first, then verify drag-and-drop and sending after upload cancellation/disconnection; upload faults are injected by the actual SSH response proxy."
+      },
+      "maxMatches": 20,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["E2E_SSH_ATTACHMENT_RACES_"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"ssh-account-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{\"content\":"SSH_ATTACHMENT_RACES_REPLY"},"finish_reason":null}]}\n\ndata: {\"id\":"ssh-account-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-resident-freeze-cold-resume",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-resident-freeze-cold-resume.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-resident-freeze-cold-resume.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "resident-enabled-title",
+      "description": "resident S1 标题 sidecar 稳定返回。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of Plugin lifecycle semantics; pin return to prevent background title retries from interfering with cold resume."
+    },
+    {
+      "id": "new-session-disabled-title",
+      "description": "新 Session S2 标题 sidecar 稳定返回。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of Plugin lifecycle semantics; pin return to prevent background title retries from interfering with Desktop restart."
+    },
+    {
+      "id": "resident-enabled-tool-call",
+      "description": "Resident S1 advertises Workspace Plugin MCP tool and invokes it.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin resident tool_use to prove catalog retention at creation."
+    },
+    {
+      "id": "resident-enabled-final",
+      "description": "Resident S1 tool call completed.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 resident 最终响应。"
+    },
+    {
+      "id": "new-session-disabled-final",
+      "description": "New Session S2 does not advertise Plugin MCP tool.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin final disabled response for new Session."
+    },
+    {
+      "id": "cold-resume-disabled-final",
+      "description": "S1 does not advertise Plugin MCP tool after cold resume.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin final disabled response for cold resume."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "codename": "Ingot",
+  "alias": "Max",
+  "windowTitle": "Ingot",
+  "folder": "windows/ingot",
+  "contents": "Monorepo tree - apps/, packages/, config/, docs/, node_modules; 160,239 files (3.9 GB). Role is NOT decided.",
+  "status": "present"
+}

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-modified-submit-delivery",
+  "spec": "./test/e2e/conversation-session/conversation-session-modified-submit-delivery.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-modified-submit-delivery.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "modified-submit-key-base",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stably create a runtime window where provider has received but assistant has not yet output."
+    },
+    {
+      "id": "modified-submit-key-selected",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "验证 Cmd/Ctrl+Enter 抢占后只启动一次新请求。"
+    },
+    {
+      "id": "modified-submit-guide-base",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stably verify that modifier keys reverse-enqueue without preempting under guide mode."
+    },
+    {
+      "id": "modified-submit-guide-queued-not-sent",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "maxMatches=0 commits guide reverse delivery to the ledger without creating new provider requests."
+    },
+    {
+      "id": "modified-submit-tool-read",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix preemption window after full tool results, verifying role, full text, and raw UI of new-turn human reminder against MCS toggle."
+    },
+    {
+      "id": "modified-submit-tool-hold",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fix preemption window after full tool results, verifying role, full text, and raw UI of new-turn human reminder against MCS toggle."
+    },
+    {
+      "id": "modified-submit-tool-selected",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix preemption window after full tool results, verifying role, full text, and raw UI of new-turn human reminder against MCS toggle."
+    }
+  ]
+}

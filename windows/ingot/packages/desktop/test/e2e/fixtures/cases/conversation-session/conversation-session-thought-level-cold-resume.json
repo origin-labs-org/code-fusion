@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-thought-level-cold-resume",
+  "spec": "./test/e2e/conversation-session/conversation-session-thought-level-cold-resume.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-thought-level-cold-resume.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "thought-cold-resume-seed-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is the cold recovery of task-local thought for completed tasks; the response only needs to reliably end the first turn."
+    },
+    {
+      "id": "thought-cold-resume-follow-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response body is not a product variable; the max configuration of the subsequent request body is the core evidence."
+    }
+  ]
+}

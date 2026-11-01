@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-disconnect-experience",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-disconnect-experience.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-disconnect-experience.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-08 only verifies uncommitted drafts, disconnection, reconnection, and directory intents; no model requests are sent.",
+  "requests": []
+}

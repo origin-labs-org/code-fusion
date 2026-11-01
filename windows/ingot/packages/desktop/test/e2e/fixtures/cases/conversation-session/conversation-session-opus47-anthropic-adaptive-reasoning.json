@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-opus47-anthropic-adaptive-reasoning",
+  "spec": "./test/e2e/conversation-session/conversation-session-opus47-anthropic-adaptive-reasoning.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-opus47-anthropic-adaptive-reasoning.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "opus47-anthropic-adaptive-reasoning-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; just return stably to prevent title requests from accidentally hitting medium/max business fixtures."
+    },
+    {
+      "id": "opus47-anthropic-adaptive-reasoning-medium-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions are on provider/model identity, Anthropic transport, and medium adaptive request body; the response only needs to complete stably and include the agreed text."
+    },
+    {
+      "id": "opus47-anthropic-adaptive-reasoning-max-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions are on Anthropic adaptive thinking after subsequent requests switch to max under the same provider/model; the response only needs to complete stably and include the agreed text."
+    }
+  ]
+}

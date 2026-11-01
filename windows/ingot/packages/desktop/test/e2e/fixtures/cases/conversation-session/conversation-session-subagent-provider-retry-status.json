@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-provider-retry-status",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-provider-retry-status.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-provider-retry-status.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "subagent-provider-retry-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case; it just needs to return reliably."
+    },
+    {
+      "id": "subagent-provider-retry-main-first-429",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "First Main request returns a retryable 429 to verify the apiRetry display for the main session's current turn."
+    },
+    {
+      "id": "subagent-provider-retry-main-second-429",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Second Main retry still fails, ensuring attempt=2 does not display a count."
+    },
+    {
+      "id": "subagent-provider-retry-main-third-429",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Third Main retry still fails, ensuring attempt=3 reaches the UI display threshold."
+    },
+    {
+      "id": "subagent-provider-retry-parent-launch",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "delayed-tool-use",
+      "syntheticReason": "Delay the first valid tool progress after the third Main retry to leave a stable observation window for the main session 3/10 UI, then create background child."
+    },
+    {
+      "id": "subagent-provider-retry-parent-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent turn concludes first; child retry continues to be displayed independently by child session."
+    },
+    {
+      "id": "subagent-provider-retry-child-first-429",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "First child request returns a retryable 429, producing an in-memory apiRetry state."
+    },
+    {
+      "id": "subagent-provider-retry-child-success",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Second request succeeds with delay, leaving a window for the UI to observe retry and clearing the state via body progress."
+    },
+    {
+      "id": "subagent-provider-retry-parent-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The full E2E system prompt triggers auto-compact before child completion notification; pin the summary and retain facts required by subsequent notification matchers."
+    },
+    {
+      "id": "subagent-provider-retry-parent-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "证明 child retry 成功后完成通知仍正常回到父会话。"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-bash-read-state",
+  "spec": "./test/e2e/conversation-session/conversation-session-bash-read-state.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-bash-read-state.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "bash-read-state-e2e/target.txt",
+      "source": "created-by-spec",
+      "description": "spec 在默认工作区写入的目标文件；Bash cat 读取它，Edit 修改它，formatter Bash 再改写它。"
+    },
+    {
+      "path": "bash-read-state-e2e/overwrite-target.mjs",
+      "source": "created-by-spec",
+      "description": "Formatter script written by spec in the default workspace; a Bash call with the --fix marker is used to trigger stale hints."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-bash-read-state-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation does not belong to Bash read-state product semantics; it only needs to return reliably to prevent title requests from accidentally matching main flow fixtures."
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-cat-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The real provider may not consistently choose Bash cat; this response deterministically triggers the Bash read-state producer specifically to verify the subsequent Edit read-before-write guard."
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-edit-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response verifies that Bash cat has backfilled read-state, so subsequent Edits no longer trigger unread guards."
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-format-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response deterministically triggers Bash write-like commands with the --fix marker to verify stale hints after read files are rewritten by Bash."
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response ends the case only after stale hints enter the provider-visible request; real provider reply content does not affect product semantics."
+    }
+  ]
+}

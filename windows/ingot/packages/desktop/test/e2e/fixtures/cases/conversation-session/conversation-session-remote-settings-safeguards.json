@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-remote-settings-safeguards",
+  "spec": "./test/e2e/conversation-session/conversation-session-remote-settings-safeguards.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-remote-settings-safeguards.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-05 verifies real SSH settings guard, editing, and machine annotation, without sending model requests.",
+  "requests": []
+}

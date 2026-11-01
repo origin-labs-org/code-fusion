@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-rename",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-rename.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-rename-title",
+      "description": "Case-local title generation response for E2E_V4_RENAME_SEED initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_RENAME_SEED initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_RENAME_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-rename-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Rename E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-rename-seed",
+      "description": "M4 renameSession gate: Fixed first-round response to establish a renamable session.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Renaming only requires an existing session; first-round text is fixed."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_RENAME_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-rename-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_RENAME_SEED_OK"
+        }
+      }
+    }
+  ]
+}

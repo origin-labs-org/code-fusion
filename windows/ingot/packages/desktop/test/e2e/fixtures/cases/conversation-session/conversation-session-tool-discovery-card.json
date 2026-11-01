@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-discovery-card",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-discovery-card.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-discovery-card.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "tool-discovery-card-title",
+      "description": "卡片测试标题响应",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix ToolSearch model output to verify card display after real tool execution; the controlled stream is explicitly released by the test and does not depend on model response speed."
+    },
+    {
+      "id": "tool-discovery-card-done",
+      "description": "工具执行后完成轮次",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix ToolSearch model output to verify card display after real tool execution; the controlled stream is explicitly released by the test and does not depend on model response speed."
+    },
+    {
+      "id": "tool-discovery-card-summary",
+      "description": "Empty input streaming placeholders and various complete search cards",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fix ToolSearch model output to verify card display after real tool execution; the controlled stream is explicitly released by the test and does not depend on model response speed."
+    },
+    {
+      "id": "tool-discovery-card-stop",
+      "description": "Stopped by user when parameters are incomplete",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fix ToolSearch model output to verify card display after real tool execution; the controlled stream is explicitly released by the test and does not depend on model response speed."
+    }
+  ]
+}

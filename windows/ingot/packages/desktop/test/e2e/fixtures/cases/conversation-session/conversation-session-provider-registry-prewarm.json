@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-provider-registry-prewarm",
+  "spec": "./test/e2e/conversation-session/conversation-session-provider-registry-prewarm.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-provider-registry-prewarm.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "provider-registry-prewarm-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of the provider registry cold start barrier semantics."
+    },
+    {
+      "id": "provider-registry-prewarm-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is that the first prewarmed session and real request during cold start retain custom GLM; response is only used for stable closure."
+    }
+  ]
+}

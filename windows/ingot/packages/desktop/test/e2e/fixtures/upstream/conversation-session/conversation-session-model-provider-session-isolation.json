@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-session-isolation",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-session-isolation.test.ts",
+  "fixtures": [
+    {
+      "id": "model-provider-session-isolation-title",
+      "description": "Fixed response for title generation in multi-session model isolation case, preventing strict case-local replay from relying on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-model-provider-session-isolation-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Session Model Isolation\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "model-provider-session-isolation-a",
+      "description": "I12 Session A primary configuration round 1 plain send fixed reply.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertions cover Session A primary request body/model/thought; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_A"],
+        "bodyIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_A", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_MODEL_PROVIDER_SESSION_ISOLATION_A_FOLLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-provider-session-isolation-a",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "model-provider-session-isolation-b",
+      "description": "I12 Session B secondary configuration round 1 plain send fixed reply.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertions cover Session B secondary request body/model/thought; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_B"],
+        "bodyIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_B", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_MODEL_PROVIDER_SESSION_ISOLATION_B_FOLLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-provider-session-isolation-b",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "model-provider-session-isolation-a-follow",
+      "description": "I12 primary configuration follow-up fixed reply after switching back to Session A.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that B's config does not pollute A's follow-up request; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_A_FOLLOW"],
+        "bodyIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_A_FOLLOW", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-provider-session-isolation-a-follow",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "model-provider-session-isolation-b-follow",
+      "description": "I12 secondary configuration follow-up fixed reply after switching back to Session B.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that A's recovery does not pollute B's follow-up request; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_B_FOLLOW"],
+        "bodyIncludes": ["E2E_MODEL_PROVIDER_SESSION_ISOLATION_B_FOLLOW", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-provider-session-isolation-b-follow",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

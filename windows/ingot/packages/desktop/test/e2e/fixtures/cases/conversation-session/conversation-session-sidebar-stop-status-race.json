@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-sidebar-stop-status-race",
+  "spec": "./test/e2e/conversation-session/conversation-session-sidebar-stop-status-race.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-sidebar-stop-status-race.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "sidebar-stop-status-race-title",
+      "description": "Case-local title generation response for TSL18 initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial send triggers the default title sidecar; mock marker response to avoid falling back to shared provider fixtures."
+    },
+    {
+      "id": "sidebar-stop-status-race-controlled-stream",
+      "description": "Reliably produce running spinner and Stop window, with membership response delay controlled by renderer E2E gate.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "TSL18 must trigger Stop while tasks-index membership refresh is in flight; real providers may complete too quickly."
+    }
+  ]
+}

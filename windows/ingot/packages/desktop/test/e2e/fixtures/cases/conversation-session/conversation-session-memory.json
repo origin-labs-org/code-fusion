@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-memory",
+  "spec": "./test/e2e/conversation-session/conversation-session-memory.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-memory.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "<cli-storage-root>/memories/projects/<workspace-key>/memory/database-test-policy.md",
+      "source": "created-by-spec",
+      "description": "The spec presets facts under the canonical root in the current isolated E2E HOME to confirm that the default branch does not launch Selector or automatically modify files."
+    },
+    {
+      "path": "<cli-storage-root>/memories/projects/<workspace-key>/memory/MEMORY.md",
+      "source": "created-by-spec",
+      "description": "The spec presets the project Memory index to assert one-by-one that Memory-enabled Main provider requests contain the exact user-context source of the default branch."
+    },
+    {
+      "path": "<cli-storage-root>/memories/projects/secondary-project-with-an-intentionally-very-long-workspace-name-2222222222222222/memory/",
+      "source": "created-by-spec",
+      "description": "spec 预置第二个 Project Memory workspace，用于验证 Settings viewer 的 Workspace Scope 菜单、扁平文件列表和当前 Scope 文件名搜索。"
+    },
+    {
+      "path": "<cli-storage-root>/memories/projects/secondary-project-with-an-intentionally-very-long-workspace-name-2222222222222222/memory/manual-refresh.md",
+      "source": "created-by-spec",
+      "description": "The spec adds a fact file after the viewer for the selected Workspace Scope is open to verify that files do not appear automatically, explicit refreshes preserve the Scope and update the catalog, and turning off the toggle does not delete files."
+    },
+    {
+      "path": ".cf/agents/memory-window-curator.md",
+      "source": "created-by-spec",
+      "description": "spec 在默认 workspace 预置 project custom-agent profile。"
+    },
+    {
+      "path": ".cf/agent-memory/memory-window-curator/MEMORY.md",
+      "source": "created-by-spec",
+      "description": "spec 预置 custom-agent project Memory index。"
+    }
+  ],
+  "requests": [
+    {
+      "id": "memory-window-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is outside Memory acceptance and only serves to prevent the title sidecar from interfering with case-local replay."
+    },
+    {
+      "id": "memory-window-default-branch-boundary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Fixes real tool boundaries to verify that the default branch still retains Main Memory in continuations and does not launch Selector."
+    },
+    {
+      "id": "memory-window-default-branch-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably terminates default branch tool turns and provides a UI final-state marker."
+    },
+    {
+      "id": "memory-window-extraction-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "该 turn 不直接写 Memory，用于稳定触发既有 Extraction scheduler。"
+    },
+    {
+      "id": "memory-window-extraction-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "generateText non-streaming response statically returns fact Write and index Read to verify the scheduler, restricted execution surface, and disk persistence."
+    },
+    {
+      "id": "memory-window-extraction-index-edit",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Statically edits the read MEMORY.md to verify that Extraction maintains the pointer required by default branch consumption."
+    },
+    {
+      "id": "memory-window-extraction-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably terminates the background loop without expanding additional Memory behaviors."
+    },
+    {
+      "id": "memory-window-extracted-default-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably proves that a new session consumes the new Extraction pointer from the default MEMORY.md source, with Selector blocked by the global default branch."
+    },
+    {
+      "id": "memory-window-custom-parent-agent",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably selects the seeded custom profile."
+    },
+    {
+      "id": "memory-window-custom-child-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Statically writes to verify prompt, tool projection, scope root, and originSessionId."
+    },
+    {
+      "id": "memory-window-custom-child-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably terminates the child tool loop."
+    },
+    {
+      "id": "memory-window-custom-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably terminates the parent Agent tool turn and provides the UI final state."
+    },
+    {
+      "id": "memory-window-custom-extraction-noop",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Maintains existing Extraction scheduling for successful Main turns without adding new project facts for this case."
+    },
+    {
+      "id": "memory-window-active-after-disable",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Continues the current Session after disabling settings to confirm that the frozen Runtime is not hot-reloaded."
+    },
+    {
+      "id": "memory-window-disabled-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably provides the UI final state for the Settings disabled gate; matcher also rejects any Memory prompt."
+    }
+  ]
+}

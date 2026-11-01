@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-bash-command-prefix-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-bash-command-prefix-permission.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-bash-command-prefix-permission.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-v4-bash-command-prefix-permission/package.json",
+      "source": "created-by-spec",
+      "description": "spec creates minimal package scripts containing only lint/test, without accessing the npm registry."
+    },
+    {
+      "path": ".cf-e2e/conversation-session-v4-bash-command-prefix-permission/bin/pnpm",
+      "source": "created-by-spec",
+      "description": "beforeSession installs a case-owned pnpm shim and prepends it only to this spec's PATH, isolating global pnpm store/startup state."
+    }
+  ],
+  "requests": [
+    {
+      "id": "bpr-prefix-title",
+      "description": "BPR initial send title response.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Isolate title requests using initial marker."
+    },
+    {
+      "id": "bpr-prefix-first-call",
+      "description": "首次 pnpm lint Bash tool_use，触发项目权限。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash command to verify prefix suggestion."
+    },
+    {
+      "id": "bpr-prefix-first-final",
+      "description": "Final state after initial project approval.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that the first tool execution wraps up."
+    },
+    {
+      "id": "bpr-prefix-same-call",
+      "description": "同 lint script 不同 transient args。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that persisted prefix is automatically allowed."
+    },
+    {
+      "id": "bpr-prefix-same-final",
+      "description": "Final state after automatic approval for the same script.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The turn must still complete reliably when there is no permission prompt."
+    },
+    {
+      "id": "bpr-prefix-sibling-call",
+      "description": "sibling test script Bash tool_use。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that lint prefix does not escalate permissions to sibling scripts."
+    },
+    {
+      "id": "bpr-prefix-sibling-final",
+      "description": "Final state after sibling is approved once.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Clean up pending broker and wrap up reliably."
+    }
+  ]
+}

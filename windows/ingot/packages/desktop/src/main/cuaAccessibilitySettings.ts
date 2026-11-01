@@ -1,0 +1,575 @@
+
+import { randomUUID } from "node:crypto";
+import { readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { shell } from "electron";
+import type { CuaHelperInstallerOptions } from "@origin-ai/cf-services/node";
+import {
+  resolveHelperPermissionSubjectIdentity,
+  type HelperPermissionSubjectIdentity,
+} from "@origin-ai/cf-services/cua-permission-broker";
+import type {
+  CuaAccessibilitySettingsResult,
+  CuaPermissionKind,
+  PrepareCuaHelperPermissionDragResult,
+} from "@origin-ai/cf-shared";
+import { createDesktopCuaHelperInstaller } from "./desktopCuaHelperInstaller.js";
+
+export const MACOS_ACCESSIBILITY_SETTINGS_URL =
+  "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
+export const MACOS_SCREEN_RECORDING_SETTINGS_URL =
+  "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture";
+
+export interface OpenCuaAccessibilitySettingsOptions {
+  initialPermission?: CuaPermissionKind;
+  requiredPermissions?: CuaPermissionKind[];
+  env?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  signal?: AbortSignal;
+  
+  participantKey?: string;
+  sessionTimeoutMs?: number;
+  settingsReturnTimeoutMs?: number;
+  logger?: {
+    debug?: (...args: unknown[]) => void;
+    info?: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+    error?: (...args: unknown[]) => void;
+  };
+  ensureHelperInstalled?: () => Promise<string>;
+  
+  bundledHelperAppPath?: string;
+  
+  verifyHelperInstalled?: (appPath: string) => Promise<void>;
+  resolveHelperIdentity?: (appPath: string) => Promise<HelperPermissionSubjectIdentity>;
+  openSettingsUrl?: (url: string) => Promise<void>;
+  
+  openSettingsAndWaitForReturn?: (options: {
+    permission: CuaPermissionKind;
+    sessionId: string;
+    timeoutMs: number;
+    signal: AbortSignal;
+    openSettings: () => Promise<void>;
+  }) => Promise<void>;
+}
+
+const DEFAULT_SETTINGS_RETURN_TIMEOUT_MS = 2 * 60_000;
+const PERMISSION_STAGE_ORDER: readonly CuaPermissionKind[] = ["accessibility", "screen_recording"];
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+export type CuaHelperBundleFingerprint = string;
+
+function statSignature(path: string): string {
+  try {
+    const st = statSync(path, { bigint: true });
+    return `${st.ino}:${st.ctimeNs}:${st.size}`;
+  } catch {
+    return "MISSING";
+  }
+}
+
+function bundleTreeFingerprint(root: string, maxEntries = 512): string {
+  const pending: Array<{ absolutePath: string; relativePath: string }> = [
+    { absolutePath: root, relativePath: "." },
+  ];
+  const parts: string[] = [];
+  while (pending.length > 0) {
+    const current = pending.shift()!;
+    if (parts.length >= maxEntries) return `${parts.join(",")},TOO_MANY`;
+    parts.push(`${current.relativePath}:${statSignature(current.absolutePath)}`);
+    let children: string[];
+    try {
+      children = readdirSync(current.absolutePath).sort();
+    } catch {
+      continue;
+    }
+    for (const child of children) {
+      pending.push({
+        absolutePath: join(current.absolutePath, child),
+        relativePath: `${current.relativePath}/${child}`,
+      });
+    }
+  }
+  return parts.join(",");
+}
+
+export function captureCuaHelperBundleFingerprint(appPath: string): CuaHelperBundleFingerprint {
+  const parts = [
+    `app=${statSignature(appPath)}`,
+    `sig=${statSignature(join(appPath, "Contents", "_CodeSignature", "CodeResources"))}`,
+    `info=${statSignature(join(appPath, "Contents", "Info.plist"))}`,
+    `resources=${bundleTreeFingerprint(join(appPath, "Contents", "Resources"))}`,
+  ];
+  try {
+    const macosDir = join(appPath, "Contents", "MacOS");
+    const entries = readdirSync(macosDir).sort();
+    parts.push(
+      `macos=${entries.map((entry) => `${entry}:${statSignature(join(macosDir, entry))}`).join(",")}`,
+    );
+  } catch {
+    parts.push("macos=MISSING");
+  }
+  return parts.join("|");
+}
+
+export function cuaHelperBundleFingerprintUnchanged(
+  appPath: string,
+  fingerprint: CuaHelperBundleFingerprint,
+): boolean {
+  return captureCuaHelperBundleFingerprint(appPath) === fingerprint;
+}
+
+function normalizePermission(value: unknown): CuaPermissionKind {
+  return value === "screen_recording" ? "screen_recording" : "accessibility";
+}
+
+function normalizeRequiredPermissions(
+  options: OpenCuaAccessibilitySettingsOptions,
+): CuaPermissionKind[] {
+  const requested = Array.isArray(options.requiredPermissions)
+    ? options.requiredPermissions
+    : [normalizePermission(options.initialPermission)];
+  const requestedSet = new Set(
+    requested.filter(
+      (permission): permission is CuaPermissionKind =>
+        permission === "screen_recording" || permission === "accessibility",
+    ),
+  );
+  return PERMISSION_STAGE_ORDER.filter((permission) => requestedSet.has(permission));
+}
+
+function settingsUrlForPermission(permission: CuaPermissionKind): string {
+  return permission === "screen_recording"
+    ? MACOS_SCREEN_RECORDING_SETTINGS_URL
+    : MACOS_ACCESSIBILITY_SETTINGS_URL;
+}
+
+function sameHelperPermissionIdentity(
+  expected: HelperPermissionSubjectIdentity,
+  actual: HelperPermissionSubjectIdentity,
+): boolean {
+  return (
+    expected.appPath === actual.appPath &&
+    expected.executablePath === actual.executablePath &&
+    expected.displayName === actual.displayName &&
+    expected.bundleId === actual.bundleId
+  );
+}
+
+async function verifyHelperPermissionIdentityUnchanged(
+  identity: HelperPermissionSubjectIdentity,
+  options: OpenCuaAccessibilitySettingsOptions,
+  phase: "launch" | "post-settings",
+): Promise<CuaHelperBundleFingerprint> {
+  const fingerprint = captureCuaHelperBundleFingerprint(identity.appPath);
+  await options.verifyHelperInstalled?.(identity.appPath);
+  if (!cuaHelperBundleFingerprintUnchanged(identity.appPath, fingerprint)) {
+    throw new Error(`CodeFusion Computer Use changed while its ${phase} signature was being verified`);
+  }
+  const currentIdentity = await (
+    options.resolveHelperIdentity ?? resolveHelperPermissionSubjectIdentity
+  )(identity.appPath);
+  if (!sameHelperPermissionIdentity(identity, currentIdentity)) {
+    throw new Error(`CodeFusion Computer Use permission identity changed during ${phase} verification`);
+  }
+  if (!cuaHelperBundleFingerprintUnchanged(identity.appPath, fingerprint)) {
+    throw new Error(
+      `CodeFusion Computer Use changed while its ${phase} permission identity was being resolved`,
+    );
+  }
+  return fingerprint;
+}
+
+type CuaHelperInstallerLogger = NonNullable<CuaHelperInstallerOptions["logger"]>;
+
+function toInstallerLogger(
+  logger: OpenCuaAccessibilitySettingsOptions["logger"],
+): CuaHelperInstallerLogger | undefined {
+  if (!logger) return undefined;
+  return {
+    debug: (_traceId, ...args) => logger.debug?.(...args),
+    info: (_traceId, ...args) => (logger.info ?? logger.warn)(...args),
+    warn: (_traceId, ...args) => logger.warn(...args),
+    error: (_traceId, ...args) => (logger.error ?? logger.warn)(...args),
+  };
+}
+
+interface ActiveOnboardingSession {
+  identity: HelperPermissionSubjectIdentity;
+  sessionId: string;
+  controller: AbortController;
+  activeParticipants: Set<number>;
+  requiredPermissions: Set<CuaPermissionKind>;
+  processedPermissions: Set<CuaPermissionKind>;
+  openedPermissions: CuaPermissionKind[];
+  acceptingRequirements: boolean;
+  recoveryOwnerParticipantKeys: Set<string>;
+  
+  launchFingerprint?: CuaHelperBundleFingerprint;
+  promise?: Promise<CuaAccessibilitySettingsResult>;
+}
+
+class CuaPermissionOnboardingCoordinator {
+  private readonly sessions = new Map<string, ActiveOnboardingSession>();
+  private nextParticipantId = 0;
+
+  constructor(private readonly createSessionId: () => string = randomUUID) {}
+
+  run(
+    identity: HelperPermissionSubjectIdentity,
+    requiredPermissions: CuaPermissionKind[],
+    options: OpenCuaAccessibilitySettingsOptions,
+  ): Promise<CuaAccessibilitySettingsResult> {
+    const identityKey = [
+      identity.bundleId,
+      identity.displayName,
+      identity.appPath,
+      identity.executablePath,
+    ].join("\0");
+    const existing = this.sessions.get(identityKey);
+    if (existing?.promise) {
+      if (existing.acceptingRequirements) {
+        for (const permission of requiredPermissions) {
+          existing.requiredPermissions.add(permission);
+        }
+        options.logger?.info?.(
+          "[cua-permission-onboarding] joined active Helper permission session",
+          existing.sessionId,
+          identity.bundleId,
+        );
+        return this.joinSession(existing, options.signal, options.participantKey);
+      }
+      return existing.promise.then(() => {
+        if (options.signal?.aborted) {
+          return this.canceledParticipantResult(existing, options.signal.reason);
+        }
+        return this.run(identity, requiredPermissions, options);
+      });
+    }
+
+    const session: ActiveOnboardingSession = {
+      identity,
+      sessionId: this.createSessionId(),
+      controller: new AbortController(),
+      activeParticipants: new Set(),
+      requiredPermissions: new Set(requiredPermissions),
+      processedPermissions: new Set(),
+      openedPermissions: [],
+      acceptingRequirements: true,
+      recoveryOwnerParticipantKeys: new Set(),
+    };
+    const promise = this.runSession(session, options).finally(() => {
+      if (this.sessions.get(identityKey) === session) {
+        this.sessions.delete(identityKey);
+      }
+    });
+    session.promise = promise;
+    this.sessions.set(identityKey, session);
+    return this.joinSession(session, options.signal, options.participantKey);
+  }
+
+  private joinSession(
+    session: ActiveOnboardingSession,
+    signal?: AbortSignal,
+    participantKey?: string,
+  ): Promise<CuaAccessibilitySettingsResult> {
+    this.nextParticipantId += 1;
+    const participantId = this.nextParticipantId;
+    const recoveryParticipantKey = participantKey?.trim() || `participant:${participantId}`;
+    session.activeParticipants.add(participantId);
+
+    return new Promise<CuaAccessibilitySettingsResult>((resolve) => {
+      let active = true;
+      const detach = () => {
+        signal?.removeEventListener("abort", onAbort);
+        session.activeParticipants.delete(participantId);
+      };
+      const onAbort = () => {
+        if (!active) return;
+        active = false;
+        detach();
+        resolve(this.canceledParticipantResult(session, signal?.reason));
+        if (session.activeParticipants.size === 0 && !session.controller.signal.aborted) {
+          session.acceptingRequirements = false;
+          session.controller.abort(
+            signal?.reason ?? new Error("all CUA permission onboarding windows closed"),
+          );
+        }
+      };
+      signal?.addEventListener("abort", onAbort, { once: true });
+      if (signal?.aborted) {
+        onAbort();
+        return;
+      }
+
+      void session.promise!.then((result) => {
+        if (!active) return;
+        active = false;
+        detach();
+        const returned =
+          result.success === true &&
+          result.returnedFromSettings === true &&
+          typeof result.sessionId === "string";
+        const ownsRecovery =
+          returned && !session.recoveryOwnerParticipantKeys.has(recoveryParticipantKey);
+        if (ownsRecovery) session.recoveryOwnerParticipantKeys.add(recoveryParticipantKey);
+        resolve({
+          ...result,
+          ...(returned ? { restartHelperAfterReturn: ownsRecovery } : {}),
+        });
+      });
+    });
+  }
+
+  private canceledParticipantResult(
+    session: ActiveOnboardingSession,
+    reason: unknown,
+  ): CuaAccessibilitySettingsResult {
+    return {
+      success: false,
+      canceled: true,
+      sessionId: session.sessionId,
+      returnedFromSettings: false,
+      error: `permission onboarding canceled: ${messageOf(
+        reason ?? new Error("origin window closed"),
+      )}`,
+    };
+  }
+
+  private async runSession(
+    session: ActiveOnboardingSession,
+    options: OpenCuaAccessibilitySettingsOptions,
+  ): Promise<CuaAccessibilitySettingsResult> {
+    const configuredSessionTimeoutMs = options.sessionTimeoutMs;
+    const sessionTimeoutMs =
+      typeof configuredSessionTimeoutMs === "number" && Number.isFinite(configuredSessionTimeoutMs)
+        ? Math.max(1, configuredSessionTimeoutMs)
+        : null;
+    const startedAt = Date.now();
+    const controller = session.controller;
+    const sessionTimer =
+      sessionTimeoutMs === null
+        ? undefined
+        : setTimeout(
+            () =>
+              controller.abort(
+                new Error(`CUA permission onboarding session exceeded ${sessionTimeoutMs}ms`),
+              ),
+            sessionTimeoutMs,
+          );
+    let returnedCount = 0;
+
+    try {
+      while (true) {
+        const permission = PERMISSION_STAGE_ORDER.find(
+          (candidate) =>
+            session.requiredPermissions.has(candidate) &&
+            !session.processedPermissions.has(candidate),
+        );
+        if (!permission) {
+          session.acceptingRequirements = false;
+          break;
+        }
+        session.processedPermissions.add(permission);
+        const remainingMs =
+          sessionTimeoutMs === null
+            ? Number.POSITIVE_INFINITY
+            : sessionTimeoutMs - (Date.now() - startedAt);
+        if (Number.isFinite(remainingMs) && remainingMs <= 0) {
+          controller.abort(new Error("CUA permission onboarding session timed out"));
+          throw controller.signal.reason;
+        }
+        //
+        session.launchFingerprint = await verifyHelperPermissionIdentityUnchanged(
+          session.identity,
+          options,
+          "launch",
+        );
+        if (controller.signal.aborted) throw controller.signal.reason;
+
+        const openSettingsUrl =
+          options.openSettingsUrl ?? ((url: string) => shell.openExternal(url));
+        const openSettings = async () => {
+          await openSettingsUrl(settingsUrlForPermission(permission));
+          if (!session.openedPermissions.includes(permission)) {
+            session.openedPermissions.push(permission);
+          }
+        };
+        const returnTimeoutMs = Math.min(
+          options.settingsReturnTimeoutMs ?? DEFAULT_SETTINGS_RETURN_TIMEOUT_MS,
+          sessionTimeoutMs === null
+            ? Number.POSITIVE_INFINITY
+            : Math.max(1, sessionTimeoutMs - (Date.now() - startedAt)),
+        );
+        if (options.openSettingsAndWaitForReturn) {
+          await options.openSettingsAndWaitForReturn({
+            permission,
+            sessionId: session.sessionId,
+            timeoutMs: returnTimeoutMs,
+            signal: controller.signal,
+            openSettings,
+          });
+          if (controller.signal.aborted) throw controller.signal.reason;
+          returnedCount += 1;
+        } else {
+          await openSettings();
+          if (controller.signal.aborted) throw controller.signal.reason;
+        }
+      }
+
+      if (session.openedPermissions.length > 0) {
+        await verifyHelperPermissionIdentityUnchanged(session.identity, options, "post-settings");
+        if (controller.signal.aborted) throw controller.signal.reason;
+      }
+      return {
+        success: true,
+        sessionId: session.sessionId,
+        returnedFromSettings:
+          session.openedPermissions.length > 0 &&
+          returnedCount === session.openedPermissions.length,
+        error: undefined,
+      };
+    } catch (error) {
+      session.acceptingRequirements = false;
+      return {
+        success: false,
+        canceled: controller.signal.aborted || undefined,
+        sessionId: session.sessionId,
+        returnedFromSettings: false,
+        error: `permission onboarding failed: ${messageOf(error)}`,
+      };
+    } finally {
+      if (sessionTimer) clearTimeout(sessionTimer);
+    }
+  }
+}
+
+const mainCuaPermissionOnboardingCoordinator = new CuaPermissionOnboardingCoordinator();
+
+export async function openCuaPermissionOnboarding(
+  options: OpenCuaAccessibilitySettingsOptions = {},
+): Promise<CuaAccessibilitySettingsResult> {
+  const platform = options.platform ?? process.platform;
+  if (platform !== "darwin") {
+    return {
+      success: false,
+      error: "CodeFusion Computer Use permissions are only available on macOS.",
+    };
+  }
+  const env = options.env ?? process.env;
+  const defaultInstaller = options.ensureHelperInstalled
+    ? null
+    : createDesktopCuaHelperInstaller({
+        logger: toInstallerLogger(options.logger),
+        env,
+        bundledHelperAppPath: options.bundledHelperAppPath,
+        platform,
+      });
+  let helperAppPath: string;
+  try {
+    helperAppPath = await (options.ensureHelperInstalled ?? defaultInstaller!.ensureInstalled)();
+  } catch (error) {
+    return {
+      success: false,
+      error: `CodeFusion Computer Use is unavailable (install/verification failed): ${messageOf(error)}`,
+    };
+  }
+
+  let identity: HelperPermissionSubjectIdentity;
+  try {
+    identity = await (options.resolveHelperIdentity ?? resolveHelperPermissionSubjectIdentity)(
+      helperAppPath,
+    );
+  } catch (error) {
+    return {
+      success: false,
+      returnedFromSettings: false,
+      error: `CodeFusion Computer Use permission identity verification failed: ${messageOf(error)}`,
+    };
+  }
+  const verifiedOptions: OpenCuaAccessibilitySettingsOptions = {
+    ...options,
+    ...(options.verifyHelperInstalled
+      ? { verifyHelperInstalled: options.verifyHelperInstalled }
+      : defaultInstaller
+        ? { verifyHelperInstalled: defaultInstaller.verifyInstalled }
+        : {}),
+  };
+  return mainCuaPermissionOnboardingCoordinator.run(
+    identity,
+    normalizeRequiredPermissions(options),
+    verifiedOptions,
+  );
+}
+
+export interface PrepareCuaHelperPermissionDragOptions {
+  env?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  logger?: OpenCuaAccessibilitySettingsOptions["logger"];
+  
+  ensureHelperInstalled?: () => Promise<string>;
+  bundledHelperAppPath?: string;
+  verifyHelperInstalled?: (appPath: string) => Promise<void>;
+  resolveHelperIdentity?: (appPath: string) => Promise<HelperPermissionSubjectIdentity>;
+}
+
+export interface PrepareCuaHelperPermissionDragMainResult extends PrepareCuaHelperPermissionDragResult {
+  
+  helperBundleFingerprint?: CuaHelperBundleFingerprint;
+}
+
+//
+// desktopCuaPermissionIpc）。
+export async function prepareCuaHelperPermissionDrag(
+  options: PrepareCuaHelperPermissionDragOptions = {},
+): Promise<PrepareCuaHelperPermissionDragMainResult> {
+  const platform = options.platform ?? process.platform;
+  if (platform !== "darwin") {
+    return {
+      success: false,
+      error: "CodeFusion Computer Use permissions are only available on macOS.",
+    };
+  }
+  const env = options.env ?? process.env;
+  const defaultInstaller = options.ensureHelperInstalled
+    ? null
+    : createDesktopCuaHelperInstaller({
+        logger: toInstallerLogger(options.logger),
+        env,
+        bundledHelperAppPath: options.bundledHelperAppPath,
+        platform,
+      });
+  try {
+    const helperAppPath = await (
+      options.ensureHelperInstalled ?? defaultInstaller!.ensureInstalled
+    )();
+    const verifiedFingerprint = captureCuaHelperBundleFingerprint(helperAppPath);
+    await (options.verifyHelperInstalled ?? defaultInstaller?.verifyInstalled)?.(helperAppPath);
+    if (!cuaHelperBundleFingerprintUnchanged(helperAppPath, verifiedFingerprint)) {
+      throw new Error("CodeFusion Computer Use changed while its drag signature was being verified");
+    }
+    const identity = await (
+      options.resolveHelperIdentity ?? resolveHelperPermissionSubjectIdentity
+    )(helperAppPath);
+    if (!cuaHelperBundleFingerprintUnchanged(helperAppPath, verifiedFingerprint)) {
+      throw new Error("CodeFusion Computer Use changed while its drag identity was being resolved");
+    }
+    return {
+      success: true,
+      helperAppPath,
+      helperDisplayName: identity.displayName,
+      helperBundleId: identity.bundleId,
+      helperBundleFingerprint: verifiedFingerprint,
+    };
+  } catch (error) {
+    const message = messageOf(error);
+    options.logger?.warn(
+      "[cua-permission-onboarding] helper install/verify failed; refusing to prepare drag of an unverified Helper",
+      message,
+    );
+    return { success: false, error: message };
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-file-tools-atomic-write",
+  "spec": "./test/e2e/conversation-session/conversation-session-file-tools-atomic-write.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-title",
+      "description": "Fixed title generation response for file tools atomic write cases.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not part of file tools permission semantics; it only needs to return stably to prevent title requests from mistakenly hitting business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_FILE_TOOLS_ATOMIC_WRITE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-file-tools-atomic-write-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"File Tools Atomic Write E2E\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-read-write",
+      "description": "First response: Read write.sh first so subsequent Write overwriting existing executable files passes the read-before-write guard.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not necessarily stably Read before Write; this response deterministically triggers the overwrite path for read existing executables."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_FILE_TOOLS_ATOMIC_WRITE"],
+        "bodyIncludes": ["E2E_FILE_TOOLS_ATOMIC_WRITE", "file-tools-atomic-write-e2e/write.sh"],
+        "bodyExcludes": ["Generate a concise title", "toolu_e2e_file_tools_atomic_write_read_write"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_file_tools_atomic_write_read_write",
+          "messageId": "msg_e2e_file_tools_atomic_write_read_write",
+          "name": "Read",
+          "input": {
+            "file_path": "file-tools-atomic-write-e2e/write.sh"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-write",
+      "description": "Second response: Overwrite previously read write.sh to verify Write uses atomic overwrite.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not necessarily stably choose Write; this response deterministically triggers full overwrite of existing scripts."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_FILE_TOOLS_ATOMIC_WRITE", "old-write"],
+        "bodyExcludes": ["Generate a concise title", "toolu_e2e_file_tools_atomic_write_write"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_file_tools_atomic_write_write",
+          "messageId": "msg_e2e_file_tools_atomic_write_write",
+          "name": "Write",
+          "input": {
+            "file_path": "file-tools-atomic-write-e2e/write.sh",
+            "content": "#!/usr/bin/env bash\necho new-write\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-read-edit",
+      "description": "Third response: Read edit.sh first so subsequent Edit overwriting existing executable files passes the read-before-write guard.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not necessarily stably read the target before Edit; this response deterministically triggers the edit path for read existing executables."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_FILE_TOOLS_ATOMIC_WRITE", "The file file-tools-atomic-write-e2e/write.sh has been updated successfully"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_file_tools_atomic_write_read_edit",
+          "messageId": "msg_e2e_file_tools_atomic_write_read_edit",
+          "name": "Read",
+          "input": {
+            "file_path": "file-tools-atomic-write-e2e/edit.sh"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-edit",
+      "description": "Fourth response: Edit previously read edit.sh to verify Edit uses atomic overwrite.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not necessarily stably choose Edit; this response deterministically triggers partial edit write of existing scripts."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_FILE_TOOLS_ATOMIC_WRITE",
+          "toolu_e2e_file_tools_atomic_write_read_edit",
+          "old-edit"
+        ],
+        "bodyExcludes": ["Generate a concise title", "toolu_e2e_file_tools_atomic_write_edit"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_file_tools_atomic_write_edit",
+          "messageId": "msg_e2e_file_tools_atomic_write_edit",
+          "name": "Edit",
+          "input": {
+            "file_path": "file-tools-atomic-write-e2e/edit.sh",
+            "old_string": "old-edit",
+            "new_string": "new-edit"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-final",
+      "description": "最终响应：Edit 成功后结束 case。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Final marker is only used to stably end window-level replay; real provider reply content does not affect file permission semantics."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_FILE_TOOLS_ATOMIC_WRITE",
+          "The file file-tools-atomic-write-e2e/edit.sh has been updated successfully"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-file-tools-atomic-write-final",
+          "inputTokens": 240,
+          "outputTokens": 12,
+          "text": "E2E_FILE_TOOLS_ATOMIC_WRITE_OK"
+        }
+      }
+    }
+  ]
+}

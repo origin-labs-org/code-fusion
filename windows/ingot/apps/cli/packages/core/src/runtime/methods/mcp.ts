@@ -1,0 +1,225 @@
+import {
+  getCapturedCfCuaBrokerCredentials,
+  CF_CUA_OFFICIAL_PLUGIN_ID,
+  CF_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  CF_PLUGIN_ID_ENV_KEY,
+} from "@origin-ai/cf-shared";
+import { registerMcpTools, traceContextToLogContext } from "../deps.js";
+import type { McpConnectionSnapshot, McpServerConfig, TraceContext } from "../deps.js";
+import type { AgentRuntimeInternal } from "../internal.js";
+import type { McpToolDescriptor, PluginReferenceCatalog } from "@origin-ai/cf-contracts";
+
+const MCP_SESSION_OAUTH_AUTHORIZATION_TIMEOUT_MS = 15_000;
+
+export function computeOfficialCuaServerNames(
+  servers: Record<string, McpServerConfig>,
+  trustedServerNames: ReadonlySet<string>,
+): Set<string> {
+  const expectedAuthority = getCapturedCfCuaBrokerCredentials().pluginAuthority;
+  const names = new Set<string>();
+  if (!expectedAuthority) return names;
+
+  for (const [name, config] of Object.entries(servers)) {
+    if (!trustedServerNames.has(name)) continue;
+    if (config.type !== "stdio") continue;
+    if (
+      config.env?.[CF_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() !==
+        CF_CUA_OFFICIAL_PLUGIN_ID ||
+      config.env?.[CF_CUA_PLUGIN_AUTHORITY_ENV_KEY]?.trim() !== expectedAuthority
+    ) {
+      continue;
+    }
+    names.add(name);
+  }
+  return names;
+}
+
+export function startMcpStartup(
+  this: AgentRuntimeInternal,
+  traceContext: TraceContext,
+): Promise<McpConnectionSnapshot> | undefined {
+  if (this.mcpInitialized) return this.mcpStartupPromise;
+  this.mcpInitialized = true;
+
+  if (!this.mcpPort || this.config.mcp?.enabled === false) {
+    this.mcpToolsRegistered = true;
+    return undefined;
+  }
+
+  const servers = this.config.mcp?.servers ?? {};
+  if (Object.keys(servers).length === 0) {
+    const startup = Promise.all([this.mcpPort.status(), this.mcpPort.listTools()])
+      .then(([statuses, tools]) => ({ statuses, tools }))
+      .catch((error) => {
+        this.logger?.warn("MCP existing tool discovery failed", {
+          ...traceContextToLogContext(traceContext),
+          error: error instanceof Error ? error.message : String(error),
+          event: "mcp.existing_tools.failed",
+          module: "core.runtime",
+          status: "failed",
+        });
+        return { statuses: {}, tools: [] };
+      });
+    this.mcpStartupPromise = this.trackResidencyBlockingWork(startup);
+    return this.mcpStartupPromise;
+  }
+
+  const startedAt = Date.now();
+  const startup = this.mcpPort
+    .connectConfiguredServers(servers, {
+      oauthAuthorizationTimeoutMs: MCP_SESSION_OAUTH_AUTHORIZATION_TIMEOUT_MS,
+      trace: traceContext,
+      workingDirectory: this.workingDirectory,
+      workspaceIdentity: this.config.workspaceIdentity?.toString(),
+    })
+    .then((snapshot) => {
+      const statusCounts = Object.values(snapshot.statuses).reduce<Record<string, number>>(
+        (counts, status) => {
+          counts[status.status] = (counts[status.status] ?? 0) + 1;
+          return counts;
+        },
+        {},
+      );
+      this.logger?.info("MCP startup completed", {
+        ...traceContextToLogContext(traceContext),
+        durationMs: Date.now() - startedAt,
+        event: "mcp.startup.completed",
+        module: "core.runtime",
+        serverCount: Object.keys(servers).length,
+        status: "completed",
+        statusCounts,
+        toolCount: snapshot.tools.length,
+      });
+      return snapshot;
+    })
+    .catch((error) => {
+      this.logger?.warn("MCP startup failed", {
+        ...traceContextToLogContext(traceContext),
+        durationMs: Date.now() - startedAt,
+        error: error instanceof Error ? error.message : String(error),
+        event: "mcp.startup.failed",
+        module: "core.runtime",
+        status: "failed",
+      });
+      return { statuses: {}, tools: [] };
+    });
+  this.mcpStartupPromise = this.trackResidencyBlockingWork(startup);
+  this.logger?.debug("MCP startup scheduled", {
+    ...traceContextToLogContext(traceContext),
+    event: "mcp.startup.scheduled",
+    module: "core.runtime",
+    serverCount: Object.keys(servers).length,
+    status: "started",
+  });
+  return this.mcpStartupPromise;
+}
+
+export async function initializeMcp(
+  this: AgentRuntimeInternal,
+  traceContext: TraceContext,
+): Promise<void> {
+  if (this.mcpToolsRegistered) return;
+
+  const startup = this.startMcpStartup(traceContext);
+  const mcpPort = this.mcpPort;
+  if (!startup || !mcpPort) {
+    this.mcpToolsRegistered = true;
+    return;
+  }
+  const serverCount = Object.keys(this.config.mcp?.servers ?? {}).length;
+
+  try {
+    const snapshot = await startup;
+    const registered = registerMcpTools(this.registry, mcpPort, snapshot.tools, {
+      allowedTools: this.config.toolAllowlist,
+      disallowedTools: this.config.toolDisallowlist,
+      officialCuaServerNames: computeOfficialCuaServerNames(
+        this.config.mcp?.servers ?? {},
+        new Set(this.config.mcp?.trustedOfficialCuaServerNames ?? []),
+      ),
+      pluginIdByServerName: buildPluginIdByServerName(this.config.pluginReferenceCatalog),
+    });
+    if (registered.length > 0) {
+      this.invalidateToolCache();
+    }
+    this.registeredMcpToolNames = registered;
+    this.mcpToolsSignature = mcpToolsSignature(snapshot.tools);
+    this.mcpToolListRevision = mcpPort.toolListRevision?.();
+    this.logger?.info("MCP tools registered", {
+      ...traceContextToLogContext(traceContext),
+      event: "mcp.tools.registered",
+      module: "core.runtime",
+      registeredToolCount: registered.length,
+      serverCount,
+      status: "completed",
+    });
+  } catch (error) {
+    this.mcpToolsRegistered = true;
+    this.logger?.warn("MCP initialization failed", {
+      ...traceContextToLogContext(traceContext),
+      error: error instanceof Error ? error.message : String(error),
+      event: "mcp.initialization.failed",
+      module: "core.runtime",
+      status: "failed",
+    });
+  }
+  this.mcpToolsRegistered = true;
+}
+
+function buildPluginIdByServerName(
+  catalog: PluginReferenceCatalog | undefined,
+): ReadonlyMap<string, string> {
+  const map = new Map<string, string>();
+  for (const plugin of catalog?.plugins ?? []) {
+    for (const serverName of plugin.mcpServerNames) map.set(serverName, plugin.pluginId);
+  }
+  return map;
+}
+
+function mcpToolsSignature(descriptors: readonly McpToolDescriptor[]): string {
+  return descriptors
+    .map((tool) => `${tool.serverName}\u0001${tool.toolName}\u0001${tool.description ?? ""}`)
+    .sort()
+    .join("\n");
+}
+
+export async function refreshMcpToolsIfChanged(
+  this: AgentRuntimeInternal,
+  traceContext: TraceContext,
+): Promise<void> {
+  const mcpPort = this.mcpPort;
+  if (!mcpPort || !this.mcpToolsRegistered) return;
+  const revision = mcpPort.toolListRevision?.();
+  if (revision === undefined || revision === this.mcpToolListRevision) return;
+  let descriptors: McpToolDescriptor[];
+  try {
+    descriptors = await mcpPort.listTools();
+  } catch {
+    return;
+  }
+  this.mcpToolListRevision = revision;
+  const signature = mcpToolsSignature(descriptors);
+  if (this.mcpToolsSignature === signature) return;
+  const previous = new Set(this.registeredMcpToolNames ?? []);
+  for (const name of previous) this.registry.unregister(name);
+  const registered = registerMcpTools(this.registry, mcpPort, descriptors, {
+    allowedTools: this.config.toolAllowlist,
+    disallowedTools: this.config.toolDisallowlist,
+    officialCuaServerNames: computeOfficialCuaServerNames(
+      this.config.mcp?.servers ?? {},
+      new Set(this.config.mcp?.trustedOfficialCuaServerNames ?? []),
+    ),
+    pluginIdByServerName: buildPluginIdByServerName(this.config.pluginReferenceCatalog),
+  });
+  this.registeredMcpToolNames = registered;
+  this.mcpToolsSignature = signature;
+  this.invalidateToolCache();
+  this.logger?.info("MCP tools re-registered after list_changed", {
+    ...traceContextToLogContext(traceContext),
+    event: "mcp.tools.reregistered",
+    module: "core.runtime",
+    removedToolCount: previous.size,
+    registeredToolCount: registered.length,
+    status: "completed",
+  });
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": null,
+  "categories": {},
+  "rules": {
+    "max-lines": ["error", { "max": 800, "skipBlankLines": true, "skipComments": true }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/apps/cli/packages/adapters/src/plugins/marketplace.ts",
+        "**/apps/cli/packages/adapters/src/mcp/index.ts",
+        "**/apps/cli/packages/bootstrap/src/plugins.ts",
+        "**/apps/cli/packages/adapters/src/storage/session-store/migrations.ts",
+        "**/apps/cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts",
+        "**/apps/cli/packages/bootstrap/src/app/create-app.ts",
+        "**/apps/cli/packages/bootstrap/src/app/session-facade.ts",
+        "**/apps/cli/packages/bootstrap/src/cf-protocol-v4/v4-gateway.ts",
+        "**/apps/cli/packages/bootstrap/src/cf-protocol/server.ts",
+        "**/apps/cli/packages/bootstrap/src/cf-protocol/session-mapper.ts",
+        "**/apps/cli/packages/bootstrap/src/cf-protocol/v4-bridge.ts",
+        "**/apps/cli/packages/contracts/src/interfaces/session-store.port.ts",
+        "**/apps/cli/packages/core/src/runtime/methods/steering.ts",
+        "**/apps/cli/packages/core/src/runtime/methods/turn.ts",
+        "**/apps/cli/packages/core/src/runtime/methods/turn-model-step.ts",
+        "src/runtime/methods/steering.ts",
+        "src/runtime/methods/turn.ts",
+        "src/runtime/methods/turn-model-step.ts",
+        "**/packages/ui/src/remote-connection-flow/index.ts"
+      ],
+      "rules": {
+        "max-lines": ["warn", { "max": 800, "skipBlankLines": true, "skipComments": true }]
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "max-lines": "off"
+      }
+    },
+    {
+      "files": ["**/i18n/locales/*.ts"],
+      "rules": {
+        "max-lines": "off"
+      }
+    }
+  ],
+  "settings": {
+    "jsx-a11y": {
+      "polymorphicPropName": null,
+      "components": {},
+      "attributes": {}
+    },
+    "next": {
+      "rootDir": []
+    },
+    "react": {
+      "formComponents": [],
+      "linkComponents": [],
+      "version": null,
+      "componentWrapperFunctions": []
+    },
+    "jsdoc": {
+      "ignorePrivate": false,
+      "ignoreInternal": false,
+      "ignoreReplacesDocs": true,
+      "overrideReplacesDocs": true,
+      "augmentsExtendsReplacesDocs": false,
+      "implementsReplacesDocs": false,
+      "exemptDestructuredRootsFromChecks": false,
+      "tagNamePreference": {}
+    },
+    "vitest": {
+      "typecheck": false
+    }
+  },
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [
+    "dist-release",
+    "packages/ui/src/components/ui",
+    "packages/ui/src/components/ai-elements",
+    ".claude/skills",
+    ".agents/skills",
+    "packages/formal-proof",
+    "apps/cli",
+    "packages/cf-cua",
+    "docs/electron"
+  ]
+}

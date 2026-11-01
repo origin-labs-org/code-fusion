@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-remote-explicit-sync-workspace",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-remote-explicit-sync-workspace.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-remote-explicit-sync-workspace.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "wpl-011-title",
+      "description": "remote pre-sync 与 post-sync task 的标题生成。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are not part of the remote Plugin explicit sync contract; only need to keep the task row stable."
+    },
+    {
+      "id": "wpl-011-before-sync",
+      "description": "Standard model response for remote Session before explicit sync.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably establish remote Session after connect and before explicit sync."
+    },
+    {
+      "id": "wpl-011-plugin-tool-call",
+      "description": "Plugin MCP tool call for remote new Session after explicit sync.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin tool call to prove that new Sessions only acquire remote Plugin runtime after explicit sync."
+    },
+    {
+      "id": "wpl-011-plugin-final",
+      "description": "Final response following Plugin MCP tool result.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin final response to close the remote Plugin MCP invocation."
+    }
+  ]
+}

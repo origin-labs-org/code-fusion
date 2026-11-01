@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-profile-fields",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-profile-fields.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-profile-fields.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "~/.cf/agents/e2e-profile-fields.md",
+      "source": "created-by-spec",
+      "description": "Created via real Settings and saved field-by-field; does not directly write configs."
+    }
+  ],
+  "requests": [
+    {
+      "id": "spf-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-seed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-seed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-seed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-resume-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-resume-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-resume-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-spawn-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-spawn-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-effort-spawn-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-resume-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-resume-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-resume-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-spawn-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-spawn-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-prompt-spawn-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-resume-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-resume-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-resume-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-spawn-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-spawn-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    },
+    {
+      "id": "spf-tools-spawn-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only fixes model responses in provider fixture, real Settings only modifies a single field; verifies completed resume and spawn requests, original history, and model change records without injecting test state into production logic."
+    }
+  ]
+}

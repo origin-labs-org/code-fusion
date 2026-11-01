@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-first-submit-visibility",
+  "spec": "./test/e2e/conversation-session/conversation-session-first-submit-visibility.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-first-submit-visibility.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "first-submit-visibility-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Background title is not involved in initial send timing, only providing stable replies to prevent unmatched request retries from interfering with subsequent cases."
+    },
+    {
+      "id": "first-submit-visibility",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify initial send UI submission order; model reply is only used to complete the real send path."
+    }
+  ]
+}

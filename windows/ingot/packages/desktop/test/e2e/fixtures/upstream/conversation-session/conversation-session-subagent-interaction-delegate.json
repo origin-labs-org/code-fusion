@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-interaction-delegate",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-interaction-delegate.test.ts",
+  "fixtures": [
+    {
+      "id": "subagent-hitl-yolo-parent-agent",
+      "description": "父 agent 首轮请求返回 general-purpose Agent tool_use，用于 Full access 下的 child AskUserQuestion delegate。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably creates parent Agent tool_use, core semantics being child AskUserQuestion must proxy back to the parent task."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_HITL_YOLO_PARENT"],
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_YOLO_PARENT",
+          "E2E_SUBAGENT_HITL_YOLO_CHILD",
+          "E2E_SUBAGENT_HITL_YOLO_PARENT_DONE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_subagent_hitl_yolo_agent",
+          "name": "Agent",
+          "input": {
+            "description": "Run subagent AskUserQuestion delegate case",
+            "prompt": "E2E_SUBAGENT_HITL_YOLO_CHILD: Ask the user one question containing E2E_SUBAGENT_HITL_YOLO_QUESTION, then after the answer reply exactly E2E_SUBAGENT_HITL_YOLO_CHILD_DONE and no other text.",
+            "subagent_type": "general-purpose"
+          }
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-yolo-child-ask",
+      "description": "Full access child subagent 返回 AskUserQuestion tool_use。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably creates child AskUserQuestion waiting state, verifying it still proxies to the parent task under yolo instead of being swallowed by the deny broker."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_HITL_YOLO_CHILD"],
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_YOLO_CHILD",
+          "E2E_SUBAGENT_HITL_YOLO_QUESTION"
+        ],
+        "bodyExcludes": [
+          "E2E_SUBAGENT_HITL_YOLO_ANSWER",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_subagent_hitl_yolo_ask",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_SUBAGENT_HITL_YOLO_QUESTION: provide the yolo child answer.",
+                "header": "Subagent question",
+                "options": [
+                  {
+                    "label": "Use default",
+                    "description": "Continue with the default subagent answer."
+                  },
+                  {
+                    "label": "Use fallback",
+                    "description": "Continue with the fallback subagent answer."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-yolo-child-final",
+      "description": "Final reply of Full access child subagent after receiving user answer.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response proves AskUserQuestion answers have entered the child provider-visible request, allowing child to continue to completion."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_YOLO_CHILD",
+          "E2E_SUBAGENT_HITL_YOLO_ANSWER",
+          "toolu_e2e_subagent_hitl_yolo_ask"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-subagent-hitl-yolo-child-final",
+          "inputTokens": 160,
+          "outputTokens": 12,
+          "text": "E2E_SUBAGENT_HITL_YOLO_CHILD_DONE"
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-yolo-parent-final",
+      "description": "Final reply of parent agent after receiving yolo child result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Final reply used to prove Agent tool_result is consumed by the parent session continuation and cleanly finalized."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_YOLO_PARENT",
+          "E2E_SUBAGENT_HITL_YOLO_CHILD_DONE",
+          "toolu_e2e_subagent_hitl_yolo_agent"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-subagent-hitl-yolo-parent-final",
+          "inputTokens": 180,
+          "outputTokens": 12,
+          "text": "E2E_SUBAGENT_HITL_YOLO_PARENT_DONE"
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-permission-parent-agent",
+      "description": "Parent agent first-round request returns general-purpose Agent tool_use for child Bash permission delegate in build mode.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably creates parent Agent tool_use, core semantics being child Bash permission must proxy back to the parent task."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_HITL_PERMISSION_PARENT"],
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_PERMISSION_PARENT",
+          "E2E_SUBAGENT_HITL_PERMISSION_CHILD",
+          "E2E_SUBAGENT_HITL_PERMISSION_PARENT_DONE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_subagent_hitl_permission_agent",
+          "name": "Agent",
+          "input": {
+            "description": "Run subagent Bash permission delegate case",
+            "prompt": "E2E_SUBAGENT_HITL_PERMISSION_CHILD: Run Bash command mkdir -p .cf-e2e/conversation-session-subagent-interaction-delegate && printf 'E2E_SUBAGENT_HITL_PERMISSION_BASH_OUTPUT\\n' > .cf-e2e/conversation-session-subagent-interaction-delegate/output.txt && cat .cf-e2e/conversation-session-subagent-interaction-delegate/output.txt, then after it succeeds reply exactly E2E_SUBAGENT_HITL_PERMISSION_CHILD_DONE and no other text.",
+            "subagent_type": "general-purpose"
+          }
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-permission-child-bash",
+      "description": "Build mode child subagent returns Bash tool_use, triggering a permission request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably creates child Bash permission waiting state, verifying permission requests proxy back to the parent task."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_HITL_PERMISSION_CHILD"],
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_PERMISSION_CHILD",
+          "E2E_SUBAGENT_HITL_PERMISSION_BASH_OUTPUT"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_subagent_hitl_permission_bash",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_subagent_hitl_permission_bash",
+          "name": "Bash",
+          "input": {
+            "command": "mkdir -p .cf-e2e/conversation-session-subagent-interaction-delegate && printf 'E2E_SUBAGENT_HITL_PERMISSION_BASH_OUTPUT\\n' > .cf-e2e/conversation-session-subagent-interaction-delegate/output.txt && cat .cf-e2e/conversation-session-subagent-interaction-delegate/output.txt",
+            "description": "Emit E2E_SUBAGENT_HITL_PERMISSION_BASH_OUTPUT"
+          }
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-permission-child-final",
+      "description": "Final reply of build mode child subagent after Bash is permitted and executed.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response proves Bash output has entered the child provider-visible request, allowing child to continue to completion."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_PERMISSION_CHILD",
+          "E2E_SUBAGENT_HITL_PERMISSION_BASH_OUTPUT",
+          "toolu_e2e_subagent_hitl_permission_bash"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-subagent-hitl-permission-child-final",
+          "inputTokens": 180,
+          "outputTokens": 12,
+          "text": "E2E_SUBAGENT_HITL_PERMISSION_CHILD_DONE"
+        }
+      }
+    },
+    {
+      "id": "subagent-hitl-permission-parent-final",
+      "description": "Final reply of parent agent after receiving permission child result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Final reply used to prove Agent tool_result is consumed by the parent session continuation and cleanly finalized."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SUBAGENT_HITL_PERMISSION_PARENT",
+          "E2E_SUBAGENT_HITL_PERMISSION_CHILD_DONE",
+          "toolu_e2e_subagent_hitl_permission_agent"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-subagent-hitl-permission-parent-final",
+          "inputTokens": 190,
+          "outputTokens": 12,
+          "text": "E2E_SUBAGENT_HITL_PERMISSION_PARENT_DONE"
+        }
+      }
+    }
+  ]
+}

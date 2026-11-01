@@ -1,0 +1,80 @@
+interface RootStartupGateState {
+  isResolvingStartupAuthState: boolean;
+  isResolvingProviderStartupState: boolean;
+  isRestoring: boolean;
+  isBootstrappingInitialWorkspace: boolean;
+}
+
+interface RootStartupLoadingVisibilityState extends RootStartupGateState {
+  isDesktop: boolean | undefined;
+  welcomeScreenOpen: boolean;
+}
+
+interface FallbackWorkspaceCreateState {
+  isMounted: boolean;
+  activeWorkspacePath: string | null;
+}
+
+interface ProviderStartupSyncState {
+  providerFamilyDomainMigrationComplete: boolean;
+  modelSelectionViewHydrated: boolean;
+}
+
+interface ProviderAvailabilityLoginEntryGuardState {
+  isWebRemoteControlRoot: boolean;
+}
+
+interface ProviderStartupResolutionState {
+  isWebRemoteControlRoot: boolean;
+  providerStartupSyncPending: boolean;
+  providerAvailabilityStartupCheckCompleted: boolean;
+}
+
+export function shouldBlockRootRender(state: RootStartupGateState): boolean {
+  return (
+    state.isResolvingStartupAuthState ||
+    state.isResolvingProviderStartupState ||
+    state.isRestoring ||
+    state.isBootstrappingInitialWorkspace
+  );
+}
+
+export function shouldShowRootStartupLoading(
+  state: RootStartupLoadingVisibilityState,
+): boolean {
+  return Boolean(state.isDesktop) && !state.welcomeScreenOpen && shouldBlockRootRender(state);
+}
+
+export function shouldEnableProviderAvailabilityLoginEntryGuard(
+  state: ProviderAvailabilityLoginEntryGuardState,
+): boolean {
+  return !state.isWebRemoteControlRoot;
+}
+
+export function shouldResolveProviderStartupState(
+  state: ProviderStartupResolutionState,
+): boolean {
+  if (state.isWebRemoteControlRoot) {
+    return false;
+  }
+
+  return (
+    state.providerStartupSyncPending ||
+    !state.providerAvailabilityStartupCheckCompleted
+  );
+}
+
+export function shouldOpenFallbackWorkspaceAfterCreate(
+  state: FallbackWorkspaceCreateState,
+): boolean {
+  return state.isMounted && !state.activeWorkspacePath;
+}
+
+export function isProviderStartupSyncPending(
+  state: ProviderStartupSyncState,
+): boolean {
+  return (
+    !state.providerFamilyDomainMigrationComplete ||
+    !state.modelSelectionViewHydrated
+  );
+}

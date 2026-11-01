@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-history-first",
+  "spec": "./test/e2e/conversation-session/conversation-session-history-first.test.ts",
+  "fixtures": [
+    {
+      "id": "history-first-title",
+      "description": "HF01 fixes history body to verify the first frame and draft gating while the resume hook is blocked.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Persistent history is seeded by isolated fixtures; the provider continues sending after verifying ready, with initialization timing controlled by file event barriers."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_HISTORY_FIRST"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "history-first-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"History First E2E"}"
+        }
+      }
+    },
+    {
+      "id": "history-first-parent",
+      "description": "HF01 fixes history body to verify the first frame and draft gating while the resume hook is blocked.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Persistent history is seeded by isolated fixtures; the provider continues sending after verifying ready, with initialization timing controlled by file event barriers."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_HISTORY_FIRST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "history-first-parent",
+          "inputTokens": 96,
+          "outputTokens": 12,
+          "text": "HISTORY_FIRST_OK"
+        }
+      }
+    }
+  ]
+}

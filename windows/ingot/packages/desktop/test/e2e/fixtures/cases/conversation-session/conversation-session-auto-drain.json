@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-auto-drain",
+  "spec": "./test/e2e/conversation-session/conversation-session-auto-drain.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-auto-drain.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-auto-drain-running-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "C02 only verifies auto-consuming the head-of-queue text after the current turn completes naturally; a real provider completing too quickly would allow the second input to bypass the queue."
+    },
+    {
+      "id": "upstream-auto-drain-queued-fast-text",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that the queued prompt automatically initiates the next provider request and drains the queue; the response content just needs to complete stably."
+    }
+  ]
+}

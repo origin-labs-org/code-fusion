@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-file-summary-cold-start",
+  "spec": "./test/e2e/conversation-session/conversation-session-file-summary-cold-start.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-file-summary-cold-start.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "file-summary-cold-start-e2e/summary.txt",
+      "source": "created-by-provider-tool",
+      "description": "Fixture drives single Write to create a two-line file, generating workspace checkpoint required for cold hydration."
+    }
+  ],
+  "requests": [
+    {
+      "id": "file-summary-cold-start-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not involved in cold materialization semantics; only use marker to isolate title requests."
+    },
+    {
+      "id": "file-summary-cold-start-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not guarantee stably choosing a single Write; fix two-line content for precise +2/-0 assertions."
+    },
+    {
+      "id": "file-summary-cold-start-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix final marker to prevent model text fluctuations from interfering with cold-start summary assertions."
+    }
+  ]
+}

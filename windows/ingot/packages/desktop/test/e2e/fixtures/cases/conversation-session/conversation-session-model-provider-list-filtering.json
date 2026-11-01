@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-list-filtering",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-list-filtering.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-list-filtering.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-list-filtering-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from mistakenly hitting initial send business fixtures."
+    },
+    {
+      "id": "model-provider-list-filtering-first-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover Provider/Model visibility filtering, built-in conflicting members remaining selectable, and request hitting the Provider's Effective Endpoint; response only needs to complete stably with the agreed text."
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-respond-to-coordinator",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-respond-to-coordinator.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-respond-to-coordinator.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "incoming-text-compact-overflow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-text-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-text-cold",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-tool-compact-overflow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-tool-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-tool-cold",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently trigger real reactive compact to verify persistence and cold recovery of the retained segment containing the peer."
+    },
+    {
+      "id": "incoming-source-matrix-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is an auxiliary request, closed independently to ensure the trace has no unrelated fixture misses or retries."
+    },
+    {
+      "id": "upstream-subagent-response-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title generation is outside BG25 product semantics and is only used to avoid unrelated retries during strict replay."
+    },
+    {
+      "id": "upstream-subagent-response-agent-tool-call",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Stably start background child and use file barrier to keep running window."
+    },
+    {
+      "id": "upstream-subagent-response-send-message-tool-call",
+      "kind": "main",
+      "timingPolicy": "controlled-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Delay SendMessage tool-use to let child enter barrier Bash first, then inject coordinator question using replay dynamic agentId."
+    },
+    {
+      "id": "upstream-subagent-response-send-message-ack",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Let parent enter idle, then wake it up via child response runtime command."
+    },
+    {
+      "id": "upstream-subagent-response-child-barrier-bash",
+      "kind": "subagent",
+      "timingPolicy": "controlled-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "File barrier stably creates steer window where first child tool call has not completed."
+    },
+    {
+      "id": "upstream-subagent-response-child-tool-calls",
+      "kind": "subagent",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Consistently verify that child calls RespondToCoordinator and a regular Read tool in the same response. Validate source hints and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-subagent-response-child-continued-tool",
+      "kind": "subagent",
+      "timingPolicy": "controlled-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Continue Bash after response tool result and wait until parent has consumed coordinator response before finishing, reliably verifying two independent provider requests."
+    },
+    {
+      "id": "upstream-subagent-response-child-final-result",
+      "kind": "subagent",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify that child continues normal tools after reply and finally wraps up via normal completion."
+    },
+    {
+      "id": "upstream-subagent-response-parent-consumed",
+      "kind": "main",
+      "timingPolicy": "subagent-message",
+      "source": "synthetic",
+      "syntheticReason": "Verify that the response is not just enqueued, but enters parent provider request and is consumed by coordinator model."
+    },
+    {
+      "id": "upstream-subagent-response-notification-consumed",
+      "kind": "main",
+      "timingPolicy": "task-notification",
+      "source": "synthetic",
+      "syntheticReason": "Verify that child ultimately still concludes via standard background completion notification. Validate source hints and non-user authorization boundaries. The full body of the new turn notification contains only one pair of system-reminder, remaining user regardless of the MCS toggle."
+    },
+    {
+      "id": "upstream-subagent-response-memory-extraction-noop",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Memory extraction runs asynchronously after successful Main turn by default; this case only uses Nothing to save to conclude, avoiding hidden requests interfering with strict replay without extending Memory product semantics."
+    },
+    {
+      "id": "upstream-task-output-card-tool-call",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Reuse the completed real BG25 background Agent to verify the full flow from TaskOutput display to dedicated card."
+    },
+    {
+      "id": "upstream-task-output-card-result-consumed",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify that successful TaskOutput results enter provider continuation and stably close the dedicated card."
+    },
+    {
+      "id": "upstream-tool-renderer-error-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title generation is outside O19 error projection semantics and is only used to avoid unrelated retries during strict replay."
+    },
+    {
+      "id": "upstream-tool-renderer-error-agent-tool-call",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Launch real background child and use a file barrier to reliably place input validation errors after parent launch turn."
+    },
+    {
+      "id": "upstream-tool-renderer-error-agent-started",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Let parent start turn return to idle first, then release child input error to avoid completion notification merge race."
+    },
+    {
+      "id": "upstream-tool-renderer-error-child-barrier",
+      "kind": "subagent",
+      "timingPolicy": "controlled-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "File barrier reliably isolates the two provider roundtrips: parent launch and child validation error."
+    },
+    {
+      "id": "upstream-tool-renderer-error-respond-call",
+      "kind": "subagent",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Produce an attainable RespondToCoordinator execution error via real schema validation without adding production fault hooks."
+    },
+    {
+      "id": "upstream-tool-renderer-error-child-final",
+      "kind": "subagent",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify that after the dedicated tool error row closes, child tool loop can still continue and complete normally."
+    },
+    {
+      "id": "upstream-tool-renderer-error-notification-consumed",
+      "kind": "main",
+      "timingPolicy": "task-notification",
+      "source": "synthetic",
+      "syntheticReason": "Let error child conclude via standard completion notification and establish a stable idle precondition for the subsequent TaskOutput error turn. Validate source hints and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-tool-renderer-error-task-output-call",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Use a non-existent stable task id to trigger TaskOutput handler error and verify real V4 error projection."
+    },
+    {
+      "id": "upstream-tool-renderer-error-task-output-consumed",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify that TaskOutput handler failure enters provider continuation and stably closes the dedicated error card."
+    },
+    {
+      "id": "incoming-tool-spawn",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-child-wait",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-tool-main-wait-peer",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-child-reply",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-tool-child-continue",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-child-final",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-tool-main-wait-task",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-main-task-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-resume",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-child-resumed",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-resume-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-tool-resume-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-spawn",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-child-wait",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-text-main-wait-peer",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-child-reply",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-text-child-continue",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-child-final",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS. CR-01: Real production entrypoint carrying disabled/enabled reminders and forged authorization payloads to verify raw MCS text and user wrapper escaping."
+    },
+    {
+      "id": "incoming-text-main-wait-task",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-main-task-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-resume",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-child-resumed",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-resume-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    },
+    {
+      "id": "incoming-text-resume-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Control parent and child Agent working windows, with real CLI generating sources and intermediate states; stage-by-stage verification of actual wire text and causal order under MCS and non-MCS."
+    }
+  ]
+}

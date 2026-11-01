@@ -1,0 +1,94 @@
+import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
+import type {
+  OpenPluginUiSideTabRequest,
+  PluginUiSessionScope,
+  PluginUiSessionCommandPort,
+  PluginUiToolBinding,
+} from "@/plugin-ui/contract.js";
+import { createPluginUiSessionActions } from "@/plugin-ui/adapters/pluginUiSessionBinding.js";
+import { registerPluginUiSessionActions } from "@/plugin-ui/adapters/pluginUiSessionActions.js";
+import { usePluginUiResourceDeltaFeed } from "@/plugin-ui/adapters/pluginUiResourceDeltaFeed.js";
+import type { ConversationProjectionStore } from "@/v4/conversationProjectionStore.js";
+
+const WorkspaceActions = createContext<((request: OpenPluginUiSideTabRequest) => void) | undefined>(
+  undefined,
+);
+const SessionScope = createContext<PluginUiSessionScope | null>(null);
+
+export function PluginUiWorkspaceProvider({
+  onOpenSidePane,
+  children,
+}: {
+  onOpenSidePane: (request: OpenPluginUiSideTabRequest) => void;
+  children: ReactNode;
+}) {
+  return <WorkspaceActions.Provider value={onOpenSidePane}>{children}</WorkspaceActions.Provider>;
+}
+export function useOpenPluginUi() {
+  return useContext(WorkspaceActions);
+}
+
+export function PluginUiSessionProvider({
+  workspacePath,
+  workspaceIdentity,
+  remoteSessionId,
+  sessionId,
+  readOnly,
+  sendText,
+  uploadAttachment,
+  projectionStore,
+  children,
+}: Omit<PluginUiSessionScope, "sessionId"> & {
+  sessionId: string | null;
+  readOnly: boolean;
+  
+  projectionStore?: ConversationProjectionStore | null;
+  children: ReactNode;
+} & PluginUiSessionCommandPort) {
+  const scope = useMemo(
+    () => (sessionId ? { workspacePath, workspaceIdentity, remoteSessionId, sessionId } : null),
+    [workspacePath, workspaceIdentity, remoteSessionId, sessionId],
+  );
+  const port = useRef({ sendText, uploadAttachment });
+  port.current = { sendText, uploadAttachment };
+  usePluginUiResourceDeltaFeed(projectionStore, scope);
+  useEffect(() => {
+    if (!scope || readOnly) return;
+    return registerPluginUiSessionActions(
+      scope,
+      createPluginUiSessionActions(scope, {
+        sendText: (...args) => port.current.sendText(...args),
+        uploadAttachment: (...args) => port.current.uploadAttachment(...args),
+      }),
+    );
+  }, [scope, readOnly]);
+  return <SessionScope.Provider value={scope}>{children}</SessionScope.Provider>;
+}
+
+export function usePluginUiToolBinding(toolCallId: string): PluginUiToolBinding | undefined {
+  const scope = useContext(SessionScope);
+  const open = useOpenPluginUi();
+  return useMemo(
+    () =>
+      scope
+        ? {
+            scope: { ...scope, toolCallId },
+            ...(open
+              ? {
+                  onOpenSidePane: (
+                    request: Parameters<NonNullable<PluginUiToolBinding["onOpenSidePane"]>>[0],
+                  ) =>
+                    open({
+                      ...request,
+                      workspacePath: scope.workspacePath,
+                      workspaceIdentity: scope.workspaceIdentity,
+                      remoteSessionId: scope.remoteSessionId,
+                      parentSessionId: scope.sessionId,
+                    }),
+                }
+              : {}),
+          }
+        : undefined,
+    [open, scope, toolCallId],
+  );
+}

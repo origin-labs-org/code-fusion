@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-switch-image-strip",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-switch-image-strip.test.ts",
+  "fixtures": [
+    {
+      "id": "model-switch-image-strip-title",
+      "description": "Fixed response for title generation in N08 image history model-switch case, preventing strict case-local replay from relying on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from accidentally hitting image history or GLM follow-up business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_MODEL_SWITCH_IMAGE_SEED"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-model-switch-image-strip-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Image Strip Switch\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":64,"completion_tokens":8,"total_tokens":72}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-switch-image-strip-seed",
+      "description": "N08 round 1 fixed final reply with real local path image, used to persist image history to completed session and fix provider wire for image + plain path text.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion occurs on provider-visible request when subsequently switching to third-party GLM; first-turn response only needs to complete stably and retain user history with image + local path."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_SWITCH_IMAGE_SEED"],
+        "bodyIncludes": [
+          "E2E_MODEL_SWITCH_IMAGE_SEED",
+          "upstream-e2e-ok",
+          "e2e-vision-seed-model",
+          "[Image: source:",
+          "model-switch-image-strip-"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-model-switch-image-strip-seed","object":"chat.completion.chunk","created":0,"model":"e2e-vision-seed-model","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-seed","object":"chat.completion.chunk","created":0,"model":"e2e-vision-seed-model","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-seed","object":"chat.completion.chunk","created":0,"model":"e2e-vision-seed-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":156,"completion_tokens":12,"total_tokens":168}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-switch-image-strip-glm-followup",
+      "description": "N08 subsequent plain text fixed final reply after switching to third-party GLM-5.2, paired with packet capture to assert historical images become omitted text while retaining original absolute path.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that third-party GLM provider-visible request no longer contains historical image block/data URL, but contains omitted text for unsupported image input and plain path text; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_SWITCH_IMAGE_FOLLOWUP"],
+        "bodyIncludes": [
+          "E2E_MODEL_SWITCH_IMAGE_FOLLOWUP",
+          "GLM-5.2",
+          "[Attached image/png:",
+          "model-switch-image-strip-",
+          "Media omitted from provider request because the selected model does not support image input.",
+          "[Image: source:"
+        ],
+        "bodyExcludes": [
+          "data:image",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-model-switch-image-strip-glm-followup","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-glm-followup","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-model-switch-image-strip-glm-followup","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":168,"completion_tokens":12,"total_tokens":180}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

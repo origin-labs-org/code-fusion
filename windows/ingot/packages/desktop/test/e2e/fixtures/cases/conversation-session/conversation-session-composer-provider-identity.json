@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-composer-provider-identity",
+  "spec": "./test/e2e/conversation-session/conversation-session-composer-provider-identity.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-composer-provider-identity.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "Pure UI model selection and window scaling without sending prompts; provider is prepared in isolated HOME via official Personal Config.",
+  "requests": []
+}

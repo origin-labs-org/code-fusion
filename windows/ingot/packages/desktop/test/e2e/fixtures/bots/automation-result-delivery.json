@@ -1,0 +1,7 @@
+{
+  "caseId": "BOT-E2E-CR-01",
+  "classification": "synthetic",
+  "syntheticReason": "Final-state pushback for scheduled tasks requires controlled triggering of complete/error and precise assertion that subscription occurs before prompt dispatch; real provider timing cannot be reliably reproduced.",
+  "timing": "controlled-stream",
+  "promptMarker": "E2E_BOT_AUTOMATION_RESULT_DELIVERY"
+}

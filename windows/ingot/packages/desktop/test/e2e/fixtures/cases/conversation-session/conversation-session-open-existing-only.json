@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-open-existing-only",
+  "spec": "./test/e2e/conversation-session/conversation-session-open-existing-only.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-open-existing-only.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-session-open-existing-only-reply",
+      "description": "Initial draft submission returns fixed text, establishing an official Session that can be left and reopened.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core contract is zero session-open on first-time new binding and a paired set of events when reopening an existing Session; the fixed response is only used to stably end the first round."
+    }
+  ]
+}

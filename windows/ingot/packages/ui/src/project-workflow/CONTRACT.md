@@ -1,0 +1,7 @@
+# Project workflow
+
+Completed卡与 run 侧板使用同One个Save控制器，workflowRunSavedStore YesSaved Workflows投影的唯OneCache。Agent Save run 的脚本，Host projectService AdjudicationTargetProject与 cwd；调用方不能PassedE同路径InferenceDeviceor归属。
+
+Save成功才PublishCacheResult，FailedRetain原Status。再次Run复用 saved-workflow launcher，DefaultTarget从原Session解析，显式选Project则使用选择Result；不改写既有Session cwd。Query与InvalidContinue使用既有 generation/key，侧板提炼Request发To父Session。
+
+模块只调整源码Boundaries，保持只读/灰度门、窄屏、Theme及Copy不变。Desktop/手机Continue使用宿主既有Commandand continuous/replayable Boundaries。

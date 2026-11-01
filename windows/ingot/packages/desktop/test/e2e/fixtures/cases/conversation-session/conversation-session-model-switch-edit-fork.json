@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-switch-edit-fork",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-switch-edit-fork.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-switch-edit-fork.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-switch-edit-fork-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from accidentally hitting business fixtures."
+    },
+    {
+      "id": "model-switch-edit-source-primary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover primary model/thought captured by request and subsequent edit rerun configuration; response only needs to complete stably."
+    },
+    {
+      "id": "model-switch-edit-rerun-secondary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion covers secondary model/thought captured by edit rerun request; response only needs to complete stably."
+    },
+    {
+      "id": "model-switch-fork-source-primary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover pre-fork source request and subsequent derived session configuration; response only needs to complete stably and display fork entry point."
+    },
+    {
+      "id": "model-switch-fork-followup-secondary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion covers secondary model/thought captured by fork follow-up request; response only needs to complete stably."
+    }
+  ]
+}

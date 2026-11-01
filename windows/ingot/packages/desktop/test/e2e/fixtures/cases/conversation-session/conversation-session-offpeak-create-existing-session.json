@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-offpeak-create-existing-session",
+  "spec": "./test/e2e/conversation-session/conversation-session-offpeak-create-existing-session.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-offpeak-create-existing-session.json"
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-session-offpeak-create-existing-session-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of idle task product semantics; it only needs to return stably."
+    },
+    {
+      "id": "upstream-conversation-session-offpeak-create-existing-session-warmup",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only one stable completed history is needed; reply content does not affect product semantics."
+    },
+    {
+      "id": "upstream-conversation-session-offpeak-create-existing-session-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real providers may not reliably choose OffPeakCreate; trigger the tool deterministically to verify that v4 cold-resumed sessions still retain the tool surface and can navigate directly to edit."
+    },
+    {
+      "id": "upstream-conversation-session-offpeak-create-existing-session-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "End the case after tool_result enters history; actual reply content does not affect product semantics."
+    }
+  ]
+}

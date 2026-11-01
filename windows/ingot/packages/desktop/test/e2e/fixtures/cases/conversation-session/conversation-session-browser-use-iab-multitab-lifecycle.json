@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-use-iab-multitab-lifecycle",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-use-iab-multitab-lifecycle.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-browser-use-iab-multitab-lifecycle.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-browser-use-multitab-title",
+      "description": "Fix asynchronous title responses for the multi-tab lifecycle case.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles do not belong to this use case's semantics; they only need to be isolated from Browser tool continuation."
+    },
+    {
+      "id": "upstream-browser-use-multitab-create",
+      "description": "In the first round, initialize the Browser client in a fresh kernel, create two real IAB tabs A/B, and mark only A for handoff.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably drive the real BrowserControl lifecycle and verify that finalize omission does not close unlisted tabs."
+    },
+    {
+      "id": "upstream-browser-use-multitab-turn-one-final",
+      "description": "First round completes normally, executing turnEnded and preserving both tabs.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Establish a real cross-turn lifecycle boundary."
+    },
+    {
+      "id": "upstream-browser-use-multitab-list",
+      "description": "In the second round, reinitialize the Browser client in a new fresh kernel, then independently return the full tabs.list and dynamic stable ids for A/B.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably verify the model-visible list and dynamically inject A/B stable ids from real tool results into the next model response."
+    },
+    {
+      "id": "upstream-browser-use-multitab-action",
+      "description": "Reinitialize Browser client in a new fresh kernel and use the A/B stable id from the previous tool result to execute get(A), update, and close(B).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that cross-turn stable ids come from model-visible tool results rather than cross-cell JS bindings, covering tabs.get activation and exact target close."
+    },
+    {
+      "id": "upstream-browser-use-multitab-turn-two-final",
+      "description": "The second round consumes lifecycle results and completes normally.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Have E2E verify that A is preserved and B is destroyed after turnEnded."
+    }
+  ]
+}

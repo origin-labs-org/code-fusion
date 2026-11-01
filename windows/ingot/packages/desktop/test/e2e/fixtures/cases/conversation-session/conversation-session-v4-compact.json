@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-compact",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-compact.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-compact.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-compact-title",
+      "description": "Case-local title generation response for E2E_V4_COMPACT_SEED initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_COMPACT_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-compact-seed",
+      "description": "M4 /compact gate: First-round fixed text reply, forming history to be compacted.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "compact requires completed history; the first round only needs to reliably produce compactible assistant text."
+    },
+    {
+      "id": "v4-compact-success",
+      "description": "M4 /compact gate: successful response for manual compact streaming summary.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion for manual compact is that v4 projection outputs [compact] · completed marker; summary text just needs to be pinned."
+    }
+  ]
+}

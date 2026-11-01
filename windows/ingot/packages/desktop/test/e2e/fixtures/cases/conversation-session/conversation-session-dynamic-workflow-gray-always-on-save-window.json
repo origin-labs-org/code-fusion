@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-dynamic-workflow-gray-always-on-save-window",
+  "spec": "./test/e2e/conversation-session/conversation-session-dynamic-workflow-gray-always-on-save-window.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-dynamic-workflow-gray-always-on-save-window.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "dwf-save-window-title",
+      "description": "Case-local title generation response for E2E_DWF_SAVE_WINDOW_BOUNDS initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial send of E2E_DWF_SAVE_WINDOW_BOUNDS triggers default title sidecar; fix case-local title response."
+    },
+    {
+      "id": "dwf-save-window-save-call",
+      "description": "SaveWorkflow tool_use opens the save confirmation dialog with oversized description/arguments/script.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Save confirmation dialog is only opened when the model calls SaveWorkflow; oversized payload is the test condition itself."
+    },
+    {
+      "id": "dwf-save-window-final",
+      "description": "Terminal text after rejecting save.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "No disk write after rejection; terminal text confirms turn closure."
+    }
+  ]
+}

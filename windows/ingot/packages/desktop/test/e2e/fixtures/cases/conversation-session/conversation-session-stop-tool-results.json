@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-stop-tool-results",
+  "spec": "./test/e2e/conversation-session/conversation-session-stop-tool-results.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-stop-tool-results.json"
+  ],
+  "fileFixtures": [
+    "./test/e2e/fixtures/fs/conversation-session/conversation-session-stop-tool-results"
+  ],
+  "requests": [
+    {
+      "id": "stop-results-title",
+      "description": "Auxiliary title for this case",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-text-tools",
+      "description": "text real Read batch",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-text-followup",
+      "description": "Normal continuation after text Stop",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-image-tools",
+      "description": "image real Read batch",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-image-followup",
+      "description": "Normal continuation after image Stop",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-db-tools",
+      "description": "纯文本 Bash 工具调用",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-db-initial",
+      "description": "Plain text Bash initial turn completed normally",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+    },
+    {
+      "id": "stop-results-db-followup",
+      "description": "Continue chat after database recovery",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-session-switch-restore",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-session-switch-restore.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-session-switch-restore.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-plan-session-switch-enter",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably enter plan mode to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-conversation-plan-session-switch-exit-controlled-stream",
+      "description": "Controlled stream first produces an empty ExitPlanMode preview, switching away before completing full plan arguments.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stably create a recovery window where the user switches away during ExitPlanMode argument generation and the complete tool call arrives in the background."
+    }
+  ]
+}

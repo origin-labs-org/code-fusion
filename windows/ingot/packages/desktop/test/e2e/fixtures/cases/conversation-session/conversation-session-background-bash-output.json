@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-bash-output",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-bash-output.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background-bash-output.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/background-bash-output/中文 空格/writer.cjs",
+      "source": "created-by-spec",
+      "description": "Case-local Node writer; file barrier drives real-time window."
+    }
+  ],
+  "requests": [
+    {
+      "id": "bgv-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "EXPLICIT-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "EXPLICIT-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "AUTO-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "AUTO-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "PAUSE-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "PAUSE-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "SCOPE_A-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "SCOPE_A-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "SCOPE_B-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "SCOPE_B-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "ERROR-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "ERROR-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "STOP-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "STOP-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "PARENT-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "PARENT-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "CHILD-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Bash tool call and main-turn wrap-up; actual process and canonical file are controlled by barrier; UI queries do not call the model."
+    },
+    {
+      "id": "CHILD-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Keep child model request in flight while child Bash runs in actual background to verify existing sub-session entries and Stop."
+    }
+  ]
+}

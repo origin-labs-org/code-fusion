@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-p0",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-p0.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-p0.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-remote-p0-title",
+      "description": "Fixed responses for title generation in two remote tasks, avoiding title requests interfering with the main flow.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title content is not part of this case\'s semantics; it only needs to keep the task row stable."
+    },
+    {
+      "id": "ssh-remote-p0-a-first",
+      "description": "Workspace A initial model reply.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Wait for sidebar active/running assertions after the first output segment before explicitly releasing the end frame, avoiding observation races caused by fixed durations."
+    },
+    {
+      "id": "ssh-remote-p0-b-first",
+      "description": "Workspace B initial model reply.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Wait for sidebar active/running assertions after the first output segment before explicitly releasing the end frame, avoiding observation races caused by fixed durations."
+    },
+    {
+      "id": "ssh-remote-p0-a-follow",
+      "description": "Follow-up model reply after switching back to the workspace A task.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Wait for sidebar active/running assertions after the first output segment before explicitly releasing the end frame, avoiding observation races caused by fixed durations."
+    },
+    {
+      "id": "ssh-remote-p0-b-follow",
+      "description": "Follow-up model reply after switching back to the workspace B task.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Wait for sidebar active/running assertions after the first output segment before explicitly releasing the end frame, avoiding observation races caused by fixed durations."
+    }
+  ]
+}

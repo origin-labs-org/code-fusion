@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-missing-package-workspace",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-missing-package-workspace.test.ts",
+  "fileFixtures": [],
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-missing-package-workspace.json"
+  ],
+  "requests": [
+    {
+      "id": "upstream-plugin-missing-package-workspace-tool-call",
+      "description": "MCP tool_use after explicitly installing Workspace Plugin.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin tool call to prove missing package declaration does not auto-activate and only enters runtime after explicit installation."
+    },
+    {
+      "id": "upstream-plugin-missing-package-workspace-final",
+      "description": "MCP tool_result 后的最终响应。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin final response to close Plugin MCP call after explicit installation."
+    }
+  ]
+}

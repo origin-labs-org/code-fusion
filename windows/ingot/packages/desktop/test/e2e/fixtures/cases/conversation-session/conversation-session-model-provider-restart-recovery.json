@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-restart-recovery",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-restart-recovery.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-restart-recovery.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-restart-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of model recovery semantics."
+    },
+    {
+      "id": "model-provider-restart-title-anthropic",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The restart window may restore startup provider transport before seed provider hydration."
+    },
+    {
+      "id": "model-provider-restart-r01",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is the requested model; response is only used for stable closeout."
+    },
+    {
+      "id": "model-provider-restart-r01-anthropic",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The case verifies provider/model, allowing startup transport during the restart recovery phase."
+    },
+    {
+      "id": "model-provider-restart-r02",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is the requested model; response is only used for stable closeout."
+    },
+    {
+      "id": "model-provider-restart-r03",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is the actual requested model after stale Recent fallback; response is only used for stable closeout."
+    },
+    {
+      "id": "model-provider-restart-r04",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is the actual requested model after stale Recent fallback; response is only used for stable closeout."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-remote-device-cards",
+  "spec": "./test/e2e/conversation-session/conversation-session-remote-device-cards.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-remote-device-cards.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-13 verifies device card, project opening, pending connection cleanup, and theme narrow screen, without sending model requests.",
+  "requests": []
+}

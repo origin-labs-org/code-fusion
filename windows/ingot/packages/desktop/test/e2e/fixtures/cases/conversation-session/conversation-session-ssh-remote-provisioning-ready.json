@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-provisioning-ready",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-provisioning-ready.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-provisioning-ready.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-ssh-ready-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title content is not part of this case\'s semantics; it only needs to keep the task row stable."
+    },
+    {
+      "id": "r3-ssh-ready-first",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Stably verify remote initial request, running state, and reply."
+    }
+  ]
+}

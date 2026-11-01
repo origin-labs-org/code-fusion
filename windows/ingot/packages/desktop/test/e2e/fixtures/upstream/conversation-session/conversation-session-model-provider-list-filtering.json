@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-list-filtering",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-list-filtering.test.ts",
+  "fixtures": [
+    {
+      "id": "model-provider-list-filtering-title",
+      "description": "Fixed response for title generation in model list filter case, preventing strict case-local replay from relying on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from mistakenly hitting initial send business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-model-provider-list-filtering-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Provider List Filter\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "model-provider-list-filtering-first-send",
+      "description": "I09 selects the retained Built-in model after Built-in/Personal name conflict filtering in model list, and sends fixed final reply of plain text initial send.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertions cover Provider/Model visibility filtering, built-in conflicting members remaining selectable, and request hitting the Provider's Effective Endpoint; response only needs to complete stably with the agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/builtin-personal-conflict",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_LIST_FILTER"],
+        "bodyIncludes": ["E2E_MODEL_PROVIDER_LIST_FILTER", "upstream-e2e-ok", "glm-5.3"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-provider-list-filtering-first-send",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

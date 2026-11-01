@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-pasted-image-path-projection",
+  "spec": "./test/e2e/conversation-session/conversation-session-pasted-image-path-projection.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-pasted-image-path-projection.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "pasted-image-path-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title content is not part of this case's semantics; simply isolate it from provider-visible functional requests."
+    },
+    {
+      "id": "pasted-image-path-live",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only ensures stable closure; E2E performs structural assertions on captured requestJson for content count, order, path, and MCS boundaries."
+    },
+    {
+      "id": "pasted-image-path-parking",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "parking only establishes deterministic cold-resume preconditions without carrying image projection assertions."
+    },
+    {
+      "id": "pasted-image-path-cold-rebuild",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only ensures stable closure; E2E deletes real derived files before requests and verifies identical paths and files are rebuilt after packet capture."
+    },
+    {
+      "id": "pasted-image-path-text-only",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only ensures stable closure; fixture and structured packet capture collectively require requests without data URL/image block while retaining omitted + path."
+    }
+  ]
+}

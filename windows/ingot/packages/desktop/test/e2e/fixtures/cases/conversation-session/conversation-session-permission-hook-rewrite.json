@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-permission-hook-rewrite",
+  "spec": "./test/e2e/conversation-session/conversation-session-permission-hook-rewrite.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-permission-hook-rewrite.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-permission-hook-rewrite/hook.mjs",
+      "source": "created-by-spec",
+      "description": "Copy real Hook from case-local fs fixture; configuration is written only to the isolated E2E HOME and restored after tests."
+    },
+    {
+      "path": ".cf-e2e/conversation-session-permission-hook-rewrite/B-after-hook.txt",
+      "source": "created-by-provider-tool",
+      "description": "Created by the real Write handler only after approving B; A must not exist; PostToolUse trace verifies single execution."
+    }
+  ],
+  "requests": [
+    {
+      "id": "permission-hook-rewrite-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin a single Write A call and subsequent tool_result response; the real Hook rewrites to B using a file barrier, and the real UI approval packet is delivered unchanged after a delay, stably observing confirmation replacement and delayed-response isolation."
+    },
+    {
+      "id": "permission-hook-rewrite-setup",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin a single Write A call and subsequent tool_result response; the real Hook rewrites to B using a file barrier, and the real UI approval packet is delivered unchanged after a delay, stably observing confirmation replacement and delayed-response isolation."
+    },
+    {
+      "id": "permission-hook-rewrite-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin a single Write A call and subsequent tool_result response; the real Hook rewrites to B using a file barrier, and the real UI approval packet is delivered unchanged after a delay, stably observing confirmation replacement and delayed-response isolation."
+    },
+    {
+      "id": "permission-hook-rewrite-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin a single Write A call and subsequent tool_result response; the real Hook rewrites to B using a file barrier, and the real UI approval packet is delivered unchanged after a delay, stably observing confirmation replacement and delayed-response isolation."
+    }
+  ]
+}

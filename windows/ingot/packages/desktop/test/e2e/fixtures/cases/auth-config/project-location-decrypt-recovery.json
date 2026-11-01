@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "project-location-decrypt-recovery",
+  "spec": "./test/e2e/manual-review/pending/project-location-decrypt-recovery.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/credentials.json",
+      "purpose": "Valid synthetic OAuth coexists with a corrupted project location to verify automatic rebuild; 503 preserves login, refreshing credentials normally after service recovery; no extra logins or App restarts."
+    }
+  ],
+  "requests": []
+}

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-side-chat-reminder",
+  "spec": "./test/e2e/conversation-session/conversation-session-side-chat-reminder.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-side-chat-reminder.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-spec",
+      "description": "Real Read tool results from the parent session are used to assert that inherited history enters child provider requests after fork."
+    }
+  ],
+  "requests": [
+    {
+      "id": "ssc-reminder-title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "The fixed response is only used for closure; it validates side chat persistence and provider-visible Attachment format, not treating response content as evidence of model identity perception."
+    },
+    {
+      "id": "ssc-reminder-seed-final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "The fixed response is only used for closure; it validates side chat persistence and provider-visible Attachment format, not treating response content as evidence of model identity perception."
+    },
+    {
+      "id": "ssc-reminder-query",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "The fixed response is only used for closure; it validates side chat persistence and provider-visible Attachment format, not treating response content as evidence of model identity perception."
+    }
+  ]
+}

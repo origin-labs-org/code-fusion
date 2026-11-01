@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-oversized-inline-image-attachment",
+  "spec": "./test/e2e/conversation-session/conversation-session-oversized-inline-image-attachment.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-oversized-inline-image-attachment.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "oversized-local-path-image-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion targets the attachment format of provider-visible requests; response only needs to complete stably and contain the agreed text."
+    }
+  ]
+}

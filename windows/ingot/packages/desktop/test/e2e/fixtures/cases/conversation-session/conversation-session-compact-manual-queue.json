@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-manual-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-manual-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-compact-manual-queue.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "Read-only tool input file written by prepareConversationE2E to construct tool_result history before compact."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-readonly-tool-call",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "通用只读 Read tool_use 让 compact 前历史包含稳定 tool_result。"
+    },
+    {
+      "id": "upstream-compact-manual-queue-prep-one",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The first turn is only used to form normal compactible history; real provider copy does not affect held queue semantics."
+    },
+    {
+      "id": "upstream-compact-manual-queue-readonly-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The second turn is only used to construct compact history containing readonly tool_result; tool operations are determined by local file fixtures."
+    },
+    {
+      "id": "upstream-compact-manual-queue-summary-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response is only used to verify manual compact marker completion and that held queue was not consumed, without depending on real summary content."
+    },
+    {
+      "id": "upstream-compact-manual-queue-held-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "held queue must be preserved both before and after manual compact; the fixture only covers marker contracts."
+    },
+    {
+      "id": "upstream-compact-manual-queue-append-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "manual compact 完成后 queue 仍 held，追加文本应入队而不是触发 provider。"
+    }
+  ]
+}

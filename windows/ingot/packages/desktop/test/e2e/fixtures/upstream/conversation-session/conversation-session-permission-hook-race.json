@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-permission-hook-race",
+  "spec": "./test/e2e/conversation-session/conversation-session-permission-hook-race.test.ts",
+  "fixtures": [
+    {
+      "id": "permission-hook-race-title",
+      "description": "Case-local title generation response for the initial E2E_PERMISSION_HOOK_RACE message.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The initial E2E_PERMISSION_HOOK_RACE message triggers the default title sidecar; pins the case-local title response to prevent default replay from falling back to legacy provider-basic, and uses this initial marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_PERMISSION_HOOK_RACE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "permission-hook-race-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Permission Hook Race E2E"}"
+        }
+      }
+    },
+    {
+      "id": "permission-hook-race-write-call",
+      "description": "HK16 race regression: Write tool_use triggers a permission dialog in default mode while simultaneously launching a blocking PermissionRequest hook.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Write is a destructive tool requiring approval; after the confirmation dialog and blocking hook appear concurrently, the spec approves from the UI side to verify first-to-respond wins in the permission-responder-race."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_PERMISSION_HOOK_RACE"],
+        "bodyIncludes": ["E2E_PERMISSION_HOOK_RACE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_permission_hook_race_write",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-permission-hook-race/write-output.txt",
+            "content": "E2E_PERMISSION_HOOK_RACE_RESULT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "permission-hook-race-final",
+      "description": "HK16 race regression: tool_result fed back after user approval wins → final text.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "When the broker response wins while the hook is still blocked, the tool executes immediately; the model produces final text based on tool_result, proving the turn no longer waits for hook completion."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PERMISSION_HOOK_RACE",
+          "toolu_e2e_permission_hook_race_write"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "permission-hook-race-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_PERMISSION_HOOK_RACE_DONE"
+        }
+      }
+    }
+  ]
+}

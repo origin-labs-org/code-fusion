@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-permission.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-permission-title",
+      "description": "Case-local title generation response for E2E_V4_PERMISSION_WRITE initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_PERMISSION_WRITE initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_V4_PERMISSION_WRITE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Permission E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-write-call",
+      "description": "M4 resolveInteraction gate: Write tool_use, triggers permission popup in default mode.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Write is a destructive tool requiring approval, used to verify v4 forward resolveInteraction command resolves reverse permission request."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_PERMISSION_WRITE"],
+        "bodyIncludes": ["E2E_V4_PERMISSION_WRITE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_permission_write",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-v4-permission/write-output.txt",
+            "content": "E2E_V4_PERMISSION_RESULT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-permission-final",
+      "description": "M4 resolveInteraction gate: post-approval tool_result feed-back → final text.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Tool executes successfully after permission is granted, and model provides final text based on tool_result."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_V4_PERMISSION_WRITE", "toolu_v4_permission_write"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_PERMISSION_DONE"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-allow-feedback-title",
+      "description": "Allow once 携带反馈 case 的标题生成响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Independent prompt marker isolates allow path."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_V4_PERMISSION_ALLOW_FEEDBACK"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-allow-feedback-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Permission Allow Feedback E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-allow-feedback-call",
+      "description": "Write tool_use for Allow once with feedback case initial launch.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify that providing feedback does not alter allow decision."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_PERMISSION_ALLOW_FEEDBACK"],
+        "bodyIncludes": ["E2E_V4_PERMISSION_ALLOW_FEEDBACK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_permission_allow_feedback",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-v4-permission/allow-feedback-output.txt",
+            "content": "E2E_V4_PERMISSION_ALLOW_FEEDBACK_RESULT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-permission-allow-feedback-final",
+      "description": "Allow once 携带反馈后的终态响应。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify allow path continues execution without backfilling feedback."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_V4_PERMISSION_ALLOW_FEEDBACK", "toolu_v4_permission_allow_feedback"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "This note must be ignored when allowing the tool."
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-allow-feedback-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_PERMISSION_ALLOW_FEEDBACK_DONE"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-title",
+      "description": "Deny with feedback case 的标题生成响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deny with feedback uses independent prompt marker to avoid reusing provider fixture with approval path."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_V4_PERMISSION_DENY_FEEDBACK"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-deny-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Permission Deny E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-call",
+      "description": "Deny with feedback 的 Enter / 确认两条 case 各自首发的 Write tool_use；排除 tool_result continuation。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Write permission request is used to verify feedback rejection does not execute tool."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_PERMISSION_DENY_FEEDBACK"],
+        "bodyIncludes": ["E2E_V4_PERMISSION_DENY_FEEDBACK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY", "toolu_v4_permission_deny_feedback"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_permission_deny_feedback",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-v4-permission/deny-output.txt",
+            "content": "E2E_V4_PERMISSION_DENY_RESULT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-final",
+      "description": "Deny with feedback 后 provider-visible denied tool_result 的收口响应。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "反馈必须与同一个 denied tool_result 一起进入 provider continuation。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_V4_PERMISSION_DENY_FEEDBACK",
+          "toolu_v4_permission_deny_feedback",
+          "The user doesn't want to proceed with this tool use",
+          "To tell you how to proceed, the user said:",
+          "Do not write the file"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-deny-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_PERMISSION_DENY_DONE"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-blank-title",
+      "description": "空白反馈拒绝 case 的标题生成响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Independent prompt marker isolates blank-feedback path."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_V4_PERMISSION_DENY_BLANK"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-deny-blank-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Permission Blank Deny E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-blank-call",
+      "description": "Write tool_use for blank-feedback deny case initial launch.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify that blank feedback falls back to base Deny text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_PERMISSION_DENY_BLANK"],
+        "bodyIncludes": ["E2E_V4_PERMISSION_DENY_BLANK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_permission_deny_blank",
+          "name": "Write",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/conversation-session-v4-permission/deny-blank-output.txt",
+            "content": "E2E_V4_PERMISSION_DENY_BLANK_RESULT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-permission-deny-blank-final",
+      "description": "Closing response with base Deny text after blank-feedback rejection.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "provider-visible tool_result should not contain feedback suffix."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_V4_PERMISSION_DENY_BLANK",
+          "toolu_v4_permission_deny_blank",
+          "The user doesn't want to proceed with this tool use",
+          "The tool use was rejected",
+          "STOP what you are doing and wait for the user to tell you how to proceed."
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "To tell you how to proceed, the user said:"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-permission-deny-blank-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_PERMISSION_DENY_BLANK_DONE"
+        }
+      }
+    }
+  ]
+}

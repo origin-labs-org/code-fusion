@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-share-authority",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-share-authority.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-share-authority.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-share-authority-reconnect-title",
+      "description": "SSH directory resilience task title auxiliary response.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "ssh-share-authority-reconnect-main",
+      "description": "SSH directory resilience generic response for initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Use fixed replies to prepare and continue real remote history, with independent SSH and loopback API verifying synthetic account routing."
+    }
+  ]
+}

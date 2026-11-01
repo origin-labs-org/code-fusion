@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-config-independent-startup",
+  "spec": "./test/e2e/conversation-session/conversation-session-config-independent-startup.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-config-independent-startup.json"
+  ],
+  "requests": [
+    {
+      "id": "scb-cold",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify dependency isolation before sending; model response only needs to end stably without measuring inference latency."
+    },
+    {
+      "id": "scb-warm",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify dependency isolation before sending; model response only needs to end stably without measuring inference latency."
+    },
+    {
+      "id": "scb-resume",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify dependency isolation before sending; model response only needs to end stably without measuring inference latency."
+    }
+  ]
+}

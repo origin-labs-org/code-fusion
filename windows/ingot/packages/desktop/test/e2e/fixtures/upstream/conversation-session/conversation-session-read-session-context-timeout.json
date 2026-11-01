@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-read-session-context-timeout",
+  "spec": "./test/e2e/conversation-session/conversation-session-read-session-context-timeout.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-read-session-context-timeout-title",
+      "description": "Fixed title generation response for the ReadSessionContext timeout case, avoiding pending replay dependency on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of O07 product semantics; it only needs to return stably to prevent title requests from accidentally hitting main flow fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-rsc-timeout-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"ReadSessionContext Timeout\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-read-session-context-timeout-tool-use",
+      "description": "Target session initial response: trigger ReadSessionContext to read the fixed source session.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core of O07 lies in internal tool wait window; tool_use only needs to point stably to seeded fixed source session."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_RSC_TIMEOUT_TARGET"],
+        "bodyIncludes": [
+          "E2E_RSC_TIMEOUT_TARGET",
+          "sess_e2e_read_session_context_timeout_source",
+          "ReadSessionContext"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_read_session_context_timeout",
+          "messageId": "msg_e2e_read_session_context_timeout_tool_use",
+          "name": "ReadSessionContext",
+          "input": {
+            "sessionId": "sess_e2e_read_session_context_timeout_source",
+            "query": "E2E_RSC_TIMEOUT_QUERY",
+            "strategy": "relevant",
+            "maxTokens": 1200
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-read-session-context-timeout-lite-extraction",
+      "description": "Fixed 55-second delay for internal lite extraction in ReadSessionContext tool, covering the 30-second ACK and legacy 45-second tool timeout boundaries.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Real model response duration is uncontrollable; O07 needs to stably create internal model extraction window over 45s but under 5m tool limit."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "You are the extraction model for the ReadSessionContext tool.",
+          "Target session: E2E ReadSessionContext Timeout Source (sess_e2e_read_session_context_timeout_source)",
+          "E2E_RSC_TIMEOUT_QUERY",
+          "E2E_RSC_TIMEOUT_SOURCE_DECISION"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 55000,
+        "text": {
+          "id": "msg_e2e_read_session_context_timeout_lite",
+          "text": "E2E_RSC_TIMEOUT_EXTRACTED_CONTEXT: Source session confirms ReadSessionContext should survive longer than the historical 45 second timeout and continue the same turn."
+        }
+      }
+    },
+    {
+      "id": "upstream-read-session-context-timeout-final",
+      "description": "Fixed final reply after ReadSessionContext tool results enter the subsequent primary model request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that long-running tool result is not truncated by protocol or tool timeout; final response only needs to complete stably and expose marker."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_RSC_TIMEOUT_TARGET",
+          "ReadSessionContext returned fallback context",
+          "E2E_RSC_TIMEOUT_SOURCE_DECISION"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "msg_e2e_read_session_context_timeout_final",
+          "text": "E2E_RSC_TIMEOUT_FINAL_OK"
+        }
+      }
+    }
+  ]
+}

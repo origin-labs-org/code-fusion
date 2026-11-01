@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-share-ssh-artifact",
+  "spec": "./test/e2e/conversation-session/conversation-session-share-ssh-artifact.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-share-ssh-artifact.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "conversation-share-ssh-write",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Replay only fixes model decisions; Write, remote artifact reads, and share publishing all go through real paths."
+    },
+    {
+      "id": "conversation-share-ssh-main",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Replay only fixes model decisions; Write, remote artifact reads, and share publishing all go through real paths."
+    }
+  ]
+}

@@ -1,0 +1,391 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-keyboard-default-focus",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-keyboard-default-focus.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-ask-default-focus-empty-submit-call",
+      "description": "Q15: AskUserQuestion single question without preselection → click Submit with empty answer",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion single-choice waiting state to test clicking Submit with mouse without pre-focus to submit an empty answer"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_EMPTY_SUBMIT"],
+        "bodyIncludes": ["E2E_ADF_EMPTY_SUBMIT"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_adf_empty_submit",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ADF_Q1_SINGLE_SELECT",
+                "header": "E2E default focus empty submit",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q1_A",
+                    "description": "First option for empty submit test."
+                  },
+                  {
+                    "label": "E2E_ADF_Q1_B",
+                    "description": "Second option for empty submit test."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-empty-submit-final",
+      "description": "Q15: Final response, confirming empty answer received",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Simulate Agent's brief confirmation upon receiving empty answers"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_EMPTY_SUBMIT"],
+        "bodyIncludes": ["toolu_e2e_adf_empty_submit"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "Received. No answer was provided — continuing with best judgment."
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-tab-enter-call",
+      "description": "Q18: AskUserQuestion two questions without preselection → Tab/↓+Enter to select and advance",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion two-question waiting state to test Tab and initial arrow key focus, and Enter selection progression"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_TAB_ENTER"],
+        "bodyIncludes": ["E2E_ADF_TAB_ENTER"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_adf_tab_enter",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ADF_Q1_SINGLE_SELECT",
+                "header": "E2E tab enter Q1",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q1_A",
+                    "description": "Tab should focus this first."
+                  },
+                  {
+                    "label": "E2E_ADF_Q1_B",
+                    "description": "ArrowDown should move here."
+                  }
+                ]
+              },
+              {
+                "question": "E2E_ADF_Q2_MULTI_SELECT",
+                "header": "E2E tab enter Q2",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q2_A",
+                    "description": "First option for Q2."
+                  },
+                  {
+                    "label": "E2E_ADF_Q2_B",
+                    "description": "Second option for Q2."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-tab-enter-final",
+      "description": "Q18: 最终响应，确认收到 Q1_A + Q2_A",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Simulate Agent's confirmation upon receiving Q1_A and Q2_A"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_TAB_ENTER"],
+        "bodyIncludes": ["toolu_e2e_adf_tab_enter"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "I received your selections: E2E_ADF_Q1_A for the first question, and E2E_ADF_Q2_A for the second question. Continuing."
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-enter-skip-call",
+      "description": "Q19: AskUserQuestion two questions without preselection → Enter to skip Q1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion two-question waiting state to test skipping Q1 with Enter"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_ENTER_SKIP"],
+        "bodyIncludes": ["E2E_ADF_ENTER_SKIP"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_adf_enter_skip",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ADF_Q1_SINGLE_SELECT",
+                "header": "E2E enter skip Q1",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q1_A",
+                    "description": "Should be skipped by Enter."
+                  },
+                  {
+                    "label": "E2E_ADF_Q1_B",
+                    "description": "Should be skipped by Enter."
+                  }
+                ]
+              },
+              {
+                "question": "E2E_ADF_Q2_MULTI_SELECT",
+                "header": "E2E enter skip Q2",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q2_A",
+                    "description": "Should be selected by Tab+Enter."
+                  },
+                  {
+                    "label": "E2E_ADF_Q2_B",
+                    "description": "Second option for Q2."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-enter-skip-final",
+      "description": "Q19: 最终响应，确认收到 Q2_A（Q1 已跳过）",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Simulate Agent's confirmation upon receiving Q2_A with Q1 skipped"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_ENTER_SKIP"],
+        "bodyIncludes": ["toolu_e2e_adf_enter_skip"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "Received: E2E_ADF_Q2_A for Q2. Q1 was skipped. Continuing with best judgment."
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-multiselect-call",
+      "description": "Q20: AskUserQuestion multiple choice → Space to select, Enter to confirm",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion multiple-choice waiting state to test checking/unchecking with Space and confirming with Enter"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_MULTISELECT"],
+        "bodyIncludes": ["E2E_ADF_MULTISELECT"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_adf_multiselect",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ADF_Q2_MULTI_SELECT",
+                "header": "E2E multi-select",
+                "multiSelect": true,
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q2_A",
+                    "description": "First multi-select option."
+                  },
+                  {
+                    "label": "E2E_ADF_Q2_B",
+                    "description": "Second option — should be toggled off."
+                  },
+                  { "label": "E2E_ADF_Q2_C", "description": "Third option." }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-multiselect-final",
+      "description": "Q20: Final response, confirming receipt of Q2_A + Q2_C (Q2_B deselected)",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Simulate Agent's confirmation upon receiving Q2_OPT_A + Q2_OPT_C"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_MULTISELECT"],
+        "bodyIncludes": ["toolu_e2e_adf_multiselect"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "Received selections: E2E_ADF_Q2_A and E2E_ADF_Q2_C. E2E_ADF_Q2_B was deselected. Continuing."
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-escape-dismiss-call",
+      "description": "Q22: AskUserQuestion first question card initial focus → Escape to dismiss",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce single-question AskUserQuestion waiting state to verify Escape at card layer closes the entire Q&A group when no option is focused"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ADF_ESCAPE_DISMISS"],
+        "bodyIncludes": ["E2E_ADF_ESCAPE_DISMISS"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_adf_escape_dismiss",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ADF_Q1_SINGLE_SELECT",
+                "header": "E2E initial card Escape dismiss",
+                "options": [
+                  {
+                    "label": "E2E_ADF_Q1_A",
+                    "description": "Must remain unselected before Escape."
+                  },
+                  {
+                    "label": "E2E_ADF_Q1_B",
+                    "description": "Must remain unselected before Escape."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-escape-dismiss-final",
+      "description": "Q22: After Escape dismiss, model receives declined tool_result and concludes normally",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably verify that after dismiss closes the UI, declined tool_result is sent back to the model per current product semantics, avoiding negative timing assertions via 500 retries on fixture misses"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["toolu_e2e_adf_escape_dismiss", "AskUserQuestion was declined"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_ADF_ESCAPE_DISMISS_ACK"
+      }
+    }
+  ]
+}

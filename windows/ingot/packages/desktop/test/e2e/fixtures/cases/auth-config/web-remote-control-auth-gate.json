@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "web-remote-control-auth-gate",
+  "spec": "./test/e2e/web-remote-control-auth-gate.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/credentials.json",
+      "purpose": "First verify unauthenticated gating with empty OAuth/JWT credentials, then write cached user and synthetic JWT to verify re-login on the current channel after remote control 401; HTTP/WS/OAuth startup counts are configured by case fixtures."
+    }
+  ],
+  "requests": []
+}

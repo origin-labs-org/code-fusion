@@ -1,0 +1,245 @@
+import { z } from "zod";
+import { bashOutputDisplaySchema } from "../bash-output-display.js";
+import { timestampSchema } from "./core.js";
+import { OFFICIAL_MCP_TOOL_ERROR_CODES } from "../official-mcp-tool-error.js";
+import { cuaRequestAccessStatusSchema } from "./cuaPermission.js";
+import { mcpToolDisplayUiSchema } from "../mcp-apps/schemas.js";
+import { toolCallCreateWorkflowDisplaySchema } from "./create-workflow-display.js";
+import {
+  toolCallEvalWorkflowSnippetDisplaySchema,
+  toolCallGetWorkflowRunDisplaySchema,
+  toolCallListModelsDisplaySchema,
+  toolCallListWorkflowRunsDisplaySchema,
+  toolCallSavedWorkflowListDisplaySchema,
+  toolCallResumeWorkflowRunDisplaySchema,
+} from "./workflow-observation-display.js";
+
+export const toolResultDisplaySchema = z.discriminatedUnion("kind", [
+  bashOutputDisplaySchema,
+  z.object({
+    kind: z.literal("file_diff"),
+    filePath: z.string().min(1),
+    additions: z.number().int().nonnegative(),
+    deletions: z.number().int().nonnegative(),
+    structuredPatch: z.array(
+      z.object({
+        oldStart: z.number().int(),
+        oldLines: z.number().int(),
+        newStart: z.number().int(),
+        newLines: z.number().int(),
+        lines: z.array(z.string()),
+      }),
+    ),
+    truncated: z.boolean().optional(),
+  }),
+  z.object({
+    kind: z.literal("local_agent_message"),
+    status: z.enum(["success", "failed"]),
+    error: z.string().optional(),
+    message: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal("task_stop"),
+    taskId: z.string().min(1),
+    taskType: z.string().min(1),
+    command: z.string().min(1).optional(),
+    message: z.string().min(1),
+    truncated: z.boolean().optional(),
+  }),
+  z.object({
+    kind: z.literal("task_output"),
+    retrievalStatus: z.enum(["success", "not_ready", "timeout"]),
+    taskStatus: z.string().min(1).max(64).optional(),
+    output: z.string().min(1).max(2_000).optional(),
+    truncated: z.literal(true).optional(),
+  }),
+  z.object({
+    kind: z.literal("respond_to_coordinator"),
+    status: z.enum(["success", "failed"]),
+  }),
+  z.object({
+    kind: z.literal("cua"),
+    schemaVersion: z.literal(1),
+    toolName: z.string().min(1),
+    status: z.enum(["success", "failed"]),
+    input: z.string().optional(),
+    structuredContent: z.string().optional(),
+    text: z.string().optional(),
+    errorCode: z.string().optional(),
+    suggestedAction: z.string().optional(),
+    permissionStatus: cuaRequestAccessStatusSchema.optional(),
+    targetApp: z
+      .object({
+        schemaVersion: z.literal(1),
+        displayName: z.string().trim().min(1).max(512).optional(),
+        iconLocators: z
+          .array(
+            z.discriminatedUnion("kind", [
+              z
+                .object({
+                  kind: z.literal("darwin-bundle-id"),
+                  value: z.string().trim().min(1).max(512),
+                })
+                .strict(),
+              z
+                .object({
+                  kind: z.literal("windows-executable-path"),
+                  value: z.string().trim().min(1).max(32_768),
+                })
+                .strict(),
+              z
+                .object({
+                  kind: z.literal("windows-aumid"),
+                  value: z.string().trim().min(1).max(512),
+                })
+                .strict(),
+            ]),
+          )
+          .max(3),
+      })
+      .strict()
+      .optional(),
+    media: z
+      .array(
+        z.object({
+          mimeType: z.string().min(1),
+          data: z.string().min(1).max(349_528).optional(),
+          artifactUri: z.string().min(1).optional(),
+        }),
+      )
+      .max(4)
+      .optional(),
+    truncated: z.boolean().optional(),
+  }),
+  z.object({
+    kind: z.literal("mcp_tool"),
+    serverName: z.string().min(1).max(256),
+    toolName: z.string().min(1).max(256),
+    description: z
+      .string()
+      .min(1)
+      .max(4 * 1024)
+      .optional(),
+    unavailable: z
+      .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
+      .strict()
+      .optional(),
+    ui: mcpToolDisplayUiSchema.optional(),
+  }),
+  toolCallCreateWorkflowDisplaySchema,
+  toolCallGetWorkflowRunDisplaySchema,
+  toolCallListWorkflowRunsDisplaySchema,
+  toolCallEvalWorkflowSnippetDisplaySchema,
+  toolCallSavedWorkflowListDisplaySchema,
+  toolCallListModelsDisplaySchema,
+  toolCallResumeWorkflowRunDisplaySchema,
+]);
+export type ToolResultDisplay = z.infer<typeof toolResultDisplaySchema>;
+
+//
+//
+//
+//
+export const toolOutputSchema = z.object({
+  text: z.string(),
+  display: toolResultDisplaySchema.optional().catch(undefined),
+  truncated: z
+    .object({
+      totalBytes: z.number(),
+      ref: z.string(),
+    })
+    .optional(),
+});
+export type ToolOutput = z.infer<typeof toolOutputSchema>;
+
+export const toolProgressSchema = z.object({
+  bytes: z.number().optional(),
+  previewLine: z.string().optional(),
+  fraction: z.number().min(0).max(1).optional(),
+  total: z.number().optional(),
+  message: z.string().max(200).optional(),
+  updatedAt: timestampSchema,
+});
+export type ToolProgress = z.infer<typeof toolProgressSchema>;
+
+const toolCallNodeReplCuaAppDisplaySchema = z
+  .object({
+    appKey: z.string().trim().min(1).max(2_048),
+    displayName: z.string().trim().min(1).max(512).optional(),
+  })
+  .strict();
+
+const toolCallNodeReplImageDisplaySchema = z
+  .object({
+    kind: z.literal("node_repl_images"),
+    images: z
+      .array(
+        z
+          .object({
+            base64: z
+              .string()
+              .min(1)
+              .max(200 * 1024),
+            mimeType: z.string().regex(/^image\/[a-z0-9.+-]+$/iu),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(2)
+      .optional(),
+    app: toolCallNodeReplCuaAppDisplaySchema.optional(),
+    truncated: z.boolean().optional(),
+    source: z.literal("browser_turn_end").optional(),
+  })
+  .strict();
+
+const toolCallTaskOutputDisplaySchema = z
+  .object({
+    kind: z.literal("task_output"),
+    retrievalStatus: z.enum(["success", "not_ready", "timeout"]),
+    taskStatus: z.string().min(1).max(64).optional(),
+    output: z.string().min(1).max(2_000).optional(),
+    truncated: z.literal(true).optional(),
+  })
+  .strict();
+
+const toolCallRespondToCoordinatorDisplaySchema = z
+  .object({
+    kind: z.literal("respond_to_coordinator"),
+    status: z.enum(["success", "failed"]),
+  })
+  .strict();
+
+const toolCallMcpDisplaySchema = z
+  .object({
+    kind: z.literal("mcp_tool"),
+    serverName: z.string().min(1).max(256),
+    toolName: z.string().min(1).max(256),
+    description: z
+      .string()
+      .min(1)
+      .max(4 * 1024)
+      .optional(),
+    
+    unavailable: z
+      .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
+      .strict()
+      .optional(),
+    ui: mcpToolDisplayUiSchema.optional(),
+  })
+  .strict();
+
+export const toolCallDisplaySchema = z.discriminatedUnion("kind", [
+  toolCallNodeReplImageDisplaySchema,
+  toolCallTaskOutputDisplaySchema,
+  toolCallRespondToCoordinatorDisplaySchema,
+  toolCallMcpDisplaySchema,
+  toolCallCreateWorkflowDisplaySchema,
+  toolCallGetWorkflowRunDisplaySchema,
+  toolCallListWorkflowRunsDisplaySchema,
+  toolCallEvalWorkflowSnippetDisplaySchema,
+  toolCallSavedWorkflowListDisplaySchema,
+  toolCallListModelsDisplaySchema,
+  toolCallResumeWorkflowRunDisplaySchema,
+]);
+export type ToolCallDisplay = z.infer<typeof toolCallDisplaySchema>;

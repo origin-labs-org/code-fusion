@@ -1,0 +1,1480 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-markdown-content-types",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-markdown-content-types.test.ts",
+  "fixtures": [
+    {
+      "id": "otc10-title",
+      "description": "OTC10 各独立任务共用的标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles do not belong to Continue Markdown type semantics; fixed response avoids interfering with the two main requests of each sub-case."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "otc10-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Continue Markdown Types"}"
+        }
+      }
+    },
+    {
+      "id": "otc10-paragraph-partial",
+      "description": "OTC10/paragraph initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/paragraph itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_PARAGRAPH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-paragraph-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"Paragraph truncated mid-Continue "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":20,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-paragraph-final",
+      "description": "OTC10/paragraph continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/paragraph itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_PARAGRAPH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-paragraph-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":21,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"and smoothly concatenated after break. PARAGRAPH_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":21,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-newline-after-partial-partial",
+      "description": "OTC10/newline-after-partial initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/newline-after-partial itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_NEWLINE_AFTER_PARTIAL"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-newline-after-partial-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":22,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"第One行在 partial 末尾。\\n\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":22,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-newline-after-partial-final",
+      "description": "OTC10/newline-after-partial continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/newline-after-partial itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_NEWLINE_AFTER_PARTIAL"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-newline-after-partial-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":23,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"Second line starts from continuation. NEWLINE_AFTER_PARTIAL_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":23,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-soft-break-at-continue-start-partial",
+      "description": "OTC10/soft-break-at-continue-start initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/soft-break-at-continue-start itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_SOFT_BREAK_AT_CONTINUE_START"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-soft-break-at-continue-start-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":24,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"Soft break line 1"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":24,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-soft-break-at-continue-start-final",
+      "description": "OTC10/soft-break-at-continue-start continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/soft-break-at-continue-start itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_SOFT_BREAK_AT_CONTINUE_START"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-soft-break-at-continue-start-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":25,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"\\n软换行第Two行。 SOFT_BREAK_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":25,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-hard-break-partial",
+      "description": "OTC10/hard-break initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/hard-break itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_HARD_BREAK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-hard-break-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":26,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"Hard break line 1  "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":26,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-hard-break-final",
+      "description": "OTC10/hard-break continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/hard-break itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_HARD_BREAK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-hard-break-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":27,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"\\n硬换行第Two行。 HARD_BREAK_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":27,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-heading-partial",
+      "description": "OTC10/heading initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/heading itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_HEADING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-heading-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":28,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"## Continue head"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":28,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-heading-final",
+      "description": "OTC10/heading continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/heading itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_HEADING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-heading-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":29,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"ing intact HEADING_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":29,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-blockquote-partial",
+      "description": "OTC10/blockquote initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/blockquote itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_BLOCKQUOTE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-blockquote-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":30,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"> Blockquote content spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":30,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-blockquote-final",
+      "description": "OTC10/blockquote continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/blockquote itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_BLOCKQUOTE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-blockquote-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":31,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"across break. BLOCKQUOTE_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":31,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-unordered-list-partial",
+      "description": "OTC10/unordered-list initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/unordered-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_UNORDERED_LIST"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-unordered-list-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":32,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"- bullet item spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":32,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-unordered-list-final",
+      "description": "OTC10/unordered-list continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/unordered-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_UNORDERED_LIST"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-unordered-list-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":33,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"across break. UNORDERED_LIST_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":33,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-ordered-list-partial",
+      "description": "OTC10/ordered-list initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/ordered-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_ORDERED_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-ordered-list-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":34,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"1. ordered item spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":34,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-ordered-list-final",
+      "description": "OTC10/ordered-list continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/ordered-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_ORDERED_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-ordered-list-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":35,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"across break. ORDERED_LIST_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":35,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-task-list-partial",
+      "description": "OTC10/task-list initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/task-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_TASK_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-task-list-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":36,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"- [x] task item spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":36,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-task-list-final",
+      "description": "OTC10/task-list continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/task-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_TASK_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-task-list-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":37,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"across break. TASK_LIST_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":37,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-nested-list-partial",
+      "description": "OTC10/nested-list initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/nested-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_NESTED_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-nested-list-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":38,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"- 父项\\n  - 子项跨\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":38,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-nested-list-final",
+      "description": "OTC10/nested-list continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/nested-list itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_NESTED_LIST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-nested-list-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":39,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"the breakpoint. NESTED_LIST_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":39,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-thematic-break-partial",
+      "description": "OTC10/thematic-break initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/thematic-break itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_THEMATIC_BREAK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-thematic-break-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":40,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"分隔线之前。\\n\\n--\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":40,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-thematic-break-final",
+      "description": "OTC10/thematic-break continuation segment closes this type and ends normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/thematic-break itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_THEMATIC_BREAK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-thematic-break-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":41,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"-\\n\\nTHEMATIC_BREAK_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":41,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-fenced-code-partial",
+      "description": "OTC10/fenced-code initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/fenced-code itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_FENCED_CODE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-fenced-code-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":42,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"```ts\\nconst partial = \\\"P1\\\";\\n\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":42,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-fenced-code-final",
+      "description": "OTC10/fenced-code 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/fenced-code itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_FENCED_CODE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-fenced-code-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":43,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"const continuation = \\\"P2\\\";\\n```\\n\\nFENCED_CODE_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":43,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-table-partial",
+      "description": "OTC10/table initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/table itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_TABLE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-table-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":44,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"| Column A | Column B |\\n| --- | --- |\\n| partial |\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":44,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-table-final",
+      "description": "OTC10/table 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/table itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_TABLE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-table-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":45,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\" continuation |\\n\\nTABLE_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":45,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-emphasis-partial",
+      "description": "OTC10/emphasis initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/emphasis itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_EMPHASIS"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-emphasis-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":46,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"*Italic spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":46,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-emphasis-final",
+      "description": "OTC10/emphasis 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/emphasis itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_EMPHASIS"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-emphasis-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":47,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"the breakpoint* EMPHASIS_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":47,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-strong-partial",
+      "description": "OTC10/strong initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/strong itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_STRONG"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-strong-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":48,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"**Bold spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":48,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-strong-final",
+      "description": "OTC10/strong 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/strong itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_STRONG"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-strong-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":49,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"the breakpoint** STRONG_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":49,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-strikethrough-partial",
+      "description": "OTC10/strikethrough initial segment is truncated by max_tokens within tokens of this type.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/strikethrough itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_STRIKETHROUGH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-strikethrough-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":50,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"~~Strikethrough spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":50,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-strikethrough-final",
+      "description": "OTC10/strikethrough 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify the Continue seam of OTC10/strikethrough itself without relying on other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_STRIKETHROUGH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-strikethrough-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":51,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"the breakpoint~~ STRIKETHROUGH_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":51,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-inline-code-partial",
+      "description": "OTC10/inline-code first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/inline-code's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_INLINE_CODE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-inline-code-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":52,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"`inline-"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":52,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-inline-code-final",
+      "description": "OTC10/inline-code 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/inline-code's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_INLINE_CODE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-inline-code-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":53,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"continue` INLINE_CODE_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":53,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-external-link-partial",
+      "description": "OTC10/external-link first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/external-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_EXTERNAL_LINK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-external-link-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":54,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"[External link spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":54,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-external-link-final",
+      "description": "OTC10/external-link 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/external-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_EXTERNAL_LINK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-external-link-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":55,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"越断点](https://example.com/otc10) EXTERNAL_LINK_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":55,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-workspace-file-link-partial",
+      "description": "OTC10/workspace-file-link first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/workspace-file-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_WORKSPACE_FILE_LINK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-workspace-file-link-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":56,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"[Workspace file spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":56,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-workspace-file-link-final",
+      "description": "OTC10/workspace-file-link 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/workspace-file-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_WORKSPACE_FILE_LINK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-workspace-file-link-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":57,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"越断点](.cf-e2e/continue-markdown-otc10/link-target.md) WORKSPACE_FILE_LINK_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":57,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-reference-link-partial",
+      "description": "OTC10/reference-link first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/reference-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_REFERENCE_LINK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-reference-link-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":58,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"[Reference link][ref]\\n\\n[ref]: https://example.com/ref\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":58,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-reference-link-final",
+      "description": "OTC10/reference-link 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/reference-link's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_REFERENCE_LINK"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-reference-link-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":59,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"erence\\n\\nREFERENCE_LINK_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":59,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-autolink-partial",
+      "description": "OTC10/autolink first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/autolink's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_AUTOLINK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-autolink-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":60,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"<https://example.com/auto"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":60,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-autolink-final",
+      "description": "OTC10/autolink 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/autolink's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_AUTOLINK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-autolink-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":61,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"link> AUTOLINK_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":61,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-single-image-partial",
+      "description": "OTC10/single-image first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/single-image's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_SINGLE_IMAGE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-single-image-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":62,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"![Single image spans "}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":62,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-single-image-final",
+      "description": "OTC10/single-image 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/single-image's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_SINGLE_IMAGE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-single-image-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":63,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"越断点](.cf-e2e/continue-markdown-otc10/one.svg)\\n\\nSINGLE_IMAGE_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":63,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-image-gallery-partial",
+      "description": "OTC10/image-gallery first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/image-gallery's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_IMAGE_GALLERY"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-image-gallery-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":64,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"![Gallery 1](.cf-e2e/continue-markdown-otc10/one.svg)\\n\\n![画廊\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":64,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-image-gallery-final",
+      "description": "OTC10/image-gallery 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/image-gallery's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_IMAGE_GALLERY"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-image-gallery-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":65,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"Two](.cf-e2e/continue-markdown-otc10/two.svg)\\n\\nIMAGE_GALLERY_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":65,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-inline-math-partial",
+      "description": "OTC10/inline-math first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/inline-math's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_INLINE_MATH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-inline-math-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":66,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"Inline formula $E = m"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":66,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-inline-math-final",
+      "description": "OTC10/inline-math 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/inline-math's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_INLINE_MATH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-inline-math-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":67,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"c^2$ INLINE_MATH_DONE"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":67,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-display-math-partial",
+      "description": "OTC10/display-math first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/display-math's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_DISPLAY_MATH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-display-math-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":68,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"$$\\na^2 + b\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":68,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-display-math-final",
+      "description": "OTC10/display-math 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/display-math's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_DISPLAY_MATH"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-display-math-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":69,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"^2 = c^2\\n$$\\n\\nDISPLAY_MATH_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":69,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-mermaid-partial",
+      "description": "OTC10/mermaid first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/mermaid's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_MERMAID"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-mermaid-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":70,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"```mermaid\\ngraph TD\\n  A[partial] -->\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":70,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-mermaid-final",
+      "description": "OTC10/mermaid 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/mermaid's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES", "OTC10_MERMAID"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-mermaid-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":71,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\" B[continue]\\n```\\n\\nMERMAID_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":71,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-cf-file-citation-partial",
+      "description": "OTC10/cf-file-citation first segment truncates within this type's token via max_tokens.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/cf-file-citation's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_CF_FILE_CITATION"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-cf-file-citation-partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":72,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"::cf-file-citation{path=\\\".cf-e2e/continue-markdown-otc10/cita\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":72,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "otc10-cf-file-citation-final",
+      "description": "OTC10/cf-file-citation 续段闭合本类型并正常结束。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify OTC10/cf-file-citation's own Continue seam, independent of other Markdown types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_CONTENT_TYPES",
+          "OTC10_CF_FILE_CITATION"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"otc10-cf-file-citation-final","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":73,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"tion.txt\\\" purpose=\\\"output\\\"}\\n\\nCF_FILE_CITATION_DONE\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":73,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    }
+  ]
+}

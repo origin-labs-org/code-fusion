@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-queue-selection",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-queue-selection.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-queue-selection.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-queue-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-queue-slow",
+      "description": "Model A 慢回合",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Switch requires running window"
+    },
+    {
+      "id": "r3-queue-drained",
+      "description": "Queue message drain turn",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "drain 结果只需可见"
+    },
+    {
+      "id": "r3-queue-model-b",
+      "description": "请求体为 Model B 的回合",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Observe model field in request body"
+    },
+    {
+      "id": "r3-queue-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch/fork/edit"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-refresh-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-refresh-permission.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-refresh-permission-title",
+      "description": "Case-local title generation response for E2E_V4_REFRESH_PERM initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_REFRESH_PERM initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_REFRESH_PERM"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-refresh-permission-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Refresh Permission E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-refresh-permission-write-call",
+      "description": "Refresh recovery × permission pending: Bash redirect exact tool_use, renderer refreshes after triggering permission popup.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Redirect forces exact suggestion to stably verify scope and response before and after refresh."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_REFRESH_PERM"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_V4_REFRESH_PERM_REPEAT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_refresh_perm_bash",
+          "name": "Bash",
+          "input": {
+            "command": "printf 'E2E_V4_REFRESH_PERM_RESULT\\n' > .cf-e2e/conversation-session-v4-refresh-permission/write-output.txt"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-refresh-permission-final",
+      "description": "Refresh recovery × permission pending: tool_result backfill upon approval → final text.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Approval after refresh can still route back to CLI broker deferred, tool executes and finishes."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_V4_REFRESH_PERM", "toolu_v4_refresh_perm_bash"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_V4_REFRESH_PERM_REPEAT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-refresh-permission-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_REFRESH_PERM_DONE"
+        }
+      }
+    },
+    {
+      "id": "v4-refresh-permission-repeat-call",
+      "description": "刷新后重复完全相同 Bash exact command。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify allowAlways updates are persisted and v4 optionId mapping is not lost."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_REFRESH_PERM_REPEAT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_v4_refresh_perm_repeat_bash",
+          "name": "Bash",
+          "input": {
+            "command": "printf 'E2E_V4_REFRESH_PERM_RESULT\\n' > .cf-e2e/conversation-session-v4-refresh-permission/write-output.txt"
+          }
+        }
+      }
+    },
+    {
+      "id": "v4-refresh-permission-repeat-final",
+      "description": "Final state after repeat exact command is automatically allowed.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably completes without secondary permission popup."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_V4_REFRESH_PERM_REPEAT", "toolu_v4_refresh_perm_repeat_bash"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-refresh-permission-repeat-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_REFRESH_PERM_REPEAT_DONE"
+        }
+      }
+    }
+  ]
+}

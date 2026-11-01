@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-fork-merged-assistant",
+  "spec": "./test/e2e/conversation-session/conversation-session-fork-merged-assistant.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-fork-merged-assistant.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "tmp/handoff/e2e-fork-merged-assistant.md",
+      "source": "created-by-provider-tool",
+      "description": "Fixture drives Write tool to create handoff file under DEFAULT_WORKSPACE; spec reads and reconciles content before and after fork."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-fork-merged-assistant-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of fork history boundary semantics; it only needs to return stably to prevent title requests from mistakenly hitting business fixtures."
+    },
+    {
+      "id": "upstream-conversation-fork-merged-assistant-write-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not necessarily stably choose Write; this response deterministically generates a workspace handoff file specifically to reproduce the boundary where fork target lands on early raw assistant."
+    },
+    {
+      "id": "upstream-conversation-fork-merged-assistant-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Final marker must be located after tool_result to expose the issue of missing the final reply when fork only copies early raw assistant."
+    }
+  ]
+}

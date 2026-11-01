@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-fork-cold-start-membership",
+  "spec": "./test/e2e/conversation-session/conversation-session-fork-cold-start-membership.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-fork-cold-start-membership.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "fork-cold-start-project-row-title",
+      "description": "Case-local title generation response for TSL19 parent initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of this case's product semantics; fixed response only provides a stable, readable title for the cold-start list."
+    },
+    {
+      "id": "fork-cold-start-project-row-parent",
+      "description": "TSL19 parent completed assistant，提供稳定 fork target。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is cold-start membership of parented fork; provider only needs to stably form completed assistant."
+    }
+  ]
+}

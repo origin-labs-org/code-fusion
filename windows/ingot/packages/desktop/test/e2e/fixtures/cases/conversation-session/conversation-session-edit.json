@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-edit",
+  "spec": "./test/e2e/conversation-session/conversation-session-edit.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-edit.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "prepareConversationE2E 写入的只读工具输入文件，用于构造 edit 前后的 tool_result 历史。"
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-edit-title-generic",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of edit product semantics; it only needs to return stably to prevent strict case-local replay from depending on legacy provider-basic."
+    },
+    {
+      "id": "upstream-conversation-readonly-tool-call",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Generic read-only Read tool_use allows the edit case to cover real tool_result history."
+    },
+    {
+      "id": "upstream-conversation-edit-original-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The initial round is only used to construct editable completed history; real provider reply content does not affect edit product semantics."
+    },
+    {
+      "id": "upstream-conversation-readonly-edit-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response stably completes the read-only tool history after edit, used to assert that the old user query was replaced."
+    },
+    {
+      "id": "upstream-conversation-edit-held-running-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Real providers may complete too quickly; the legacy slow stream at 90.2s was close to the 90s test wait boundary, which misreported timing jitter as product bugs."
+    },
+    {
+      "id": "upstream-conversation-edit-held-rerun-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "edit rerun requires streaming to verify held queue, normal queue, goal queue, and duplicate compact guard; uses a 30s case-local stream to avoid legacy 90.2s boundary timeouts."
+    },
+    {
+      "id": "upstream-conversation-edit-manual-compact-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response is only used to prove compact marker completion and queue retention, without relying on real summary content."
+    },
+    {
+      "id": "upstream-conversation-edit-interrupted-source-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "D10 needs to stably create a window where the first assistant delta has appeared but can still be stopped; the short source preserves only interrupted semantics to prevent replay tail from slowing down this case."
+    },
+    {
+      "id": "upstream-conversation-edit-interrupted-rerun-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response is used to distinguish whether a new rerun after an interrupted edit actually executed; real provider reply content does not affect product semantics."
+    }
+  ]
+}

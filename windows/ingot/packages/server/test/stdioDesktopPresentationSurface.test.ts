@@ -1,0 +1,232 @@
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { IModelSelectionService, ICfAgentService } from "@origin-ai/cf-services";
+import {
+  disposeServiceResourcesAndWait,
+  resolveDefaultCfAgentCommand,
+  setDataBaseDir,
+  type CfAgentCommand,
+  type CfAgentCommandResolverContext,
+} from "@origin-ai/cf-services/node";
+import {
+  SERVICE_AUTHORITY_MODE_ENV,
+  CF_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  CF_REMOTE_HTTP_PROXY_ENV_KEY,
+  CF_REMOTE_NO_PROXY_ENV_KEY,
+  CF_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
+} from "@origin-ai/cf-shared";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createStdioServices, resolveRemoteAgentNetworkFromEnv } from "../src/stdioServices.js";
+
+const originalHome = process.env.HOME;
+const originalCommand = process.env.CF_AGENT_SERVER_COMMAND;
+const originalArgsJson = process.env.CF_AGENT_SERVER_ARGS_JSON;
+const originalDesktopContextPromptEnabled = process.env[CF_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV];
+
+function restoreEnv(name: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+  process.env[name] = value;
+}
+
+describe("stdio Desktop presentation surface", () => {
+  const tempHomes: string[] = [];
+
+  afterEach(async () => {
+    setDataBaseDir(null);
+    restoreEnv("HOME", originalHome);
+    restoreEnv("CF_AGENT_SERVER_COMMAND", originalCommand);
+    restoreEnv("CF_AGENT_SERVER_ARGS_JSON", originalArgsJson);
+    restoreEnv(CF_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV, originalDesktopContextPromptEnabled);
+    vi.restoreAllMocks();
+    await Promise.all(
+      tempHomes.splice(0).map((home) => rm(home, { recursive: true, force: true })),
+    );
+  });
+
+  it("只从 Host 权威标记读取一次性 WSL Agent 网络配置", () => {
+    expect(
+      resolveRemoteAgentNetworkFromEnv({
+        [CF_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
+        [CF_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
+      }),
+    ).toBeUndefined();
+    expect(
+      resolveRemoteAgentNetworkFromEnv({
+        [CF_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY]: "1",
+        [CF_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
+        [CF_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
+      }),
+    ).toEqual({
+      httpProxy: "http://172.21.240.1:7890",
+      noProxy: "localhost,127.0.0.1",
+    });
+  });
+
+  it("让 Desktop attached remote authority 贯穿 stdio 装配并生成 Desktop Agent 命令", async () => {
+    const home = await mkdtemp(join(tmpdir(), "cf-stdio-desktop-surface-"));
+    tempHomes.push(home);
+    process.env.HOME = home;
+    setDataBaseDir(home);
+    process.env[CF_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV] = "1";
+    process.env.CF_AGENT_SERVER_COMMAND = process.execPath;
+    process.env.CF_AGENT_SERVER_ARGS_JSON = JSON.stringify([
+      "cf.cjs",
+      "app-server",
+      "--stdio",
+    ]);
+    const cfBuiltinProviderConfigFilePath = join(home, "cf-builtin.json");
+    const personalConfigFilePath = join(home, ".cf", "v2", "provider_config.json");
+    await mkdir(join(home, ".cf", "v2"), { recursive: true });
+    await writeFile(
+      personalConfigFilePath,
+      JSON.stringify({
+        schemaVersion: 1,
+        config: {
+          providerConfigRules: {
+            providerRules: [
+              {
+                providerId: "test-provider",
+                templateId: "test-template",
+                providerName: "Test Provider",
+                config: {
+                  group: "standard-personal",
+                  access: { type: "api-key", apiKey: "test-key" },
+                  personalModelIds: ["test-model"],
+                },
+              },
+            ],
+          },
+          modelConfigRules: { providerModelRules: [], manualProviderModelRules: [] },
+        },
+      }),
+      "utf8",
+    );
+    await writeFile(
+      cfBuiltinProviderConfigFilePath,
+      JSON.stringify({
+        schemaVersion: 1,
+        revision: 1,
+        config: {
+          providerConfigRules: {
+            providerRules: [],
+            templateRules: [
+              {
+                templateId: "test-template",
+                templateNameMap: { "en-US": "Test Provider" },
+                config: {
+                  access: { type: "api-key" },
+                  api: {
+                    type: "openai-chat-completions",
+                    baseUrl: "https://example.com/v1",
+                  },
+                  builtinModelIds: ["test-model"],
+                },
+              },
+            ],
+          },
+          modelConfigRules: {
+            modelRules: [],
+            modelApiRules: [],
+            providerSiteRules: [],
+            builtinProviderModelRules: [],
+            templateModelRules: [
+              {
+                templateId: "test-template",
+                modelId: "test-model",
+                config: {
+                  enabled: true,
+
+                  properties: {
+                    requiresMfjsToolSchema: false,
+                    contextWindow: 128000,
+                    inputFormat: {
+                      supportsText: true,
+                      supportsImage: false,
+                      supportsVideo: false,
+                      supportsAudio: false,
+                      supportsPdf: false,
+                    },
+                    outputFormat: { supportsText: true },
+                    supportsToolCall: true,
+                    supportsJsonSchemaOutput: true,
+                    supportsNativeWebSearch: false,
+                    supportsMidConversationSystem: false,
+                  },
+                  optionSpecs: {
+                    reasoningLevel: {
+                      values: ["disabled"],
+                      map: "{}",
+                    },
+                    maxOutputTokens: {
+                      max: 8192,
+                      map: "{'max_completion_tokens': maxOutputTokens}",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      }),
+      "utf8",
+    );
+
+    let resolvedCommand: CfAgentCommand | null = null;
+    const commandResolver = vi.fn((context: CfAgentCommandResolverContext) => {
+      resolvedCommand = resolveDefaultCfAgentCommand(context);
+      return null;
+    });
+    const bootstrap = createStdioServices({
+      env: {
+        [SERVICE_AUTHORITY_MODE_ENV]: "desktop-attached-remote",
+      },
+      cfBuiltinProviderConfigFilePath,
+      cfAgentCommandResolver: commandResolver,
+    });
+
+    try {
+      await expect(bootstrap.services.get(IModelSelectionService).getView()).resolves.toMatchObject(
+        {
+          revision: 1,
+          providers: [
+            {
+              providerId: "test-provider",
+              models: [{ modelId: "test-model" }],
+            },
+          ],
+        },
+      );
+      await expect(
+        bootstrap.services.get(ICfAgentService).initialize({
+          workspaceIdentity: "ssh://host/workspace/project",
+          workspacePath: "/workspace/project",
+        }),
+      ).resolves.toMatchObject({
+        available: false,
+        reason: expect.stringContaining("CodeFusion agent server command is not configured"),
+      });
+
+      expect(bootstrap.authorityModeParseResult.mode).toBe("desktop-attached-remote");
+      expect(commandResolver).toHaveBeenCalledWith(
+        expect.objectContaining({
+          presentationSurface: "desktop",
+          workspaceIdentity: "ssh://host/workspace/project",
+          workspaceKey: "ssh://host/workspace/project",
+          workspacePath: "/workspace/project",
+        }),
+      );
+      expect(resolvedCommand).toEqual({
+        args: ["cf.cjs", "app-server", "--stdio", "--surface", "desktop"],
+        command: process.execPath,
+        cwd: "/workspace/project",
+      });
+    } finally {
+      await disposeServiceResourcesAndWait(bootstrap.services);
+      setDataBaseDir(null);
+    }
+  });
+});

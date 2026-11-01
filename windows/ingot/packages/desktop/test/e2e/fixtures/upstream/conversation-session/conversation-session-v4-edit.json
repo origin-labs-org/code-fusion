@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-edit",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-edit.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-edit-title",
+      "description": "Case-local title generation response for E2E_V4_EDIT_ORIGINAL initial send.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_EDIT_ORIGINAL initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_EDIT_ORIGINAL"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-edit-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Edit E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-edit-original",
+      "description": "M4 editUserQuery gate: Original turn reply.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Original reply before edit; should be replaced by the new query's reply after editing."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_V4_EDIT_ORIGINAL"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageExcludes": [
+          "E2E_V4_EDIT_NEWTEXT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-edit-original",
+          "inputTokens": 50,
+          "outputTokens": 5,
+          "text": "V4_EDIT_ORIGINAL_REPLY"
+        }
+      }
+    },
+    {
+      "id": "v4-edit-compact",
+      "description": "PV4-11: Stable manual compact summary covering the original turn.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Establish compact coverage first, then verify edit uses same-session branch cut."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_V4_EDIT_ORIGINAL",
+          "CRITICAL: Respond with TEXT ONLY",
+          "V4_EDIT_ORIGINAL_REPLY",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "delayMs": 100,
+        "text": {
+          "id": "v4-edit-compact",
+          "inputTokens": 128,
+          "outputTokens": 32,
+          "text": "<summary>The original compact-covered request asked for V4_EDIT_ORIGINAL_REPLY. No files or tools were used.</summary>"
+        }
+      }
+    },
+    {
+      "id": "v4-edit-new",
+      "description": "M4 editUserQuery gate: Reply for newText after edit.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "editUserQuery reruns with newText to produce a new reply."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_V4_EDIT_NEWTEXT"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-edit-new",
+          "inputTokens": 50,
+          "outputTokens": 5,
+          "text": "V4_EDIT_NEW_REPLY"
+        }
+      }
+    }
+  ]
+}

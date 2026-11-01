@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-permission-full-access",
+  "spec": "./test/e2e/conversation-session/conversation-session-permission-full-access.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-permission-full-access.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-permission-full-access/output.txt",
+      "source": "created-by-provider-tool",
+      "description": "Output of real Write after full access approval."
+    }
+  ],
+  "requests": [
+    {
+      "id": "pa158-title",
+      "description": "E2E_PA158_MAIN initially emitted case-local title generation response.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial E2E_PA158_MAIN triggers default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and isolates cross-case matching via this initial marker."
+    },
+    {
+      "id": "pa158-write-call",
+      "description": "M4 resolveInteraction gate: Write tool_use, triggers permission popup in default mode.",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "PA158 preserves a controlled window before real Write approval, enqueuing into the hybrid Plan queue via UI and pausing auto-consumption."
+    },
+    {
+      "id": "pa158-final",
+      "description": "M4 resolveInteraction gate: post-approval tool_result feed-back → final text.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Tool executes successfully after permission is granted, and model provides final text based on tool_result."
+    }
+  ]
+}

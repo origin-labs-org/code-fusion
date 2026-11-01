@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-side-pane-full-view",
+  "spec": "./test/e2e/conversation-session/conversation-session-side-pane-full-view.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-side-pane-full-view-first",
+      "description": "First message for the full view test case: establish real session A.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Only a completed session is needed as the full view owner; reply content is not part of the assertions."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SPFV_FIRST"],
+        "bodyIncludes": ["E2E_SPFV_FIRST"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "spfv-first-ok"
+      }
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-floating-send",
+      "description": "Message sent from the full view floating window input box.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Prove that the floating window input box and the main chat are the same instance; reply content is only used to confirm the message was processed by the agent."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SPFV_FLOATING_SEND"],
+        "bodyIncludes": ["E2E_SPFV_FLOATING_SEND"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "spfv-floating-ok"
+      }
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-ask",
+      "description": "Trigger AskUserQuestion pending state while the floating window is minimized.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce a Q&A waiting state with a 4s delayed return to ensure the request arrives after the floating window is minimized, verifying automatic restore and card display."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SPFV_ASK"],
+        "bodyIncludes": ["E2E_SPFV_ASK"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_spfv_ask_user_question",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_SPFV_ASK_QUESTION: choose an answer?",
+                "header": "E2E",
+                "options": [
+                  {
+                    "label": "Use default",
+                    "description": "Continue with the default answer."
+                  },
+                  {
+                    "label": "Use fallback",
+                    "description": "Continue with the fallback answer."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "delayMs": 4000
+      }
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-ask-final",
+      "description": "Final reply after Q&A answers enter the next request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Only proves that the Q&A answer has been consumed by the agent; the core assertion is on the display and dismissal of the floating card."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_SPFV_ASK_QUESTION", "toolu_e2e_spfv_ask_user_question"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "spfv-ask-done"
+      }
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-title",
+      "description": "Initial case-local title generation response for the full view test case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_SPFV_FIRST initial send triggers title sidecar; mock a case-local title to avoid sidecar 500 retries interfering with the session."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_SPFV_FIRST"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-conversation-side-pane-full-view-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"SPFV E2E"}"
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-side-pane-full-view-compact",
+      "description": "manual-review 小上下文窗口触发的自动 compact 摘要。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The small context window of manual-review automatically compacts between turns (history no longer contains the first marker after compact); compaction failure backs off, retries, and blocks subsequent input, so a stable summary is consistently provided here."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["CRITICAL: Respond with TEXT ONLY", "E2E_SPFV_"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-conversation-side-pane-full-view-compact",
+          "inputTokens": 128,
+          "outputTokens": 32,
+          "text": "<summary>The user asked for brief replies in a side pane full view test. No files or tools were used.</summary>"
+        }
+      }
+    }
+  ]
+}

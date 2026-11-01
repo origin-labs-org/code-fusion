@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-timeline-projection",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-timeline-projection.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-compact-timeline-projection.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-compact-timeline-projection-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion of TP is the UI projection position of auto compact marker; real model token usage is unstable; DeepSeek v4 may have a 1M context, requiring synthesis of sufficiently high provider usage."
+    },
+    {
+      "id": "upstream-compact-timeline-projection-pending",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response only needs to stably produce pending assistant; the core assertion is whether compact marker collapses into the same work block."
+    },
+    {
+      "id": "upstream-compact-timeline-projection-manual-split-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core sample for manual failed compact is injected by renderer store; the real model only needs to create a stable task first."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-rename",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-rename.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-rename.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-rename-title",
+      "description": "Case-local title generation response for E2E_V4_RENAME_SEED initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_RENAME_SEED initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-rename-seed",
+      "description": "M4 renameSession gate: Fixed first-round response to establish a renamable session.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Renaming only requires an existing session; first-round text is fixed."
+    }
+  ]
+}

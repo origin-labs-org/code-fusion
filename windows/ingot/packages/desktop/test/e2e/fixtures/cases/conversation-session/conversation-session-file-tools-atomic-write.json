@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-file-tools-atomic-write",
+  "spec": "./test/e2e/conversation-session/conversation-session-file-tools-atomic-write.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-file-tools-atomic-write.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "file-tools-atomic-write-e2e/write.sh",
+      "source": "created-by-spec",
+      "description": "0755 script written by spec in the default workspace; overwritten by Write after Read, asserting execution bit is preserved."
+    },
+    {
+      "path": "file-tools-atomic-write-e2e/edit.sh",
+      "source": "created-by-spec",
+      "description": "0755 script written by spec in the default workspace; modified by Edit after Read, asserting execution bit is preserved."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of file tools permission semantics; it only needs to return stably to prevent title requests from mistakenly hitting business fixtures."
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-read-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not necessarily stably Read before Write; this response deterministically triggers the overwrite path for read existing executables."
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not necessarily stably choose Write; this response deterministically triggers full overwrite of existing scripts."
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-read-edit",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not necessarily stably read the target before Edit; this response deterministically triggers the edit path for read existing executables."
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-edit",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real provider does not necessarily stably choose Edit; this response deterministically triggers partial edit write of existing scripts."
+    },
+    {
+      "id": "upstream-conversation-file-tools-atomic-write-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Final marker is only used to stably end window-level replay; real provider reply content does not affect file permission semantics."
+    }
+  ]
+}

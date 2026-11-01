@@ -1,0 +1,48 @@
+{
+  "name": "@ali/better-harness",
+  "version": "0.2.9",
+  "description": "Better Harness CLI, skills, templates, and guardrails for coding-agent workflows.",
+  "type": "module",
+  "publishConfig": {
+    "registry": "https://registry.anpm.alibaba-inc.com"
+  },
+  "files": [
+    ".qoder-plugin/",
+    "assets/logo.svg",
+    "case-studies/",
+    "datasets/",
+    "docs/ARCHITECTURE.md",
+    "docs/community.md",
+    "docs/concepts.md",
+    "hooks/",
+    "models/",
+    "references/",
+    "scripts/",
+    "!scripts/packaging/",
+    "!scripts/session-evidence-eval.mjs",
+    "!scripts/session-evidence-eval/",
+    "skills/",
+    "!skills/**/.plugin-eval/",
+    "templates/"
+  ],
+  "bin": {
+    "better-harness": "scripts/better-harness.mjs",
+    "qoder-harness": "scripts/better-harness.mjs"
+  },
+  "scripts": {
+    "bundle:zip": "node scripts/package/create-bundle.mjs",
+    "pack:verify": "node scripts/package/verify-pack.mjs",
+    "publish:dry-run": "npm publish --dry-run --registry https://registry.anpm.alibaba-inc.com",
+    "preview": "node dev/canvas-preview.mjs",
+    "preview:canvas": "node dev/canvas-preview.mjs",
+    "preview:html": "node dev/html-preview.mjs",
+    "test": "node --test"
+  },
+  "packageManager": "npm@10.9.3",
+  "dependencies": {
+    "esbuild-wasm": "0.28.1"
+  },
+  "optionalDependencies": {
+    "@vscode/tree-sitter-wasm": "0.3.1"
+  }
+}

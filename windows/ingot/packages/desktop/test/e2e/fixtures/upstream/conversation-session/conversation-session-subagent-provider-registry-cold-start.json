@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-provider-registry-cold-start",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-provider-registry-cold-start.test.ts",
+  "fixtures": [
+    {
+      "id": "subagent-provider-registry-cold-start-title",
+      "description": "Fixed response for title generation in subagent provider registry cold start case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-subagent-provider-registry-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Subagent Provider Registry\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-parent-tool",
+      "description": "父 agent 首轮请求返回 Agent tool_use，强制进入绑定 alternate provider 的 subagent。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core verification point is whether the child subagent provider registry exists; parent requests only need to reliably trigger Agent tool_use."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_PROVIDER_REGISTRY_PARENT"],
+        "bodyIncludes": [
+          "E2E_SUBAGENT_PROVIDER_REGISTRY_PARENT",
+          "e2e-provider-registry-reviewer"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_subagent_provider_registry",
+          "name": "Agent",
+          "input": {
+            "description": "Run the alternate-provider E2E reviewer",
+            "prompt": "E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD: Reply with exactly \"E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD_OK\" and no other text.",
+            "subagent_type": "e2e-provider-registry-reviewer"
+          }
+        }
+      }
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-child",
+      "description": "Fixed reply for child subagent bound to alternate provider.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The child request itself is the verification evidence for this case; the response only needs to complete stably and return sub-result tokens."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD"],
+        "bodyIncludes": ["E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-subagent-provider-registry-child",
+          "inputTokens": 128,
+          "outputTokens": 16,
+          "text": "E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD_OK"
+        }
+      }
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-parent-final",
+      "description": "Fixed final reply of parent agent after receiving child tool_result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The final reply is only used to verify that Agent tool_result continues to be consumed by the parent session and returns to idle."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SUBAGENT_PROVIDER_REGISTRY_PARENT",
+          "E2E_SUBAGENT_PROVIDER_REGISTRY_CHILD_OK"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-subagent-provider-registry-parent-final",
+          "inputTokens": 160,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

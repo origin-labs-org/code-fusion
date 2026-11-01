@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-large-text-attachment",
+  "spec": "./test/e2e/conversation-session/conversation-session-large-text-attachment.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-large-text-attachment.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "large-text-only",
+      "description": "T18 only: initial send of large text attachment with 4096 bytes straddling Chinese characters.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix replies to isolate model randomness; real file selection, Agent reading, and provider request body are asserted by E2E without mocking attachment reading."
+    },
+    {
+      "id": "large-text-with-query",
+      "description": "T18 with-query: initial send of large text attachment with 4096 bytes straddling Chinese characters.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix replies to isolate model randomness; real file selection, Agent reading, and provider request body are asserted by E2E without mocking attachment reading."
+    },
+    {
+      "id": "large-text-gbk",
+      "description": "T18 gbk: GBK characters following an ASCII prefix straddle the 4096-byte sampling boundary, ruling out UTF-8 after supplemental reading.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix replies to isolate model randomness; real file selection, Agent reading, and provider request body are asserted by E2E without mocking attachment reading."
+    }
+  ]
+}

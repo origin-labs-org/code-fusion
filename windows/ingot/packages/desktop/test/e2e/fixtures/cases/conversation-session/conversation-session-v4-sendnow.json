@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-sendnow",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-sendnow.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-sendnow.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-sendnow-title",
+      "description": "Case-local title generation response for E2E_V4_SENDNOW_SLOW initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch of E2E_V4_SENDNOW_SLOW triggers default title sidecar; fix case-local title response to prevent default replay from falling back to legacy provider-basic and use this initial marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-sendnow-slow-turn",
+      "description": "M4 sendQueuedNow gate: Controllable slow stream first turn, keeping running for enqueue + send now.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "sendQueuedNow 需 running 窗口入队，再 stop 当前 + 消费该项。"
+    },
+    {
+      "id": "v4-sendnow-item-reply",
+      "description": "M4 sendQueuedNow gate: Response for the queue item sent immediately.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "After stopping current, sendQueuedNow resends the queue item with original text, and the model responds."
+    }
+  ]
+}

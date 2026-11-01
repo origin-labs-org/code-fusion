@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-stream-fallback",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-stream-fallback.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-compact-stream-fallback.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "compact-stream-fallback-title",
+      "description": "Case-local title response for initial compact stream fallback seed.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch triggers title sidecar; fix the title response and use case markers to isolate cross-case matching."
+    },
+    {
+      "id": "compact-stream-fallback-seed",
+      "description": "Form stable history that can be compacted.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Transport fallback gate only requires a completed history; fixed text prevents real provider drift."
+    },
+    {
+      "id": "compact-stream-fallback-stream-failure",
+      "description": "Deterministic non-retryable failure of the first stream request in compact.",
+      "kind": "fault",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Fixture matches only when compact body explicitly contains stream:true to stably prove stream-first; 404 prevents adapter internal retry amplification."
+    },
+    {
+      "id": "compact-stream-fallback-non-stream-success",
+      "description": "Successful non-stream JSON fallback response for the same logical compact attempt.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fixture explicitly excludes stream:true to prove non-stream is entered only after the first leg fails, and fixes summary to verify the final success marker."
+    }
+  ]
+}

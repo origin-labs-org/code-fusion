@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-use-subagent-boundary",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-use-subagent-boundary.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-browser-use-subagent-boundary.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "browser-subagent-boundary-title",
+      "description": "Fix asynchronous title responses for the Browser subagent boundary case.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles do not belong to runtime scope boundaries; they only need to be isolated from parent/child requests."
+    },
+    {
+      "id": "browser-subagent-parent-init",
+      "description": "The main Agent initializes the Browser runtime, opens its own Tab, and writes parent-before.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The main Agent's Tab must be created using a real shared Node REPL and IAB guest, so the child can list it and it can be reverified after the child ends."
+    },
+    {
+      "id": "browser-subagent-parent-agent",
+      "description": "After receiving initialization results, the main Agent launches a foreground general-purpose child.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably generate runtime_scope=subagent requests in the shared Node REPL kernel."
+    },
+    {
+      "id": "browser-subagent-child-browse",
+      "description": "Child sees the existing Tab in the conversation, opens a new Tab, and completes a form fill.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that real MCP calls with runtime_scope=subagent associate tabs with the current conversation: it can list the main Agent's Tab, and newly opened tabs also belong to the same conversation."
+    },
+    {
+      "id": "browser-subagent-child-final",
+      "description": "Child 消费 Browser 检查结果并完成。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Child does not close tabs upon completion, allowing the parent Agent to reverify that both tabs are present after receiving the Agent tool_result."
+    },
+    {
+      "id": "browser-subagent-parent-resume",
+      "description": "After receiving child results, the main Agent reuses the original Tab and confirms that the tab opened by child is still in the conversation.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that the child did not modify the main Agent's Tab, and tabs opened by the child are preserved in the current conversation after the subagent terminates."
+    },
+    {
+      "id": "browser-subagent-parent-final",
+      "description": "The main Agent consumes reuse results and completes normally.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Form a normal turn complete for E2E to reverify the same guest at the final boundary."
+    }
+  ]
+}

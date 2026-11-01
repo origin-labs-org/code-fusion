@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-notification-batch",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-notification-batch.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background-notification-batch.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-background-notification-batch-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Session title sidecar is not part of notification batch semantics; simply return stably to avoid interfering with request counts."
+    },
+    {
+      "id": "upstream-background-notification-batch-agent-tools",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably launch three run_in_background Agents to construct a representative N>=2 notification scenario."
+    },
+    {
+      "id": "upstream-background-notification-batch-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Ensure parent session stably returns to idle before first child completes to isolate outer command loop drain semantics."
+    },
+    {
+      "id": "upstream-background-notification-batch-child-one",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "A 6-second delay leaves an observable window for provider child request admission + V4 canStop=false stable sampling after parent launch turn terminal, while ensuring the first notification finishes clearly before the other two."
+    },
+    {
+      "id": "upstream-background-notification-batch-child-two",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "八秒延迟把第二条 notification 放进第一条 provider request 的 in-flight 窗口。"
+    },
+    {
+      "id": "upstream-background-notification-batch-child-three",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "An 8.5-second delay places the third notification into the in-flight window as well, admitted after the second."
+    },
+    {
+      "id": "upstream-background-notification-batch-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The complete E2E system prompt triggers auto-compact before the first notification; fix the summary and retain case marker to prevent sidecars from interfering with batch request counts."
+    },
+    {
+      "id": "upstream-background-notification-batch-first-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "A 5-second controlled delay allows the second and third child completions to enter the pending queue during this request's processing. Verify provenance prompt and non-user authorization boundaries. The full body of the new-turn notification wraps only one pair of system-reminders, remaining user regardless of the MCS switch. The Messages character delta actually counted by CLI includes the full notification text and is counted only once; static context classification remains unchanged, and check the Messages percentage in the V4 panel."
+    },
+    {
+      "id": "upstream-background-notification-batch-post-first-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The first notification's provider input still exceeds the E2E auto-compact threshold; fix this sidecar to ensure the next drain directly tests the second and third pending notifications."
+    },
+    {
+      "id": "upstream-background-notification-batch-pending-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Precisely constrain the same last user message to contain both second and third notifications simultaneously, proving only one batch model turn is started. Verify provenance prompt and non-user authorization boundaries. The full body of the new-turn notification wraps only one pair of system-reminders, remaining user regardless of the MCS switch. The Messages character delta actually counted by CLI includes the full notification text and is counted only once; static context classification remains unchanged, and check the Messages percentage in the V4 panel."
+    }
+  ]
+}

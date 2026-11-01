@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-effective-selection",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-effective-selection.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-effective-selection.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "sr87-effective-selection-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify actual request identity, tier, and admission write boundaries; model text uses fixed closeout without calling real plans."
+    }
+  ]
+}

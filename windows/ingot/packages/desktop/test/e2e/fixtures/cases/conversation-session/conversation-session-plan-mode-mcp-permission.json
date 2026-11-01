@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-mode-mcp-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-mode-mcp-permission.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-mode-mcp-permission.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-plan-mode-mcp-enter-plan",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model proactively enters plan mode."
+    },
+    {
+      "id": "upstream-plan-mode-mcp-lookup",
+      "description": "Call non-destructive MCP tool without declared readOnlyHint within plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably cover the Plan mode readonly exception for non-destructive MCP tools."
+    },
+    {
+      "id": "upstream-plan-mode-mcp-destructive-reset",
+      "description": "After the lookup tool actually executes, continue attempting destructive MCP tools.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably cover that destructive MCP tools must still be rejected within the same plan turn."
+    },
+    {
+      "id": "upstream-plan-mode-mcp-final",
+      "description": "After the destructive MCP tool is rejected by Plan mode, the model consumes the rejection result and produces a final reply.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that destructive MCP rejection results enter provider-visible requests and the turn wraps up properly."
+    }
+  ]
+}

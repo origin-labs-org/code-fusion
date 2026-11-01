@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-fork-merged-assistant",
+  "spec": "./test/e2e/conversation-session/conversation-session-fork-merged-assistant.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-fork-merged-assistant-title",
+      "description": "Fixed title generation response for fork merged assistant cases.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not part of fork history boundary semantics; it only needs to return stably to prevent title requests from mistakenly hitting business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_FORK_MERGED_ASSISTANT_SOURCE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-fork-merged-assistant-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Fork Merged Assistant E2E\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-conversation-fork-merged-assistant-write-call",
+      "description": "E10 reproduction: First assistant returns Write tool_use, creating a same-turn structure with final assistant after tool_result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not necessarily stably choose Write; this response deterministically generates a workspace handoff file specifically to reproduce the boundary where fork target lands on early raw assistant."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_FORK_MERGED_ASSISTANT_SOURCE"],
+        "bodyIncludes": ["E2E_FORK_MERGED_ASSISTANT_SOURCE"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_fork_merged_assistant_write",
+          "messageId": "msg_e2e_fork_merged_assistant_write",
+          "name": "Write",
+          "input": {
+            "file_path": "tmp/handoff/e2e-fork-merged-assistant.md",
+            "content": "E2E_FORK_MERGED_ASSISTANT_FILE_CONTENT\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-fork-merged-assistant-final",
+      "description": "E10 reproduction: Final assistant text appearing only after Write tool_result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Final marker must be located after tool_result to expose the issue of missing the final reply when fork only copies early raw assistant."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_FORK_MERGED_ASSISTANT_SOURCE",
+          "toolu_e2e_fork_merged_assistant_write",
+          "File created successfully at: tmp/handoff/e2e-fork-merged-assistant.md"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-fork-merged-assistant-final",
+          "inputTokens": 190,
+          "outputTokens": 18,
+          "text": "E2E_FORK_MERGED_ASSISTANT_FINAL"
+        }
+      }
+    }
+  ]
+}

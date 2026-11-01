@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-git-review-entry",
+  "spec": "./test/e2e/conversation-session/conversation-session-git-review-entry.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-git-review-entry.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-git-review-entry/status-panel-review.txt",
+      "source": "created-by-spec",
+      "description": "beforeSession case setup creates untracked files to drive the status panel Git Changes entry point and unstaged review data."
+    }
+  ],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "Reuse pre-populated read-only history sessions in the isolated HOME; creating unstaged files, clicking the status panel, and opening the Git pane are all local UI/Git service actions without sending prompt or provider requests.",
+  "requests": []
+}

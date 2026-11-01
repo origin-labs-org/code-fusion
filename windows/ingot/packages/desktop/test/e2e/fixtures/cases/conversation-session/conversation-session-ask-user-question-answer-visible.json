@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-answer-visible",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-answer-visible.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-answer-visible.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-ask-user-question-answer-visible-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion single-question waiting state to prevent real model questioning behavior from affecting UI projection reproduction."
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-answer-visible-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response only proves Q&A answers have been consumed by the agent; the core assertion is whether the UI retains user-visible records."
+    }
+  ]
+}

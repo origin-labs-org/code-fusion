@@ -1,0 +1,34 @@
+{
+  "name": "computer-use",
+  "version": "1.0.1",
+  "description": "Control desktop apps on Windows through CodeFusion Computer Use.",
+  "author": {
+    "name": "CodeFusion"
+  },
+  "homepage": "https://qoder.com/",
+  "license": "Proprietary",
+  "keywords": [
+    "computer-use",
+    "desktop-control",
+    "windows",
+    "automation",
+    "uia"
+  ],
+  "mcpServers": "./.mcp.json",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Computer Use",
+    "shortDescription": "Control Windows apps from CodeFusion",
+    "longDescription": "Computer Use lets CodeFusion inspect and operate allowed Windows apps through UI Automation state and screenshots.",
+    "developerName": "CodeFusion",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": [
+      "Inspect and operate an app on my Windows desktop",
+      "Use the open app to complete this task",
+      "Check the current UI and help me continue"
+    ],
+    "brandColor": "#0F172A",
+    "screenshots": []
+  }
+}

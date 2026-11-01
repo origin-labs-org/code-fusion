@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-reference-subagent",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-reference-subagent.test.ts",
+  "fixtures": [
+    {
+      "id": "plugin-reference-subagent-title",
+      "description": "Case-local title generation response for PLG16 initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Initial launch triggers the default title sidecar; pin title response to prevent title requests from hitting business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_PLUGIN_REFERENCE_SUBAGENT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "plugin-reference-subagent-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Plugin Subagent Reference"}"
+        }
+      }
+    },
+    {
+      "id": "plugin-reference-subagent-reminder",
+      "description": "PLG16 wire gate: request must carry inline Plugin stable ID and canonical Subagent identifier.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify that provider receives the Subagent identifier in reminder, independent of whether the real model actively selects Agent."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_PLUGIN_REFERENCE_SUBAGENT"],
+        "bodyIncludes": [
+          "<plugin_reference>",
+          "e2e-inline-lifecycle@inline",
+          "subagents: ["e2e-inline-lifecycle:inline-reviewer"]"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "plugin-reference-subagent-reply",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "PLUGIN_REFERENCE_SUBAGENT_REPLY_OK"
+        }
+      }
+    }
+  ]
+}

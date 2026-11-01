@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-history-first",
+  "spec": "./test/e2e/conversation-session/conversation-session-history-first.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-history-first.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "history-first-title",
+      "description": "HF01 fixes history body to verify the first frame and draft gating while the resume hook is blocked.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Persistent history is seeded by isolated fixtures; the provider continues sending after verifying ready, with initialization timing controlled by file event barriers."
+    },
+    {
+      "id": "history-first-parent",
+      "description": "HF01 fixes history body to verify the first frame and draft gating while the resume hook is blocked.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Persistent history is seeded by isolated fixtures; the provider continues sending after verifying ready, with initialization timing controlled by file event barriers."
+    }
+  ]
+}

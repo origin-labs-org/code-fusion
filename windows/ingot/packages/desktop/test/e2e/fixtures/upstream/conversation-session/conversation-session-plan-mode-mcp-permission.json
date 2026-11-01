@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-mode-mcp-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-mode-mcp-permission.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-plan-mode-mcp-enter-plan",
+      "description": "First-round request returns EnterPlanMode, placing subsequent MCP tool calls in plan mode.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model proactively enters plan mode."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_MODE_MCP_PERMISSION"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_MODE_MCP_PERMISSION",
+          "mcp__plan_mode_e2e__lookup",
+          "mcp__plan_mode_e2e__reset"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_mcp_enter_plan",
+          "name": "EnterPlanMode",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-mode-mcp-lookup",
+      "description": "Call non-destructive MCP tool without declared readOnlyHint within plan mode.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably cover the Plan mode readonly exception for non-destructive MCP tools."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_MODE_MCP_PERMISSION",
+          "toolu_e2e_plan_mcp_enter_plan"
+        ],
+        "bodyExcludes": [
+          "E2E_PLAN_MCP_LOOKUP_RESULT",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_mcp_lookup",
+          "name": "mcp__plan_mode_e2e__lookup",
+          "input": {
+            "query": "E2E_PLAN_MCP_LOOKUP_QUERY"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-mode-mcp-destructive-reset",
+      "description": "After the lookup tool actually executes, continue attempting destructive MCP tools.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably cover that destructive MCP tools must still be rejected within the same plan turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_MODE_MCP_PERMISSION",
+          "toolu_e2e_plan_mcp_lookup",
+          "E2E_PLAN_MCP_LOOKUP_RESULT:E2E_PLAN_MCP_LOOKUP_QUERY"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_plan_mcp_reset",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_mcp_reset",
+          "name": "mcp__plan_mode_e2e__reset",
+          "input": {
+            "marker": "E2E_PLAN_MCP_DESTRUCTIVE_ATTEMPT"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-mode-mcp-final",
+      "description": "After the destructive MCP tool is rejected by Plan mode, the model consumes the rejection result and produces a final reply.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Prove that destructive MCP rejection results enter provider-visible requests and the turn wraps up properly."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_MODE_MCP_PERMISSION",
+          "toolu_e2e_plan_mcp_reset",
+          "Plan mode only allows read-only, non-destructive tools"
+        ],
+        "bodyExcludes": [
+          "E2E_PLAN_MCP_RESET_SHOULD_NOT_RUN",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

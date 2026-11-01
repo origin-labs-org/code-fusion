@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "computer-use": {
+      "command": "./bin/computer-use-client-launcher.cmd",
+      "args": [],
+      "cwd": ".",
+      "env_vars": [
+        "QODER_HOME"
+      ]
+    }
+  }
+}

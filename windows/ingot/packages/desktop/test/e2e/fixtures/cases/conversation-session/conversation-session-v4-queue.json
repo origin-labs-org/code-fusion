@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-queue-title",
+      "description": "Case-local title generation response for E2E_V4_QUEUE_SLOW initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_QUEUE_SLOW initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-queue-slow-turn",
+      "description": "M4/B09 queue gate: keep running to verify authoritative deletion, composer restore, and resend with new identity.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Queue exists only during running turn; needs stable window to verify delete/reorder falls back to CLI authoritative projection, and edit-withdrawal restores initiator composer only after delete ACK."
+    }
+  ]
+}

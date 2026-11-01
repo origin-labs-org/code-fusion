@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-cancel-retry",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-cancel-retry.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-cancel-retry.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "SSH-P0-CONN-03 only verifies pending SSH cancellation, retrying with new credentials on the same target, directory selection, single-Host, and secret boundaries; no model requests are initiated.",
+  "requests": []
+}

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-side-chat-escape",
+  "spec": "./test/e2e/conversation-session/conversation-session-side-chat-escape.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-side-chat-escape.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssc-escape-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The title request only needs to complete normally and is not involved in Esc focus routing assertions."
+    },
+    {
+      "id": "ssc-escape-running",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Both primary and auxiliary chats must remain running simultaneously to verify Esc focus isolation and repeated keystrokes after stopping."
+    },
+    {
+      "id": "ssc-escape-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only need to establish a parent session capable of creating auxiliary chats; tool history is not involved in keyboard focus return."
+    }
+  ]
+}

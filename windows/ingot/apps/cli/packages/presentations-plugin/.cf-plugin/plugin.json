@@ -1,0 +1,41 @@
+{
+  "name": "presentations",
+  "version": "0.2.0",
+  "description": "PPTX presentation production skills and a PowerPoint viewer panel, published as an official CodeFusion plugin.",
+  "description_i18n": {
+    "en": "Presentation production skills for PPTX, with a visual acceptance reviewer agent. View decks in a side panel: reference slides in chat, and the agent can read, search, point at and capture them.",
+    "zh-CN": "PPTX presentation crafting skill featuring a visual review agent. Also allows viewing presentations in the sidebar and referencing slides in chat, where the Agent can read, search, locate, highlight, and capture screenshots."
+  },
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "Apache-2.0",
+  "skills": "skills",
+  "agents": "agents",
+  "mcpServers": {
+    "presentations": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CF_PLUGIN_ROOT}/dist/server.mjs"],
+      "cwd": "${CF_PROJECT_DIR}",
+      "env": {
+        "CF_WORKSPACE_ROOT": "${CF_PROJECT_DIR}"
+      }
+    }
+  },
+  "ui": {
+    "surfaces": [
+      {
+        "id": "presentations",
+        "title": {
+          "zh-CN": "演示文稿",
+          "en-US": "Presentations"
+        },
+        "icon": "presentation",
+        "server": "presentations",
+        "resourceUri": "ui://presentations/panel.html",
+        "availability": "session"
+      }
+    ]
+  }
+}

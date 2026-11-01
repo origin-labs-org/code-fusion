@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-output-token-preflight-smoke",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-output-token-preflight-smoke.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-output-token-preflight-smoke.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "otb11-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are outside budget semantics; their requests are isolated only to avoid interfering with per-turn main request counting."
+    },
+    {
+      "id": "otb11-turn-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pins first-round usage so subsequent mixed-length messages reproducibly cross the cap threshold within a small window."
+    },
+    {
+      "id": "otb11-turn-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pins 14K usage as the provider anchor for entering the preflight cap range in the next round."
+    },
+    {
+      "id": "otb11-turn-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 18.5K usage anchor keeps subsequent requests within the cap range while remaining below the 30K compact threshold."
+    },
+    {
+      "id": "otb11-turn-4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 23.5K usage anchor reliably produces a second distinct cap, verifying it is not a single boundary case."
+    },
+    {
+      "id": "otb11-turn-5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 28.5K usage anchor combined with the fixed-seed sixth message deterministically triggers Auto Compact in the next round."
+    },
+    {
+      "id": "otb11-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Successful summary pins the compact boundary, verifying the execution order of original pending messages after the 30K threshold."
+    },
+    {
+      "id": "otb11-turn-6-after-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "A short successful response proves pending messages were not lost and the prior dynamic cap was not persisted to the compressed main request."
+    },
+    {
+      "id": "otb12-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are outside budget semantics; their requests are isolated only to avoid interfering with per-turn main request counting."
+    },
+    {
+      "id": "otb12-turn-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pins first-round usage so the 200K/128K scenario first demonstrates that baseline is still sent when below the 71K cap threshold."
+    },
+    {
+      "id": "otb12-turn-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pins 70K usage as the provider anchor for crossing the 71K preflight cap threshold in the next round."
+    },
+    {
+      "id": "otb12-turn-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 100K usage anchor keeps subsequent requests within the large-window cap range while remaining below the 166K threshold."
+    },
+    {
+      "id": "otb12-turn-4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 135K usage anchor produces a second clearly distinct cap, proving scaling still follows the same formula under the 128K baseline."
+    },
+    {
+      "id": "otb12-turn-5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 164K usage anchor allows two subsequent shorter messages to produce critical caps of roughly 34.3K and 33.1K before Compact."
+    },
+    {
+      "id": "otb12-turn-6",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 165.1K usage anchor lets the next shorter message continue approaching the 33K critical cap while staying below the 166K threshold."
+    },
+    {
+      "id": "otb12-turn-7",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The 165.8K usage anchor combined with the final short message allows the next round to just cross the 166K threshold and deterministically enter Auto Compact."
+    },
+    {
+      "id": "otb12-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Successful summary pins the 166K compact boundary, verifying the execution order of original pending messages under a large window."
+    },
+    {
+      "id": "otb12-turn-8-after-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "A short successful response proves pending messages were not lost and the 128K baseline is recalculated after compression rather than reusing the old cap."
+    }
+  ]
+}

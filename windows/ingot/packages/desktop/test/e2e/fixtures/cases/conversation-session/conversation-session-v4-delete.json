@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-delete",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-delete.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-delete.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-delete-title",
+      "description": "Case-local title generation response for E2E_V4_DELETE_SEED initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_DELETE_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-delete-seed",
+      "description": "M4 deleteSession gate: First-round fixed reply to establish a deletable session.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deletion only requires an existing session; first-round text is fixed."
+    }
+  ]
+}

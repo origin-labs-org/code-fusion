@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-command-unknown-recovery",
+  "spec": "./test/e2e/conversation-session/conversation-session-command-unknown-recovery.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-command-unknown-recovery.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "command-unknown-recovery-title",
+      "description": "PV4-25U 前置 session 的 case-local 标题响应。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably create a normal session recoverable after renderer reload; the title is not an assertion target."
+    },
+    {
+      "id": "command-unknown-recovery-turn",
+      "description": "PV4-25U establishes a completed session, then reconciles unknown commandId with real commands/query.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that unknown is silently cleared after renderer reload; the provider is only responsible for stably creating the prerequisite session."
+    }
+  ]
+}

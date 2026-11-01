@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-vertical-slice",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-vertical-slice.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-vertical-slice.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-vertical-slice-title",
+      "description": "Case-local title generation response for initial E2E_V4_SLICE_TURN1 submission.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial submission of E2E_V4_SLICE_TURN1 triggers the default title sidecar; stub case-local title response to prevent default replay from falling back to legacy provider-basic, and isolate cross-case matching with this initial submission marker."
+    },
+    {
+      "id": "v4-slice-turn1-controlled-stream",
+      "description": "M3 vertical slice gate turn 1: controlled slow stream, creating a \"refresh during agent output\" window (first delta 0.5s, stream completes in 12s).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Refresh recovery assertions require a stable streaming window; real provider stream completion time is uncontrollable."
+    },
+    {
+      "id": "v4-slice-turn2-controlled-stream",
+      "description": "M3 vertical slice gate turn 2: long-tail slow stream (completes in 45s), leaving a window to click stop; client aborts after stop.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stop assertions require a running window much larger than click latency to avoid timing jitter false alarms."
+    }
+  ]
+}

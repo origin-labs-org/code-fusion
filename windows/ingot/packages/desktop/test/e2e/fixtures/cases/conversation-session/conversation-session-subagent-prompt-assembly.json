@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-prompt-assembly",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-prompt-assembly.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-prompt-assembly.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "~/.cf/agents/e2e-prompt-assembly-reviewer.md",
+      "source": "created-by-spec",
+      "description": "Covers custom subagent prompt assembly, verifying markdown body enters child provider-visible system[1]."
+    },
+    {
+      "path": "~/.cf/cli/agents/e2e-prompt-assembly-reviewer.md",
+      "source": "created-by-spec",
+      "description": "Compatible with CLI legacy agents root, preventing path discrepancies from causing custom subagent resolution to stall on not found."
+    },
+    {
+      "path": "~/.cf/agents/e2e-prompt-assembly-isolated.md",
+      "source": "created-by-spec",
+      "description": "Covers custom subagents with explicit injectAgentsMd=false."
+    },
+    {
+      "path": "~/.cf/cli/agents/e2e-prompt-assembly-isolated.md",
+      "source": "created-by-spec",
+      "description": "兼容 CLI legacy agents root，确保显式关闭继承的 custom profile 可加载。"
+    },
+    {
+      "path": "~/.cf/AGENTS.md",
+      "source": "created-by-spec",
+      "description": "Provides a unique user AGENTS marker to verify the inheritance count and order of child trajectories."
+    },
+    {
+      "path": "AGENTS.md",
+      "source": "created-by-spec",
+      "description": "Provides a unique workspace AGENTS marker to verify the inheritance count and order of child trajectories."
+    }
+  ],
+  "requests": [
+    {
+      "id": "subagent-prompt-assembly-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+    },
+    {
+      "id": "subagent-prompt-assembly-builtin-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is child provider-visible prompt assembly; parent requests only need to reliably trigger Agent tool_use."
+    },
+    {
+      "id": "subagent-prompt-assembly-builtin-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The child request itself is the verification evidence for this case; the response only needs to complete stably and return sub-result tokens."
+    },
+    {
+      "id": "subagent-prompt-assembly-builtin-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Final reply used to prove Agent tool_result is consumed by parent session continuation and returns to idle."
+    },
+    {
+      "id": "subagent-prompt-assembly-explore-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is Explore child omitting parent AGENTS.md; parent requests only need to reliably trigger Agent tool_use."
+    },
+    {
+      "id": "subagent-prompt-assembly-explore-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The Explore child request itself is trajectory evidence of omitting AGENTS.md; the response just needs to complete reliably."
+    },
+    {
+      "id": "subagent-prompt-assembly-explore-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Explore final reply used to prove Agent tool_result is consumed by parent session continuation and returns to idle."
+    },
+    {
+      "id": "subagent-prompt-assembly-custom-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is custom child provider-visible prompt assembly; parent requests only need to reliably trigger Agent tool_use."
+    },
+    {
+      "id": "subagent-prompt-assembly-custom-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The custom child request itself is verification evidence for this case; the response just needs to complete reliably and return the child result token."
+    },
+    {
+      "id": "subagent-prompt-assembly-custom-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Custom final reply used to prove Agent tool_result is consumed by parent session continuation and returns to idle."
+    },
+    {
+      "id": "subagent-prompt-assembly-isolated-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is custom false child omitting parent AGENTS.md; parent requests only need to reliably trigger Agent tool_use."
+    },
+    {
+      "id": "subagent-prompt-assembly-isolated-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The custom false child request itself is trajectory evidence of omitting AGENTS.md; the response just needs to complete reliably."
+    },
+    {
+      "id": "subagent-prompt-assembly-isolated-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Custom false final reply used to prove Agent tool_result is consumed by parent session continuation and returns to idle."
+    }
+  ]
+}

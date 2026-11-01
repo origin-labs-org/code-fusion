@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-interaction-delegate",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-interaction-delegate.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-interaction-delegate.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "subagent-hitl-yolo-parent-agent",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably creates parent Agent tool_use, core semantics being child AskUserQuestion must proxy back to the parent task."
+    },
+    {
+      "id": "subagent-hitl-yolo-child-ask",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably creates child AskUserQuestion waiting state, verifying it still proxies to the parent task under yolo instead of being swallowed by the deny broker."
+    },
+    {
+      "id": "subagent-hitl-yolo-child-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response proves AskUserQuestion answers have entered the child provider-visible request, allowing child to continue to completion."
+    },
+    {
+      "id": "subagent-hitl-yolo-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Final reply used to prove Agent tool_result is consumed by the parent session continuation and cleanly finalized."
+    },
+    {
+      "id": "subagent-hitl-permission-parent-agent",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably creates parent Agent tool_use, core semantics being child Bash permission must proxy back to the parent task."
+    },
+    {
+      "id": "subagent-hitl-permission-child-bash",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably creates child Bash permission waiting state, verifying permission requests proxy back to the parent task."
+    },
+    {
+      "id": "subagent-hitl-permission-child-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response proves Bash output has entered the child provider-visible request, allowing child to continue to completion."
+    },
+    {
+      "id": "subagent-hitl-permission-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Final reply used to prove Agent tool_result is consumed by the parent session continuation and cleanly finalized."
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-active-model-context",
+  "spec": "./test/e2e/conversation-session/conversation-session-active-model-context.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-active-model-context.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "active-model-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify the identity of the first request after each switch without validating generation quality; pin fast text responses to avoid external model dependencies."
+    },
+    {
+      "id": "active-model-step-0",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify the identity of the first request after each switch without validating generation quality; pin fast text responses to avoid external model dependencies."
+    },
+    {
+      "id": "active-model-step-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify the identity of the first request after each switch without validating generation quality; pin fast text responses to avoid external model dependencies."
+    },
+    {
+      "id": "active-model-step-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify the identity of the first request after each switch without validating generation quality; pin fast text responses to avoid external model dependencies."
+    },
+    {
+      "id": "active-model-step-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only verify the identity of the first request after each switch without validating generation quality; pin fast text responses to avoid external model dependencies."
+    }
+  ]
+}

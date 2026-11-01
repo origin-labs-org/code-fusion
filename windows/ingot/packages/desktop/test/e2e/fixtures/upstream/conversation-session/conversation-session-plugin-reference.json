@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-reference",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-reference.test.ts",
+  "fixtures": [
+    {
+      "id": "plugin-reference-title",
+      "description": "Case-local title generation response for E2E_PLUGIN_REFERENCE initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Initial launch triggers default title sidecar; pin case-local title response and use initial launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_PLUGIN_REFERENCE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "plugin-reference-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Plugin Reference E2E"}"
+        }
+      }
+    },
+    {
+      "id": "plugin-reference-reminder-tool-call",
+      "description": "PLG01 wire gate: only allow through when request body genuinely carries identifiers-only <plugin_reference> reminder (including skill-creator stable id), and drive a Read test tool call.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically verify provider receives reminder: fixture gates match on bodyIncludes <plugin_reference>, independent of real model random preference."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_PLUGIN_REFERENCE"],
+        "bodyIncludes": [
+          "<plugin_reference>",
+          "skill-creator@cf-plugins-official"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "toolu_e2e_plugin_reference_read"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plugin_reference_read",
+          "messageId": "msg_e2e_plugin_reference_read",
+          "name": "Read",
+          "input": { "file_path": "plugin-reference-e2e/note.md" }
+        }
+      }
+    },
+    {
+      "id": "plugin-reference-final-reply",
+      "description": "Closing response after feeding back Read tool results, outputting timeline assertion marker.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Step two matches on tool result content + tool id to ensure sequential determinism."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLUGIN_REFERENCE",
+          "PLUGIN_REFERENCE_NOTE_BODY",
+          "toolu_e2e_plugin_reference_read"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "plugin-reference-final-reply",
+          "inputTokens": 120,
+          "outputTokens": 12,
+          "text": "PLUGIN_REFERENCE_REPLY_OK"
+        }
+      }
+    }
+  ]
+}

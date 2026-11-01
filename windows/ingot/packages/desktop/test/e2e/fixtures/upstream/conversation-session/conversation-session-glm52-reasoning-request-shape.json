@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-glm52-reasoning-request-shape",
+  "spec": "./test/e2e/conversation-session/conversation-session-glm52-reasoning-request-shape.test.ts",
+  "fixtures": [
+    {
+      "id": "glm52-reasoning-request-shape-title",
+      "description": "Fixed title generation response in GLM-5.2 OpenAI-compatible reasoning tier case to avoid strict case-local replay depending on other cases.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix the response while ensuring the title sidecar's GLM-5.2 thinking-disabled request fields to prevent re-inheriting max."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "\"reasoning_effort\": "none""],
+        "bodyExcludes": ["extra_body", "chat_template_kwargs", "\"thinking\""]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-glm52-reasoning-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"GLM Reasoning\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":64,"completion_tokens":8,"total_tokens":72}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "glm52-reasoning-max-main",
+      "description": "Fixed final reply for initial plain text after selecting max reasoning tier in I14 GLM-5.2, paired with packet capture to assert OpenAI-compatible request fields.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertions focus on provider/model identity, OpenAI-compatible transport, and the GLM-5.2 max request body; the response only needs to complete reliably with the expected text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GLM52_REASONING_MAX"],
+        "bodyIncludes": ["E2E_GLM52_REASONING_MAX", "upstream-e2e-ok", "GLM-5.2"],
+        "bodyExcludes": ["Generate a concise title", "extra_body", "chat_template_kwargs"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-glm52-reasoning-max","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-max","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-max","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "glm52-reasoning-nothink-main",
+      "description": "Fixed final reply for subsequent plain text after switching from max to nothink in I14 GLM-5.2, paired with packet capture to assert reasoning disabled request fields.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertions focus on the GLM-5.2-specific request body after subsequent requests switch to nothink under the same provider/model; the response only needs to complete reliably with the expected text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GLM52_REASONING_NOTHINK"],
+        "bodyIncludes": ["E2E_GLM52_REASONING_NOTHINK", "upstream-e2e-ok", "GLM-5.2"],
+        "bodyExcludes": ["Generate a concise title", "extra_body", "chat_template_kwargs"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-glm52-reasoning-nothink","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-nothink","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-glm52-reasoning-nothink","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":132,"completion_tokens":12,"total_tokens":144}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

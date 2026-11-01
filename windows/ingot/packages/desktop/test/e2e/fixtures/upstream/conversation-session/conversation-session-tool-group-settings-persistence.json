@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-group-settings-persistence",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-group-settings-persistence.test.ts",
+  "fixtures": [
+    {
+      "id": "tge06-title",
+      "description": "TGE06 title sidecar response.",
+      "metadata": {
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Titles do not participate in grouping setting persistence semantics; case-local fixed responses ensure strict replay does not depend on the legacy fixture pool."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "tge06-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Tool Group Settings E2E"}"
+        }
+      }
+    },
+    {
+      "id": "tge06-read",
+      "description": "TGE06 creates the Explore history segment with two consecutive Read tools.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Fix two consecutive tools for each family to meet parent group creation conditions and verify that toggling settings only regroups the corresponding family."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_GROUP_SETTINGS_PERSISTENCE"],
+        "bodyExcludes": ["Generate a concise title", "toolu_tge06_read_1", "toolu_tge06_read_2"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_tge06_read_1",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-group-settings-persistence/seed-a.txt"
+            }
+          },
+          {
+            "id": "toolu_tge06_read_2",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-group-settings-persistence/seed-b.txt"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tge06-compact-after-read",
+      "description": "TGE06 compact sidecar after the Read pair.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "The minimal E2E context window triggers automatic compact after the first tool set; the summary preserves markers and two Read tool ids so subsequent Bash matchers continue to match."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_read_1",
+          "toolu_tge06_read_2",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "bodyExcludes": [
+          "toolu_tge06_terminal_1",
+          "toolu_tge06_terminal_2",
+          "toolu_tge06_write_1",
+          "toolu_tge06_write_2",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "tge06-compact-after-read",
+          "inputTokens": 128,
+          "outputTokens": 20,
+          "text": "<summary>E2E_TOOL_GROUP_SETTINGS_PERSISTENCE completed Reads toolu_tge06_read_1 and toolu_tge06_read_2. Continue with Bash.</summary>"
+        }
+      }
+    },
+    {
+      "id": "tge06-compact-after-terminal",
+      "description": "TGE06 compact sidecar after the terminal pair.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "The minimal E2E context window triggers automatic compact after the second tool set; the summary preserves markers and two Bash tool ids so subsequent Write matchers continue to match."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_terminal_1",
+          "toolu_tge06_terminal_2",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "bodyExcludes": ["toolu_tge06_write_1", "toolu_tge06_write_2", "Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "tge06-compact-after-terminal",
+          "inputTokens": 128,
+          "outputTokens": 24,
+          "text": "<summary>E2E_TOOL_GROUP_SETTINGS_PERSISTENCE completed Reads toolu_tge06_read_1/toolu_tge06_read_2 and Bash tools toolu_tge06_terminal_1/toolu_tge06_terminal_2. Continue with Write.</summary>"
+        }
+      }
+    },
+    {
+      "id": "tge06-terminal",
+      "description": "TGE06 creates the Terminal history segment with two consecutive Bash tools.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Fix two consecutive command tools to satisfy Terminal parent group creation conditions and verify that the toggle is independent of the other two group types."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_read_1",
+          "toolu_tge06_read_2"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "toolu_tge06_terminal_1",
+          "toolu_tge06_terminal_2"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_tge06_terminal_1",
+            "name": "Bash",
+            "input": { "command": "node -e \"console.log('TGE06_TERMINAL_A')\"" }
+          },
+          {
+            "id": "toolu_tge06_terminal_2",
+            "name": "Bash",
+            "input": { "command": "node -e \"console.log('TGE06_TERMINAL_B')\"" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tge06-write",
+      "description": "TGE06 creates the Changes history segment with two consecutive Write tools.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Fix two consecutive file-writing tools to satisfy Changes parent group creation conditions and verify that Changes, disabled by default, participate in history regrouping once enabled."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_terminal_1",
+          "toolu_tge06_terminal_2"
+        ],
+        "bodyExcludes": ["Generate a concise title", "toolu_tge06_write_1", "toolu_tge06_write_2"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_tge06_write_1",
+            "name": "Write",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-group-settings-persistence/result-a.ts",
+              "content": "export const grouped = true;\n"
+            }
+          },
+          {
+            "id": "toolu_tge06_write_2",
+            "name": "Write",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-group-settings-persistence/result-b.ts",
+              "content": "export const grouped = true;\n"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "tge06-final",
+      "description": "TGE06 closes the tool history.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fix terminal text so setting toggle assertions only observe completed history."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_write_1",
+          "toolu_tge06_write_2"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": { "statusCode": 200, "text": "upstream-e2e-ok" }
+    },
+    {
+      "id": "tge06-compact-after-write",
+      "description": "TGE06 compact sidecar after the Write pair.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Automatic compact after the third tool set preserves all tool ids so the final response matcher can continue to match."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_GROUP_SETTINGS_PERSISTENCE",
+          "toolu_tge06_write_1",
+          "toolu_tge06_write_2",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "tge06-compact-after-write",
+          "inputTokens": 128,
+          "outputTokens": 24,
+          "text": "<summary>E2E_TOOL_GROUP_SETTINGS_PERSISTENCE completed both Read, Bash, and Write tool pairs. Return upstream-e2e-ok.</summary>"
+        }
+      }
+    }
+  ]
+}

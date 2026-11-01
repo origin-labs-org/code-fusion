@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-group-settings-persistence",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-group-settings-persistence.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-group-settings-persistence.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-tool-group-settings-persistence",
+      "source": "created-by-spec",
+      "description": "Case-owned workspace fixture used by two Read/Write sets in TGE06."
+    }
+  ],
+  "requests": [
+    {
+      "id": "tge06-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles do not participate in grouping setting persistence semantics; case-local fixed responses ensure strict replay does not depend on the legacy fixture pool."
+    },
+    {
+      "id": "tge06-read",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Fix two consecutive tools for each family to meet parent group creation conditions and verify that toggling settings only regroups the corresponding family."
+    },
+    {
+      "id": "tge06-compact-after-read",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The minimal E2E context window triggers automatic compact after the first tool set; the summary preserves markers and two Read tool ids so subsequent Bash matchers continue to match."
+    },
+    {
+      "id": "tge06-compact-after-terminal",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The minimal E2E context window triggers automatic compact after the second tool set; the summary preserves markers and two Bash tool ids so subsequent Write matchers continue to match."
+    },
+    {
+      "id": "tge06-terminal",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Fix two consecutive command tools to satisfy Terminal parent group creation conditions and verify that the toggle is independent of the other two group types."
+    },
+    {
+      "id": "tge06-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Fix two consecutive file-writing tools to satisfy Changes parent group creation conditions and verify that Changes, disabled by default, participate in history regrouping once enabled."
+    },
+    {
+      "id": "tge06-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix terminal text so setting toggle assertions only observe completed history."
+    },
+    {
+      "id": "tge06-compact-after-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Automatic compact after the third tool set preserves all tool ids so the final response matcher can continue to match."
+    }
+  ]
+}

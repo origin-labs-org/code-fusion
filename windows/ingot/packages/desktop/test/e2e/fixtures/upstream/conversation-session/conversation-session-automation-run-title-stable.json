@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-automation-run-title-stable",
+  "spec": "./test/e2e/conversation-session/conversation-session-automation-run-title-stable.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-automation-run-title-stable-main",
+      "description": "Run immediately after editing prompt on automation page; main reply intentionally introduces Lin Daiyu to ensure dispatch uses current form and execution session title keeps the prompt.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix matching the edit page's current prompt and respond with a different entity to reliably verify that Run now first saves the current form and the execution session does not regenerate titles based on response content."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_AUTOMATION_TITLE_STABLE",
+          "随机介绍一位红楼梦人物"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-automation-run-title-stable-main",
+          "inputTokens": 120,
+          "outputTokens": 24,
+          "text": "Lin Daiyu is a character of keen talent and delicate sensibility in Dream of the Red Chamber. automation-title-stable-done"
+        }
+      }
+    }
+  ]
+}

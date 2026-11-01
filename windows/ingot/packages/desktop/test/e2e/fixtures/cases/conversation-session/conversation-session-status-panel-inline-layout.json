@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-status-panel-inline-layout",
+  "spec": "./test/e2e/conversation-session/conversation-session-status-panel-inline-layout.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-status-panel-inline-layout.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "status-panel-inline-layout-empty-task-response",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case verifies the renderer layout contract; the main reply only needs to complete stably and avoid introducing goal/todo/running content."
+    },
+    {
+      "id": "status-panel-inline-layout-goal-response",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case only needs to reliably produce a task with target; the model body content is not part of the assertions."
+    }
+  ]
+}

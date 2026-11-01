@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-side-slash-arguments",
+  "spec": "./test/e2e/conversation-session/conversation-session-side-slash-arguments.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-side-slash-arguments.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "side-slash-arguments-title",
+      "description": "Title sidecars for all slash argument children return fixed responses.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not slash argument semantics; return a fixed title according to the unified E2E marker to isolate replay matching."
+    },
+    {
+      "id": "side-slash-arguments-parent-running",
+      "description": "父任务 running 窗口的 controlled stream。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "The running combination requires a stable parent active turn; real provider stream completion time is uncontrollable."
+    },
+    {
+      "id": "side-slash-arguments-parent-seed",
+      "description": "Fixed quick text response for the parent session initial seed.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The parent session only needs to establish a session reliably, independent of real provider generation."
+    },
+    {
+      "id": "side-slash-arguments-side-idle",
+      "description": "Fixed quick text response for idle /side firstInput.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Idle alias assertions only need a stable child text response."
+    },
+    {
+      "id": "side-slash-arguments-btw-multiline",
+      "description": "Fixed response for /btw firstInput with outer whitespace and internal line breaks.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify parser trim boundaries and multi-line argument preservation."
+    },
+    {
+      "id": "side-slash-arguments-second-side",
+      "description": "The second /side child response in consecutive submission combinations.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consecutive child creation only requires stable responses to verify children are not reused."
+    },
+    {
+      "id": "side-slash-arguments-second-btw",
+      "description": "The second /btw child response in consecutive submission combinations.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consecutive child creation only requires stable responses to verify children are not reused."
+    },
+    {
+      "id": "side-slash-arguments-running-child",
+      "description": "Fixed quick response for /btw child while parent task is running.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "child startNow assertions need to complete quickly during the parent controlled stream."
+    }
+  ]
+}

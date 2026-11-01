@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-toolsearch-feedback",
+  "spec": "./test/e2e/conversation-session/conversation-session-toolsearch-feedback.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-toolsearch-feedback.json"
+  ],
+  "fileFixtures": [],
+  "providerHarness": "./test/e2e/helpers/toolsearch-cli-process.ts",
+  "requests": [
+    {
+      "id": "conversation-session-toolsearch-feedback-done-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-batch-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-discover-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-mcp-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-native-unloaded-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-native-loaded-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-native-good-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-local-unloaded-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-local-loaded-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-feedback-local-good-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    }
+  ],
+  "notes": "Pending controlled-provider regression. Actual HTTP requests and request records are retained as evidence; no live model or external-product parity claim. Not admitted to Docker."
+}

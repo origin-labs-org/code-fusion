@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-changes-group-unresolved-path",
+  "spec": "./test/e2e/conversation-session/conversation-session-changes-group-unresolved-path.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-changes-group-unresolved-path.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-changes-group-unresolved-path",
+      "source": "created-by-tool",
+      "description": "TGE07 single-file case-owned fixture created by Write."
+    }
+  ],
+  "requests": [
+    {
+      "id": "tge07-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles do not participate in Changes streaming path semantics; case-local fixed responses ensure strict replay does not depend on the legacy fixture pool."
+    },
+    {
+      "id": "tge07-write-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stably preserve observation window before file_path arrives to verify Changes does not display 0 files and retains Writing when expanded."
+    },
+    {
+      "id": "tge07-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix final state text to verify single-file completion collapsed summary omits 1 file."
+    },
+    {
+      "id": "tge07-compact-after-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "An extremely small E2E context window triggers auto-compact after Write; the summary retains markers and tool ids so final-state matchers can continue to match."
+    }
+  ]
+}

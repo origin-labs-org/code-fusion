@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-custom-enter-manual-multi-question",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-custom-enter-manual-multi-question.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-custom-enter-manual-multi-question.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-manual-multi-question-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion three-question waiting state to prevent real model generating illegal option counts or question structure drift from affecting Enter answer collection reproduction."
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-manual-multi-question-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response proves custom answers submitted via Enter across three questions have been consumed by the agent; core assertions are on answer collection and UI answered records."
+    }
+  ]
+}

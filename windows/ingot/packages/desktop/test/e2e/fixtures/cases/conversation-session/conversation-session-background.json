@@ -1,0 +1,865 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background",
+  "spec": "./test/e2e/conversation-session/conversation-session-background.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-background/bg08-launcher.cjs",
+      "source": "created-by-spec",
+      "description": "In BG08, spec writes launcher, genuinely starting cross-PGID worker and leaving fresh PID marker."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-background-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of background runtime task semantics; since the same spec also includes a foreground control group, return stably via general E2E marker to prevent title request retries from blocking business requests."
+    },
+    {
+      "id": "upstream-background-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably trigger Agent(run_in_background=true) to verify background Agent notification wake."
+    },
+    {
+      "id": "upstream-background-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after async launch tool result."
+    },
+    {
+      "id": "upstream-background-agent-child-delayed-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Delay sub-agent completion to reliably produce parent idle wake."
+    },
+    {
+      "id": "upstream-background-agent-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify provider-visible request consumes <task-notification>. Verify provenance prompt and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-bash-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably trigger Bash(run_in_background=true)."
+    },
+    {
+      "id": "upstream-background-bash-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after backgrounded Bash tool result."
+    },
+    {
+      "id": "upstream-background-bash-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify Bash completion notification enters parent model request. Verify provenance prompt and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-direct-user-prompt-bash-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably produce a window where main is idle but background task is still running, verifying that subsequent regular user messages do not enter queued prompt."
+    },
+    {
+      "id": "upstream-background-direct-user-prompt-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let main return to idle while unified background control UI still has a running Bash task."
+    },
+    {
+      "id": "upstream-background-direct-user-prompt-received",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that running background task does not put regular user messages into queue, but immediately enters provider request."
+    },
+    {
+      "id": "upstream-background-direct-user-prompt-stop-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Wrap up long-running background Bash before test ends to avoid leaving background processes, while verifying stop notification still follows the standard pipeline. Verify provenance prompt and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-compact-after-idle-bash-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably produce a window where main is idle but background task is running, verifying manual compact is allowed at this time."
+    },
+    {
+      "id": "upstream-background-compact-after-idle-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let main return to idle; subsequent manual compact should not be blocked by running background."
+    },
+    {
+      "id": "upstream-background-compact-after-idle-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-json",
+      "syntheticReason": "Leave an assertable post-compact summary marker for subsequent requests of background completion notification."
+    },
+    {
+      "id": "upstream-background-compact-after-idle-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify that post-compact background completion notification still enters parent model request, with request context sourced from post-compact summary. Verify provenance prompt and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-auto-timeout-bash-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably trigger foreground Bash timeout auto-background to verify entering background task control UI even without explicit run_in_background."
+    },
+    {
+      "id": "upstream-background-auto-timeout-bash-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Have UI display the auto-backgrounded running control row before Bash completes naturally."
+    },
+    {
+      "id": "upstream-background-auto-timeout-bash-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify provider-visible notification and UI control row cleanup after auto-background Bash completes naturally. Verify provenance prompt and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-bg37-explicit-timeout-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably verify that input timeout no longer terminates the process after explicit background commit."
+    },
+    {
+      "id": "upstream-bg37-explicit-timeout-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Retain the window where running control row remains visible after input timeout."
+    },
+    {
+      "id": "upstream-bg37-explicit-timeout-auto-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This turn will auto-compact first as Bash prompt grows longer; fix summary to continue verifying completion notification rather than causing replay to lack fixture."
+    },
+    {
+      "id": "upstream-bg37-explicit-timeout-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify explicit Bash completes naturally after exceeding input timeout and notifies only once. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-bg38-parent-abort-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Background command first writes started marker, then the test stops the still-active parent turn."
+    },
+    {
+      "id": "upstream-bg38-parent-abort-launch-running",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Delay launch response to reliably create an abort window where task is committed but parent turn is still active."
+    },
+    {
+      "id": "upstream-bg38-parent-abort-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify parent abort does not kill committed Bash and produces no duplicate notifications. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-bg39-sleep-hard-timeout-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably verify first-token sleep adheres to foreground hard timeout and does not enter auto-background."
+    },
+    {
+      "id": "upstream-bg39-sleep-hard-timeout-completed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify provider-visible result is foreground timeout with no background notification."
+    },
+    {
+      "id": "upstream-background-cancel-bash-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger a cross-PGID launcher/worker subtree constructed via Bash job control to verify tree-kill path on stop in unified background control UI."
+    },
+    {
+      "id": "upstream-background-cancel-bash-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Have UI display running background Bash control in idle state, then let test click stop."
+    },
+    {
+      "id": "upstream-background-cancel-bash-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify UI stopping Bash still goes through background task notification rather than just disappearing locally in UI. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-cancel-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger running local_agent task to verify unified background control UI can stop subagent."
+    },
+    {
+      "id": "upstream-background-cancel-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Have UI display running background Agent control in idle state, then let test click stop."
+    },
+    {
+      "id": "upstream-background-cancel-agent-child-delayed-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Keep child provider request running to verify stop aborts running background Agent."
+    },
+    {
+      "id": "upstream-background-cancel-agent-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify UI stop subagent reuses local_agent task notification pipeline. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-taskstop-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger running local_agent task, then stop it with TaskStop in subsequent provider replay."
+    },
+    {
+      "id": "upstream-background-taskstop-agent-tool-stop",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Verify provider-visible TaskStop tool reuses runtime background stop dispatcher."
+    },
+    {
+      "id": "upstream-background-taskstop-agent-child-delayed-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Keep child provider request running to verify TaskStop aborts running background Agent."
+    },
+    {
+      "id": "upstream-background-taskstop-agent-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify TaskStop tool result and stopped notification converge in the same runtime queue/active-loop pipeline. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-active-loop-bash-tool-calls",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger active-loop background notification intake: Bash first backgrounds due to short timeout, then command completes and enqueues notification before subsequent provider request."
+    },
+    {
+      "id": "upstream-background-active-loop-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify the same provider request includes both previous-turn Bash tool result and <task-notification>, rather than waiting for idle wake to start a separate turn. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-goal-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "V4 /goal requires an existing session; first turn only establishes stable session boundary for BG34."
+    },
+    {
+      "id": "upstream-background-goal-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "goal continuation 中启动 background Agent。"
+    },
+    {
+      "id": "upstream-background-goal-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Current turn of goal continuation ends before subtask completes."
+    },
+    {
+      "id": "upstream-background-goal-direct-prompt",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably prove background-only state of active goal does not equal main busy, and user input bypasses future queue."
+    },
+    {
+      "id": "upstream-background-goal-child-delayed-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Delay subagent completion to prove verifier waits for notification."
+    },
+    {
+      "id": "upstream-background-goal-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Goal notification turn consumes sub-result. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-goal-verifier-passed",
+      "kind": "goal-verifier",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Verify verifier executes and passes only after notification, and reliably leaves future queue admission window."
+    },
+    {
+      "id": "upstream-background-goal-verifier-queue-drained",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably verify TargetChanged(complete) itself re-evaluates CLI queue gate and automatically promotes queue head."
+    },
+    {
+      "id": "upstream-background-send-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger Agent(run_in_background=true), then use SendMessage to verify running child steer."
+    },
+    {
+      "id": "upstream-background-send-message-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Call SendMessage using agentId from Agent tool result to verify parent agent can steer running child."
+    },
+    {
+      "id": "upstream-background-send-message-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after receiving SendMessage tool result, awaiting background notification."
+    },
+    {
+      "id": "upstream-background-send-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Subagent immediately releases provider connection on first turn, but keeps turn active via build-mode-permitted sleep foreground Bash that does not auto-background, reliably covering running child steer."
+    },
+    {
+      "id": "upstream-background-send-child-steered-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify subagent's provider-visible request receives complete mid-flight coordinator prompt. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-send-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify subagent completion after SendMessage steer still goes through background notification. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-foreground-long-bash-loading-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably create normal foreground Bash running window to verify background event exemption does not disrupt foreground loading."
+    },
+    {
+      "id": "upstream-foreground-long-bash-loading-completed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify foreground Bash enters provider continuation normally after completion and returns to idle."
+    },
+    {
+      "id": "upstream-foreground-child-tool-streaming-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger foreground Agent to verify parent loading maintains original display semantics while child Bash is running."
+    },
+    {
+      "id": "upstream-foreground-child-tool-streaming-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Use real child Bash tool update to cover streaming retention branch of foreground mirrored subagent event."
+    },
+    {
+      "id": "upstream-foreground-child-tool-streaming-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let foreground Agent complete normally and return results to parent turn."
+    },
+    {
+      "id": "upstream-foreground-child-tool-streaming-completed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify parent turn closes normally after foreground subagent child tool running window."
+    },
+    {
+      "id": "upstream-background-child-tool-idle-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger background Agent to verify parent idle UI does not show fake loading while child Bash is running."
+    },
+    {
+      "id": "upstream-background-child-tool-idle-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after async Agent launch tool result, creating parent idle + child tool running window."
+    },
+    {
+      "id": "upstream-background-child-tool-idle-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Use real child Bash tool update to cover UI streaming guard for mirrored background subagent event."
+    },
+    {
+      "id": "upstream-background-child-tool-idle-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let background Agent complete normally and generate parent notification."
+    },
+    {
+      "id": "upstream-background-child-tool-idle-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify Agent completion still follows standard task-notification pipeline after child tool running window. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably create a live aggregation window where child tool update arrives only after background Agent has launched, parent session is idle, and subsequent main response has completed."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Allow parent session to return to idle first, after which user can send second main message."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-follow-up",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Create new main assistant reply before child tool update arrives to reproduce issue where live child tool incorrectly attaches to latest reply."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-tool-use",
+      "syntheticReason": "Delay child Bash tool_use to reliably verify mirrored child tool update must attach back to original Agent message by parentToolUseId."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let background Agent complete normally and generate parent notification."
+    },
+    {
+      "id": "upstream-background-child-tool-parent-anchor-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify child tool placement fix does not affect standard task-notification closure. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-session-switch-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably create a window where background Agent + child Bash tool have appeared, followed by switching away from parent session."
+    },
+    {
+      "id": "upstream-background-session-switch-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Allow parent session to return to idle first, then test switches to another session/draft."
+    },
+    {
+      "id": "upstream-background-session-switch-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-tool-use",
+      "syntheticReason": "Let child Bash running card enter parent renderer store first; command waits for file barrier, released by test after parent session is hidden."
+    },
+    {
+      "id": "upstream-background-session-switch-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Let hidden/tombstoned terminal tool update and Agent completion notification both finish."
+    },
+    {
+      "id": "upstream-background-session-switch-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify UI restores terminal child tool projection from store/snapshot upon switching back. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-switch-back-running-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably create a window where background Agent + child Bash tool have appeared and remain running upon switching back."
+    },
+    {
+      "id": "upstream-background-switch-back-running-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Allow parent session to return to idle first, then test switches to another session/draft and immediately switches back."
+    },
+    {
+      "id": "upstream-background-switch-back-running-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-tool-use",
+      "syntheticReason": "Let child Bash running card enter parent renderer store first, remaining long enough to cover window where it is still running upon switching back."
+    },
+    {
+      "id": "upstream-background-switch-back-running-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify child Bash terminal update still patches the same tool card after switching back to visible state."
+    },
+    {
+      "id": "upstream-background-switch-back-running-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify subsequent Agent completion notification is still consumed via standard pipeline after switching back. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-send-now-queue-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably create a window with main idle + background-only child tool running + held queue to reproduce that queued prompt Send now should not stop background tasks."
+    },
+    {
+      "id": "upstream-background-send-now-queue-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after async Agent launch tool result, creating parent idle + child tool running window."
+    },
+    {
+      "id": "upstream-background-send-now-queue-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Control real child Bash lifecycle using file barrier so parent side has raw runtime streaming while mainActive=false; release after clicking Send now to prevent fixed sleep from being affected by full load."
+    },
+    {
+      "id": "upstream-background-send-now-queue-hold",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Use real main turn and composer queue instead of removed renderer store injection to reliably construct background-only + paused queue after stop."
+    },
+    {
+      "id": "upstream-background-send-now-queue-prompt-received",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify queued prompt Send now directly triggers provider request under background-only running instead of stopping background task first."
+    },
+    {
+      "id": "upstream-background-send-now-queue-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove Send now did not stop background Agent; Agent continues to produce completion notification after child Bash finishes naturally."
+    },
+    {
+      "id": "upstream-background-send-now-queue-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify background Agent completion still follows standard task-notification pipeline after queued Send now. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-queue-drain-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably launch real background Agent; subsequent delayed launch ack creates queue window of main running + background running."
+    },
+    {
+      "id": "upstream-background-queue-drain-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Delay parent model launch ack to reliably create scenario where user message enters renderer queue while background Agent is running and main turn is active."
+    },
+    {
+      "id": "upstream-background-queue-drain-child-delayed-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Delay background Agent completion to prevent notification from entering parent session before queued prompt drain verification."
+    },
+    {
+      "id": "upstream-background-queue-drain-first-queued-prompt",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Delay Q2 response to reliably verify Q3/Q4 enqueued before launch ack are not lost after Q2 drains."
+    },
+    {
+      "id": "upstream-background-queue-drain-second-queued-prompt",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Delay Q3 response to reliably observe UI window where Q3 is rendered as user message and Q4 remains in queue."
+    },
+    {
+      "id": "upstream-background-queue-drain-third-queued-prompt",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Delay Q4 response to reliably observe Q4 rendered as user message after drain."
+    },
+    {
+      "id": "upstream-background-queue-drain-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify queued prompt drain does not lose subsequent background Agent completion notification. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-nested-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger background Agent launching background Bash internally, verifying parent surface only consumes Agent completion."
+    },
+    {
+      "id": "upstream-background-nested-agent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent model ends current turn after async Agent launch tool result."
+    },
+    {
+      "id": "upstream-background-nested-child-bash-tool-call",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably trigger Bash(run_in_background=true) inside child runtime."
+    },
+    {
+      "id": "upstream-background-nested-child-stops-after-bash-launch",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove parent Agent completion does not wait for nested Bash terminal."
+    },
+    {
+      "id": "upstream-background-nested-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify parent surface only consumes Agent completion notification. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-snapshot-control-ready",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Reliably launch two background Bashes: first completes first, second keeps running, reproducing flicker-disappearance scenario with real top-right background control panel."
+    },
+    {
+      "id": "upstream-background-snapshot-control-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Allow main to return to idle while top-right background control panel still shows two running Bash rows."
+    },
+    {
+      "id": "upstream-background-snapshot-control-first-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Consume first background Bash completion notification while keeping second running row visible. Verify source prompt and non-user authorization boundary."
+    },
+    {
+      "id": "upstream-background-snapshot-control-second-stopped",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Consume the second background Bash stop notification to prevent long-running tasks from leaking into subsequent tests. Verify source prompts and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-ready",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably start four background Agents: three cf Agents complete sequentially while the cc Agent stays running, reproducing the Agent row disappearing glitch using the real top-right background control panel."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cc-child-keepalive-tool",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Let the cc Agent enter a child Bash that does not complete on its own and keep it running, verifying that another Agent's completion notification will not clear its control row."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-one-child-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Complete the first cf background Agent with a short delay to reliably trigger the parent task-notification."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-two-child-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Complete the second cf background Agent with a short delay to reliably trigger the parent task-notification."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-three-child-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Complete the third cf background Agent with a short delay to reproduce the real-world scenario where the third completion notification triggers UI flickering and disappearing."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Return main to idle while multiple running Agent rows remain in the top-right background control panel."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-one-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "First consume the first cf Agent completion notification, reproducing multiple cf Agents completing sequentially in real scenarios. Verify source prompts and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-two-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Then consume the second cf Agent completion notification, reproducing multiple cf Agents completing sequentially in real scenarios. Verify source prompts and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cf-three-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Reproduce real scenario: main executes TodoWrite first when processing the third Agent completion notification, covering internal state updates within the notification turn. Verify source prompts and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-after-todo",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Reproduce real scenario: after TodoWrite, while the main notification turn is still processing, another still-running Agent row must not glitch away from the top-right corner."
+    },
+    {
+      "id": "upstream-background-agent-control-preserve-cc-stopped",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Close out the still-running cc Agent before test completion to prevent long-running tasks from leaking into subsequent tests. Verify source prompts and non-user authorization boundaries."
+    },
+    {
+      "id": "upstream-agent-composition-mixed-launch",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Start foreground/background Agents in the same main turn, verifying that both results are consumed in the same provider request to generate main_plus_fg_bg."
+    },
+    {
+      "id": "upstream-agent-composition-mixed-foreground-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-tool-use",
+      "syntheticReason": "Use a child Bash file barrier to wait for the background response to complete before releasing the foreground child, reliably creating a mixed consumption window in the same main turn."
+    },
+    {
+      "id": "upstream-agent-composition-mixed-foreground-child-done",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Return final results after the file barrier releases the foreground child, ensuring the main active-loop can still consume completed background notifications."
+    },
+    {
+      "id": "upstream-agent-composition-mixed-background-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Complete the background child first, ensuring its structured subagent notification can be consumed by the active loop before closing out the foreground child."
+    },
+    {
+      "id": "upstream-agent-composition-mixed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The provider-visible request contains both foreground tool results and background subagent notifications to verify mixed composition. Verify source prompts and non-user authorization boundaries."
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-running-send-now",
+  "spec": "./test/e2e/conversation-session/conversation-session-running-send-now.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-running-send-now.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-running-send-now-head-base",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Pin the current turn's text-only assistant output and keep it running to verify MCS position demotion for human reminders after preemption."
+    },
+    {
+      "id": "upstream-running-send-now-head-selected",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Keep the next turn streaming to easily assert user projection, queue clearing, and request count simultaneously."
+    },
+    {
+      "id": "upstream-running-send-now-promote-base",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Reliably retain both typed queues to prevent the first turn from completing early and auto-draining."
+    },
+    {
+      "id": "upstream-running-send-now-promote-first-not-selected",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "maxMatches=0 includes the negative contract of unclicked items remaining in the queue into the replay ledger."
+    },
+    {
+      "id": "upstream-running-send-now-promote-second-selected",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Reliably verify clicked items become active while unclicked items are retained."
+    },
+    {
+      "id": "upstream-running-send-now-goal-base",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Ensure /goal first forms a typed queue before being explicitly promoted by the user."
+    },
+    {
+      "id": "upstream-running-send-now-goal-continuation",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Maintain the active target + streaming window to directly verify that the intent has not degraded into plain text."
+    },
+    {
+      "id": "upstream-running-send-now-double-base",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Make both clicks occur within the same active turn and the same React render boundary."
+    },
+    {
+      "id": "upstream-running-send-now-double-first-not-selected",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "maxMatches=0 证明第二条 command 不会触发普通 drain 消费 sibling queue item。"
+    },
+    {
+      "id": "upstream-running-send-now-double-second-selected-once",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "maxMatches=1 directly treats duplicate provider requests as replay failures and preserves the streaming assertion window."
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-output-token-preflight",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-output-token-preflight.test.ts",
+  "fixtures": [
+    {
+      "id": "model-output-token-preflight-title",
+      "description": "Fixed response for title generation in Preflight case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is outside budget policy semantics; it only needs to avoid interfering with main request and Compact matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb-preflight-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb-preflight-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Preflight Budget\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb-preflight-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":32,"completion_tokens":8,"total_tokens":40}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb08-history",
+      "description": "OTB08 建立可压缩的第一轮历史。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Round 1 only establishes history required for Auto Compact and confirms that preflight-v1 still sends 64K at low usage."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB08_HISTORY"],
+        "bodyIncludes": [
+          "E2E_OTB08_HISTORY",
+          "\"max_completion_tokens\":64000",
+          "otb-preflight-64k"
+        ],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb08-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb08-history-ready"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":192,"completion_tokens":8,"total_tokens":200}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb08-seed",
+      "description": "OTB08 returns 94K provider usage, driving Auto Compact in the next round per the preflight-v1 threshold.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Controlled 94K usage is used to prove the 94K threshold for 128K context, 21K reserve, and 13K buffer."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB08_SEED"],
+        "bodyIncludes": ["E2E_OTB08_SEED", "\"max_completion_tokens\":64000", "otb-preflight-64k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb08-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb08-seed-ready"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":94000,"completion_tokens":8,"total_tokens":94008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb08-auto-compact",
+      "description": "OTB08 Auto Compact summary 继续使用 20K。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The successful summary request body and compact.auto.started logs jointly verify the reserve and summary budgets of preflight-v1."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "E2E_OTB08_SEED",
+          "create a detailed summary",
+          "\"max_completion_tokens\":20000",
+          "otb-preflight-64k"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb08-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"<summary>OTB08 retained the preflight strategy history.</summary>"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":256,"completion_tokens":32,"total_tokens":288}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb08-post-compact",
+      "description": "OTB08 main request reverts to canonical 64K baseline after Compact.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verifies that Compact clears old usage anchors and the preflight cap is not persisted to subsequent model steps."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB08_POST"],
+        "bodyIncludes": ["E2E_OTB08_POST", "\"max_completion_tokens\":64000", "otb-preflight-64k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb08-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb08-post-compact-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb08-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":320,"completion_tokens":8,"total_tokens":328}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb09-seed",
+      "description": "OTB09 establishes provider usage anchor with inputTokens=1.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pins provider base to 1; provider usage already covers the previous assistant round, which combined with the shared /3 estimator and an exact-length next-round message reliably yields estimatedCurrentUsage=85,329."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB09_SEED"],
+        "bodyIncludes": ["E2E_OTB09_SEED", "\"max_completion_tokens\":64000", "otb-preflight-64k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb09-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb09-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb09-seed-ready"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb09-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":1,"completion_tokens":0,"total_tokens":1}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb09-exact-cap",
+      "description": "OTB09 estimatedCurrentUsage=85,329 时发送 max_tokens=41,671。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The request body serves as end-to-end evidence for the preflight formula 128,000 - 85,329 - 1,000 = 41,671 under the shared /3 estimator."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB09_CAP"],
+        "bodyIncludes": ["E2E_OTB09_CAP", "\"max_completion_tokens\":41671", "otb-preflight-64k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb09-cap","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb09-cap","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb09-preflight-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb09-cap","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":85329,"completion_tokens":8,"total_tokens":85337}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb10-history",
+      "description": "OTB10 建立 reactive compact 可总结的第一轮历史。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Round 1 only satisfies the history prerequisite for existing reactive compact."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB10_HISTORY"],
+        "bodyIncludes": [
+          "E2E_OTB10_HISTORY",
+          "\"max_completion_tokens\":64000",
+          "otb-preflight-64k"
+        ],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb10-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb10-history-ready"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-history","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":192,"completion_tokens":8,"total_tokens":200}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb10-seed",
+      "description": "OTB10 establishes 64K provider usage anchor so the next round executes preflight cap first.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Controlled usage is used to reliably prove that the request was capped before an error occurred, rather than directly sending the 64K baseline."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB10_SEED"],
+        "bodyIncludes": ["E2E_OTB10_SEED", "\"max_completion_tokens\":64000", "otb-preflight-64k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb10-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb10-seed-ready"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-seed","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":64000,"completion_tokens":8,"total_tokens":64008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb10-capped-context-error",
+      "description": "OTB10 pruned main request still returns recognized context_length_exceeded from provider.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "immediate-error",
+        "source": "synthetic",
+        "syntheticReason": "The failure is only used to enter the project's existing reactive compact; this requirement does not add or modify error recognition corpus."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB10_REACTIVE"],
+        "bodyIncludes": ["E2E_OTB10_REACTIVE", "otb-preflight-64k"],
+        "bodyExcludes": [
+          "\"max_completion_tokens\":64000",
+          "Generate a concise title",
+          "create a detailed summary"
+        ]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": { "content-type": "application/json; charset=utf-8" },
+        "body": "{\"error\":{\"message\":"This model's maximum context length is 128000 tokens. Please reduce the length of the messages.","type":"invalid_request_error","code":"context_length_exceeded"}}"
+      }
+    },
+    {
+      "id": "otb10-reactive-compact",
+      "description": "OTB10 existing reactive compact summary uses 20K.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verifies that a capped failure does not produce a reduction retry, but directly enters existing reactive compact summary."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "E2E_OTB10_SEED",
+          "create a detailed summary",
+          "\"max_completion_tokens\":20000",
+          "otb-preflight-64k"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb10-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"<summary>OTB10 retained enough context to retry the original turn.</summary>"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":256,"completion_tokens":32,"total_tokens":288}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb10-post-reactive-compact",
+      "description": "OTB10 original request restores 64K baseline and succeeds after reactive compact.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "A successful request proves the capped value was not persisted; combined with the first error model-io, there are exactly two main requests in total."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB10_REACTIVE"],
+        "bodyIncludes": [
+          "E2E_OTB10_REACTIVE",
+          "\"max_completion_tokens\":64000",
+          "otb-preflight-64k"
+        ],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb10-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{\"content\":"otb10-reactive-compact-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb10-post","object":"chat.completion.chunk","created":0,"model":"otb-preflight-64k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":320,"completion_tokens":8,"total_tokens":328}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

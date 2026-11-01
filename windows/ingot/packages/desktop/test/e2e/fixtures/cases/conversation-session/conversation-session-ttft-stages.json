@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ttft-stages",
+  "spec": "./test/e2e/conversation-session/conversation-session-ttft-stages.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ttft-stages.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/ttft/input.txt",
+      "source": "created-by-helper",
+      "description": "This case is created via async fs; the real Read tool returns a fixed marker."
+    }
+  ],
+  "requests": [
+    {
+      "id": "ttft-text",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fix body first-output and model wait to verify phase attribution with final OTLP."
+    },
+    {
+      "id": "ttft-stage-tool-call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool type and input to ensure both the legacy version and V4 execute the same read-only tool."
+    },
+    {
+      "id": "ttft-stage-tool-final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Stably conclude the tool turn so both tool and generation steps can be fully reconciled."
+    },
+    {
+      "id": "ttft-stage-reasoning",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Whether the real model outputs thought is non-deterministic; use deterministic Anthropic SSE."
+    }
+  ]
+}

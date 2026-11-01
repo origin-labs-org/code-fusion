@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-highspeed-card-fallback-unlocks-model",
+  "spec": "./test/e2e/conversation-session/conversation-session-highspeed-card-fallback-unlocks-model.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-card-fallback-unlocks-model.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "highspeed-invalid-model-fallback",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the regular model's success response to verify fallback, card invalidation, and Composer unlocking after Highspeed creation-phase failure; without calling real plans."
+    }
+  ]
+}

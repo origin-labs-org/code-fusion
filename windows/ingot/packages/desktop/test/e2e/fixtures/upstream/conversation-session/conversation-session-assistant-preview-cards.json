@@ -1,0 +1,500 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards.test.ts",
+  "fixtures": [
+    {
+      "id": "assistant-preview-cards-title",
+      "description": "Fixed title sidecar response for each independent task of Assistant Preview Cards.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title does not belong to preview card product semantics; only need to avoid sidecar requests mistakenly hitting business fixtures."
+      },
+      "maxMatches": 20,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_ASSISTANT_PREVIEW_CARDS"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Assistant Preview Cards E2E"}"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-local-url",
+      "description": "APC01/APC04 outputs the same local URL twice to verify completion deduplication and Browser opening.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pin dynamic random port URL in assistant text to reliably verify card projection and Browser side pane."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_ASSISTANT_PREVIEW_CARDS_LOCAL_URL",
+          "E2E_BROWSER_FIXTURE_URL:"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-local-url",
+          "inputTokens": 96,
+          "outputTokens": 20,
+          "text": "[APC Local Preview]({{browserFixtureUrl}})\n再次打开 {{browserFixtureUrl}}。\nE2E_ASSISTANT_PREVIEW_CARDS_LOCAL_URL_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-interrupted",
+      "description": "APC02 keeps the stream open after the first URL segment arrives, allowing the spec to click Stop.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Interrupted cards must trigger Stop within a reproducible mid-stream window; ordinary fast-text cannot provide this boundary."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_INTERRUPTED"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "chunks": [
+          {
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"assistant-preview-cards-interrupted","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "offsetMs": 200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"E2E_ASSISTANT_PREVIEW_CARDS_INTERRUPTED_EARLY http://localhost:41789/assistant-preview-stream"}}\n\n"
+          },
+          {
+            "offsetMs": 20000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":" E2E_ASSISTANT_PREVIEW_CARDS_INTERRUPTED_LATE"}}\n\n"
+          },
+          {
+            "offsetMs": 20100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "offsetMs": 20200,
+            "text": "event: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":20,"service_tier":"standard"}}\n\n"
+          },
+          {
+            "offsetMs": 20300,
+            "text": "event: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assistant-preview-cards-streaming",
+      "description": "APC03 outputs URL first, then completes normally with delay.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Need to assert no cards when assistant text is visible but the row is not yet terminal."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_STREAMING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "chunks": [
+          {
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"assistant-preview-cards-streaming","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "offsetMs": 200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"E2E_ASSISTANT_PREVIEW_CARDS_STREAMING_EARLY http://localhost:41789/assistant-preview-stream"}}\n\n"
+          },
+          {
+            "offsetMs": 5000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":" E2E_ASSISTANT_PREVIEW_CARDS_STREAMING_DONE"}}\n\n"
+          },
+          {
+            "offsetMs": 5100,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "offsetMs": 5200,
+            "text": "event: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":20,"service_tier":"standard"}}\n\n"
+          },
+          {
+            "offsetMs": 5300,
+            "text": "event: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assistant-preview-cards-suppression-write",
+      "description": "APC04 performs a real Write HTML to ensure global localhost suppression is not due to missing fileChanges.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pin Write tool selection to establish current-turn active HTML fileChanges."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_LOCAL_SUPPRESSES_HTML"],
+        "bodyExcludes": ["Generate a concise title", "toolu_apc_suppression_write"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_apc_suppression_write",
+          "name": "Write",
+          "input": {
+            "file_path": "assistant-preview-e2e/current turn output/index page.html",
+            "content": "<!doctype html><html><body>APC04_HTML_PAGE</body></html>"
+          }
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-suppression-final",
+      "description": "APC04 outputs localhost and the written HTML in the same turn.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pin existing business semantics: any local HTTP URL suppresses all HTML cards in the same turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_ASSISTANT_PREVIEW_CARDS_LOCAL_SUPPRESSES_HTML",
+          "toolu_apc_suppression_write"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-suppression-final",
+          "inputTokens": 120,
+          "outputTokens": 24,
+          "text": "[APC Local Only]({{browserFixtureUrl}})\n再次访Question {{browserFixtureUrl}}。\n已生成 assistant-preview-e2e/Current-Turn Output/index page.html。\nE2E_ASSISTANT_PREVIEW_CARDS_LOCAL_SUPPRESSES_HTML_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-office-pptx",
+      "description": "APC06/APC07 and APC14 output preset stale source, Office/PDF, and a missing PDF respectively; this turn includes PPTX auto-open.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably provide Unicode/whitespace file references and appearance order; file existence and renderer still follow the real product path."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_OFFICE_PPTX"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-office-pptx",
+          "inputTokens": 128,
+          "outputTokens": 48,
+          "text": "assistant-preview-e2e/stale/Old Page.html\nassistant-preview-e2e/stale/Old Instructions.md\nassistant-preview-e2e/office/Project Overview.docx\nassistant-preview-e2e/office/Annual Summary.xlsx\nassistant-preview-e2e/office/Product Roadmap.pptx\nassistant-preview-e2e/office/Audit Report.pdf\nassistant-preview-e2e/office/Nonexistent.pdf\nE2E_ASSISTANT_PREVIEW_CARDS_OFFICE_PPTX_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-audio",
+      "description": "APC12 standalone message only outputs the preset WAV media file.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Split audio out of the PPTX auto-open turn to avoid side pane active tab competition."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_OFFICE_AUDIO"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-audio",
+          "inputTokens": 128,
+          "outputTokens": 16,
+          "text": "assistant-preview-e2e/media/Generated Audio.wav\nE2E_ASSISTANT_PREVIEW_CARDS_OFFICE_AUDIO_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-video",
+      "description": "APC12 standalone message only outputs the preset MP4 media file.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Split video out of the PPTX auto-open turn to avoid side pane active tab competition."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_OFFICE_VIDEO"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-video",
+          "inputTokens": 128,
+          "outputTokens": 16,
+          "text": "assistant-preview-e2e/media/Generated Video.mp4\nE2E_ASSISTANT_PREVIEW_CARDS_OFFICE_VIDEO_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-max-ten",
+      "description": "APC08 输出 12 个均存在的 PDF，验证逆序最多 10 张。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pin candidate count and text order; actual existence continues to be determined by Host stat."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_MAX_TEN"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-max-ten",
+          "inputTokens": 128,
+          "outputTokens": 64,
+          "text": "assistant-preview-e2e/bounds/max-01.pdf\nassistant-preview-e2e/bounds/max-02.pdf\nassistant-preview-e2e/bounds/max-03.pdf\nassistant-preview-e2e/bounds/max-04.pdf\nassistant-preview-e2e/bounds/max-05.pdf\nassistant-preview-e2e/bounds/max-06.pdf\nassistant-preview-e2e/bounds/max-07.pdf\nassistant-preview-e2e/bounds/max-08.pdf\nassistant-preview-e2e/bounds/max-09.pdf\nassistant-preview-e2e/bounds/max-10.pdf\nassistant-preview-e2e/bounds/max-11.pdf\nassistant-preview-e2e/bounds/max-12.pdf\nE2E_ASSISTANT_PREVIEW_CARDS_MAX_TEN_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-no-backfill",
+      "description": "APC08 outputs 16 PDFs; among first 15 in reverse order only 9 exist, 16th candidate exists but must not backfill.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix the 15-candidate boundary and missing distribution to verify the product does not continue probing just to reach 10 images."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_NO_BACKFILL"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-no-backfill",
+          "inputTokens": 128,
+          "outputTokens": 72,
+          "text": "assistant-preview-e2e/bounds/nofill-01.pdf\nassistant-preview-e2e/bounds/nofill-02.pdf\nassistant-preview-e2e/bounds/nofill-03.pdf\nassistant-preview-e2e/bounds/nofill-04.pdf\nassistant-preview-e2e/bounds/nofill-05.pdf\nassistant-preview-e2e/bounds/nofill-06.pdf\nassistant-preview-e2e/bounds/nofill-07.pdf\nassistant-preview-e2e/bounds/nofill-08.pdf\nassistant-preview-e2e/bounds/nofill-09.pdf\nassistant-preview-e2e/bounds/nofill-10.pdf\nassistant-preview-e2e/bounds/nofill-11.pdf\nassistant-preview-e2e/bounds/nofill-12.pdf\nassistant-preview-e2e/bounds/nofill-13.pdf\nassistant-preview-e2e/bounds/nofill-14.pdf\nassistant-preview-e2e/bounds/nofill-15.pdf\nassistant-preview-e2e/bounds/nofill-16.pdf\nE2E_ASSISTANT_PREVIEW_CARDS_NO_BACKFILL_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-source-write-html",
+      "description": "APC05/APC09/APC11 first step performs a real Write of Unicode/space HTML.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix Write tool selection to establish persistable HTML fileChanges for the current turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD"],
+        "bodyExcludes": ["Generate a concise title", "toolu_apc_source_write_html"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_apc_source_write_html",
+          "name": "Write",
+          "input": {
+            "file_path": "assistant-preview-e2e/current turn output/index page.html",
+            "content": "<!doctype html><html><head><title>APC05 HTML</title></head><body>APC05_HTML_PAGE</body></html>"
+          }
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-source-write-markdown",
+      "description": "APC05/APC09/APC11 second step performs a real Write of Unicode/space Markdown.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix the second Write to ensure both HTML and Markdown belong to active fileChanges of the same turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD",
+          "toolu_apc_source_write_html"
+        ],
+        "bodyExcludes": ["Generate a concise title", "toolu_apc_source_write_markdown"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_apc_source_write_markdown",
+          "name": "Write",
+          "input": {
+            "file_path": "assistant-preview-e2e/current turn output/instruction document.md",
+            "content": "# Assistant Preview Markdown\n\nAPC05 Markdown renderer marker\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-source-auto-compact",
+      "description": "Auto compact after dual Write in APC05/APC09 persistently retains file change context.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The E2E provider's minimal context window triggers auto-compact after the second Write; fix the summary to prevent replay gaps from breaking file preview and cold resume semantics."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-source-auto-compact",
+          "inputTokens": 200,
+          "outputTokens": 56,
+          "text": "<analysis>Both workspace files were written successfully.</analysis>\n\n<summary>E2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD created toolu_apc_source_write_html and toolu_apc_source_write_markdown for assistant-preview-e2e/Current-Turn Output/index page.html and assistant-preview-e2e/Current-Turn Output/Instruction Document.md. Report both files in that order.</summary>"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-source-final",
+      "description": "APC05/APC09 ultimately outputs paths in HTML followed by Markdown order.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix text order to verify reverse card order, open targets, and cold resume reconstruction."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD",
+          "toolu_apc_source_write_markdown"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-source-final",
+          "inputTokens": 160,
+          "outputTokens": 32,
+          "text": "已生成 assistant-preview-e2e/Current-Turn Output/index page.html。\n已生成 [Description Documentation](assistant-preview-e2e/Current-Turn Output/Instruction Document.md)。\nE2E_ASSISTANT_PREVIEW_CARDS_SOURCE_AND_COLD_DONE"
+        }
+      }
+    },
+    {
+      "id": "assistant-preview-cards-parking",
+      "description": "APC09/APC11 creates another completed parking session before switching or cold recovery.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Explicitly select the target historical task after cold start to avoid miscounting auto-restoring the current task as evidence of cold resume."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASSISTANT_PREVIEW_CARDS_PARKING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "assistant-preview-cards-parking",
+          "inputTokens": 80,
+          "outputTokens": 12,
+          "text": "E2E_ASSISTANT_PREVIEW_CARDS_PARKING_DONE"
+        }
+      }
+    }
+  ]
+}

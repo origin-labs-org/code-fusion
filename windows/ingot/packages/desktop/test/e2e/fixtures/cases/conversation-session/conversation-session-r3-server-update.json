@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-server-update",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-server-update.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-server-update.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-update-title",
+      "description": "Auxiliary title response",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-update-slow-turn",
+      "description": "Keep remote task running until update guard appears and user cancels; allow normal update only after explicit release",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Keep remote task running until update guard appears and user cancels; allow normal update only after explicit release"
+    },
+    {
+      "id": "r3-update-queued",
+      "description": "Normal reply after queued item is consumed",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Queue consumed by FIFO"
+    },
+    {
+      "id": "r3-update-permission-write",
+      "description": "Write 工具触发远端权限请求",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "权限阻塞必须由真实 blocking request 承载"
+    },
+    {
+      "id": "r3-update-permission-final",
+      "description": "Terminal text following tool result",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Terminal state"
+    },
+    {
+      "id": "r3-update-main-fallback",
+      "description": "Other requests in this case (follow-up history may include SLOW/Q/PERMISSION, excluded only by last user message)",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Normal reply for initial/follow-up turn"
+    }
+  ]
+}

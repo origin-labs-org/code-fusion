@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-anthropic-reasoning-history-replay",
+  "spec": "./test/e2e/conversation-session/conversation-session-anthropic-reasoning-history-replay.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-anthropic-reasoning-history-replay.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "anthropic-reasoning-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of the product semantics for this case; pin response to prevent title requests from mistakenly hitting the primary reasoning request."
+    },
+    {
+      "id": "anthropic-reasoning-signature-start-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Provider wire shape of a real compatibility issue: start has a signature but no native signature_delta."
+    },
+    {
+      "id": "anthropic-reasoning-standard-signature-delta-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Explicitly lock standard native signature_delta parsing to avoid only covering the start-signature compatibility branch."
+    },
+    {
+      "id": "anthropic-reasoning-native-signature-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Simultaneously verify that existing native deltas are not redundantly patched and that all three types of reasoning metadata can enter live history."
+    },
+    {
+      "id": "anthropic-reasoning-live-replay",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Use independent provider attempts to prove that standard delta, start fallback, and native precedence have all entered multi-turn live history."
+    },
+    {
+      "id": "anthropic-reasoning-cold-replay",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The response only needs to complete reliably; core evidence is that cold request body preserves historical metadata and provenance."
+    },
+    {
+      "id": "anthropic-reasoning-cross-model",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The matcher directly locks the provider wire where cross-model signed/redacted are removed and unsigned is preserved."
+    },
+    {
+      "id": "anthropic-reasoning-orphan-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "A reasoning-only turn must be truly persisted so the next logical request can verify the cleanup of orphaned assistants."
+    },
+    {
+      "id": "anthropic-reasoning-orphan-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The matcher requires orphaned reasoning markers to be removed from the provider request."
+    },
+    {
+      "id": "anthropic-reasoning-empty-envelope-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The real turn only produces signed reasoning; after switching models in the next turn, structural repair should backfill the assistant envelope."
+    },
+    {
+      "id": "anthropic-reasoning-empty-envelope-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The matcher constrains that signed reasoning is removed while the (no content) assistant still exists."
+    },
+    {
+      "id": "anthropic-reasoning-whitespace-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Switching models leaves only whitespace after signature cleanup; verify assistant deletion and merging with normal user."
+    },
+    {
+      "id": "anthropic-reasoning-whitespace-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The matcher constrains that both normal user markers exist concurrently and no signed reasoning is present."
+    },
+    {
+      "id": "anthropic-reasoning-retry-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Subsequent retry branches reuse the same real persisted history to verify repairs only modify the request copy."
+    },
+    {
+      "id": "anthropic-reasoning-http-signature-400",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically trigger signature rejection before the first token to verify request copy repair and a zero-backoff single retry."
+    },
+    {
+      "id": "anthropic-reasoning-http-signature-retry-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The matcher proves that the second attempt only removes signed/redacted while preserving unsigned and normal answers."
+    },
+    {
+      "id": "anthropic-reasoning-retry-canonical-history",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that retry cleanup does not write back to MessageHistory or persisted data."
+    },
+    {
+      "id": "anthropic-reasoning-sse-signature-400",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Cover the same signature repair entry point where the error originates from stream consume rather than HTTP setup."
+    },
+    {
+      "id": "anthropic-reasoning-sse-signature-retry-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "第二 attempt 的 matcher 与 HTTP 分支相同，保证两条错误入口使用同一修复投影。"
+    },
+    {
+      "id": "anthropic-reasoning-unrelated-400",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify narrowed error message matching; other invalid_request errors must not modify history or make additional requests."
+    },
+    {
+      "id": "anthropic-reasoning-double-signature-400-first",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The first leg allows request-local repair; maxMatches ensures the next physical request enters the second rejection fixture."
+    },
+    {
+      "id": "anthropic-reasoning-double-signature-400-second",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The second leg requires signed/redacted to be removed and returns the same 400 again to verify the one-shot ceiling."
+    },
+    {
+      "id": "anthropic-reasoning-visible-signature-error",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Bug root cause: under coverage instrumentation, 180ms is insufficient to ensure AI SDK consumes completed text blocks; errors arrive early and are misidentified as pre-output. Preserve a 5s consumption window before injecting signature errors to verify retries are forbidden once visible output has been committed."
+    },
+    {
+      "id": "anthropic-reasoning-unsigned-only-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Persist an old session containing only unsigned reasoning, and verify cold replay after a full restart."
+    },
+    {
+      "id": "anthropic-reasoning-no-change-signature-400",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Cold-restored unsigned reasoning is sent to the provider first; since existing cleanup is unchanged, there must be only one physical attempt."
+    }
+  ]
+}

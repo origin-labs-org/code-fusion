@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-turn-navigator",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-turn-navigator.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-turn-navigator.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-v4-turn-navigator/tool-secret.txt",
+      "source": "created-by-spec",
+      "description": "Spec writes fixed Read tool result to assert that turn navigator tooltip does not leak tool body text."
+    }
+  ],
+  "requests": [
+    {
+      "id": "v4-turn-navigator-title",
+      "description": "Fixed title generation response in Turn navigator case to prevent title requests from accidentally hitting main flow fixtures.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not product semantics for TN case; it only needs a stable response to prevent title requests from blocking the main message stream."
+    },
+    {
+      "id": "v4-turn-navigator-tool-call",
+      "description": "TN02 round 1 returns Read tool_use first to create realistic tool result history, asserting tooltip does not leak tool body text.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "TN02 requires realistic tool history, but navigator summary only allows user + assistant text."
+    },
+    {
+      "id": "v4-turn-navigator-turn1-final",
+      "description": "TN02 round 1 fixed concluding text after Read tool_result.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Navigator summary requires stable assistant text excerpt."
+    },
+    {
+      "id": "v4-turn-navigator-turn2-final",
+      "description": "TN01 第二轮固定长文本，达到 2+ 可导航 turn 后显示 rail。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "TN01/TN03 require stable multi-turn scrollable history."
+    },
+    {
+      "id": "v4-turn-navigator-turn3-final",
+      "description": "TN03 第三轮固定长文本。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "TN03 需要点击非当前 bar 并滚动到目标 turn。"
+    },
+    {
+      "id": "v4-turn-navigator-turn4-final",
+      "description": "TN03 round 4 fixed long text, letting current viewport stay at bottom before clicking preceding bar.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "TN03 requires 4+ turns to construct jump to non-current bar."
+    }
+  ]
+}

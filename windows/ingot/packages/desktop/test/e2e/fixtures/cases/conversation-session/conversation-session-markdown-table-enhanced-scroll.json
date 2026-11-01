@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-markdown-table-enhanced-scroll",
+  "spec": "./test/e2e/conversation-session/conversation-session-markdown-table-enhanced-scroll.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-markdown-table-enhanced-scroll.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "markdown-table-enhanced-scroll-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return reliably."
+    },
+    {
+      "id": "markdown-table-enhanced-scroll-status-panel-goal",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "W15 needs to reliably create the target objective and status panel to prevent real model output from affecting layout assertions."
+    },
+    {
+      "id": "markdown-table-enhanced-scroll-tables",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Enhanced scrolling cases need to reliably construct markdown tables of varying widths and heights to prevent drift in real model response formatting."
+    }
+  ]
+}

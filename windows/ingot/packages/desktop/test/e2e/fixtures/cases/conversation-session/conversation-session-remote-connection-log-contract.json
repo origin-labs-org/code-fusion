@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-remote-connection-log-contract",
+  "spec": "./test/e2e/conversation-session/conversation-session-remote-connection-log-contract.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-remote-connection-log-contract.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-LOG verifies connection rejection, sanitized logs, and feedback prefill, without sending model requests.",
+  "requests": []
+}

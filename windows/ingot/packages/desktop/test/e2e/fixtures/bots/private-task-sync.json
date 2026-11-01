@@ -1,0 +1,7 @@
+{
+  "caseId": "BOT-E2E-PS-01",
+  "classification": "synthetic",
+  "syntheticReason": "Need to control final round states across IM, desktop, and mobile for the same task, and inject late events after disabling to verify continuous subscription and target isolation without relying on real IM networks.",
+  "timing": "controlled-stream",
+  "promptMarker": "E2E_BOT_PRIVATE_SYNC"
+}

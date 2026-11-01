@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-highspeed-queue-edit",
+  "spec": "./test/e2e/conversation-session/conversation-session-highspeed-queue-edit.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-queue-edit.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "highspeed-queue-edit-running-turn",
+      "description": "Keep the first turn Highspeed controlled slow stream running to verify queuing, retracting, and resending of the next input.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "queue only exists during a running turn; fix the slow stream window to verify that the queue preserves regular Selection and that retracting does not restore the hidden Highspeed Provider to Composer."
+    }
+  ]
+}

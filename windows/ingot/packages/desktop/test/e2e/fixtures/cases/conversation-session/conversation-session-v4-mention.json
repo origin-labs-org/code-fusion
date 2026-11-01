@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-mention",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-mention.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-mention.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-mention-title",
+      "description": "Case-local title generation response for E2E_V4_MENTION_SEED initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_MENTION_SEED initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-mention-seed",
+      "description": "M5 mention panel gate: fixed first-round reply establishes session matchable by # session mentions (sessions-index data source).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Mention panel only needs an existing session for # directory matching; first-round text is fixed."
+    }
+  ]
+}

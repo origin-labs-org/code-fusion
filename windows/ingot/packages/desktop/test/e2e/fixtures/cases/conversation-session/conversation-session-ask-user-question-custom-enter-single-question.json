@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-custom-enter-single-question",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-custom-enter-single-question.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-custom-enter-single-question.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-single-question-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion single-question waiting state to contrast whether custom input Enter submits directly in single-question scenarios."
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-single-question-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response proves single-question custom input Enter has been submitted to the agent, allowing UI assertions on answered records."
+    }
+  ]
+}

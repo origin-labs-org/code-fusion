@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-fork",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-fork.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-fork-title",
+      "description": "Case-local title generation response for E2E_V4_FORK_PARENT initial send.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_FORK_PARENT initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_FORK_PARENT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"v4-fork-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"V4 Fork E2E\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"v4-fork-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "v4-fork-parent-turn",
+      "description": "M4 forkAssistant gate: parent session first round completes, producing forkable assistant rows.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The fork target must be an assistant message stably committed to transcript; use controllable fast stream to ensure stream completion stability."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_V4_FORK_PARENT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"v4-fork-parent","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"V4_FORK_PARENT_REPLY"},"finish_reason":null}]}\n\ndata: {\"id\":"v4-fork-parent","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "v4-fork-child-followup",
+      "description": "Subsequent inputs of fork child must reuse provider requests with fork-time thought level.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Match child follow-up with independent marker to verify live child runtime and provider wire use the same thought level."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_V4_FORK_CHILD"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"v4-fork-child","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"V4_FORK_CHILD_REPLY"},"finish_reason":null}]}\n\ndata: {\"id\":"v4-fork-child","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

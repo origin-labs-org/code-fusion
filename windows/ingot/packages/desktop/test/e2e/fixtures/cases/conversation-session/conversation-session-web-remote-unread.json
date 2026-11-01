@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-web-remote-unread",
+  "spec": "./test/e2e/conversation-session/conversation-session-web-remote-unread.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-web-remote-unread.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "mro03-title",
+      "description": "未读用例标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Prepare replayable history for the same task; title is not involved in unread determination."
+    },
+    {
+      "id": "mro03-seed",
+      "description": "本地历史准备",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Prepare replayable history for the same task; title is not involved in unread determination."
+    },
+    {
+      "id": "mro03-ssh-seed",
+      "description": "真实SSH历史准备",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Prepare replayable history for the same task; title is not involved in unread determination."
+    },
+    {
+      "id": "mro03-visible",
+      "description": "Local VISIBLE active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-home",
+      "description": "Local HOME active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-reconnect",
+      "description": "Local RECONNECT active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-promotion",
+      "description": "Local PROMOTION active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-background",
+      "description": "Local BACKGROUND active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-ssh-visible",
+      "description": "SSHVISIBLE active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    },
+    {
+      "id": "mro03-ssh-home",
+      "description": "SSHHOME active view scenario",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Fixed model response; explicitly released and completed by the test after active view state is accepted by Main, verifying single desktop writer and persistent marker without consuming model quota."
+    }
+  ]
+}

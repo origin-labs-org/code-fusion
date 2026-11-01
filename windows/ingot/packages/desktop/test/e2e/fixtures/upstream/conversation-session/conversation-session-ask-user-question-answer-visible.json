@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-answer-visible",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-answer-visible.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-ask-user-question-answer-visible-call",
+      "description": "AskUserQuestion answer visible repro: round 1 returns single-question Q&A tool call.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion single-question waiting state to prevent real model questioning behavior from affecting UI projection reproduction."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASK_USER_QUESTION_ANSWER_VISIBLE"],
+        "bodyIncludes": [
+          "E2E_ASK_USER_QUESTION_ANSWER_VISIBLE",
+          "E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_tool_cross_product_ask_user_question",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION: choose an answer?",
+                "header": "E2E",
+                "options": [
+                  {
+                    "label": "Use default",
+                    "description": "Continue the e2e run with the default answer."
+                  },
+                  {
+                    "label": "Use fallback",
+                    "description": "Continue the e2e run with the fallback answer."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-answer-visible-final",
+      "description": "AskUserQuestion answer visible repro: Final reply after user answers are fed into the next model request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response only proves Q&A answers have been consumed by the agent; the core assertion is whether the UI retains user-visible records."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_ASK_USER_QUESTION_CUSTOM_ANSWER",
+          "E2E_TOOL_CROSS_PRODUCT_ASK_USER_QUESTION",
+          "toolu_e2e_tool_cross_product_ask_user_question"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-account-isolation",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-account-isolation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-account-isolation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-account-reconnect-title",
+      "description": "SSH directory resilience task title auxiliary response.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "ssh-account-reconnect-main",
+      "description": "SSH directory resilience generic response for initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Use fixed replies to prepare and continue real remote history, with account isolation constructed from two real users on the same SSH target."
+    }
+  ]
+}

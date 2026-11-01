@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-stop-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-stop-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-stop-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-stop-queue-title",
+      "description": "Case-local title generation response for initial E2E_V4_HELD_SLOW submission.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial submission of E2E_V4_HELD_SLOW triggers the default title sidecar; stub case-local title response to prevent default replay from falling back to legacy provider-basic, and isolate cross-case matching with this initial submission marker."
+    },
+    {
+      "id": "v4-stop-queue-q1",
+      "description": "Consumed reply for held queue item 1 (visible after sendQueuedNow / drain).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Held queue item requires an assertable reply sentinel after being explicitly consumed."
+    },
+    {
+      "id": "v4-stop-queue-q2",
+      "description": "FIFO reply for paused queue item 2 after resuming automatic consumption.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "B14 requires a second distinguishable reply sentinel to prove that after clicking resume, Q1/Q2 are consumed to empty by CLI in FIFO order."
+    },
+    {
+      "id": "v4-stop-queue-keep-send",
+      "description": "Controlled slow streaming reply after selecting keep and send in paused queue modal.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "B06 requires an assertable keepQueueAndSend reply; B15 also requires a stable running window to click resume before current stream completes, proving the old paused queue head does not preempt."
+    },
+    {
+      "id": "v4-stop-queue-clear-send",
+      "description": "New round reply after selecting \"Clear Queue\" in paused queue modal.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "clearQueueAndSend requires an assertable new reply sentinel while the queue is cleared."
+    },
+    {
+      "id": "v4-stop-queue-slow-turn",
+      "description": "B02/B04 held queue gate: controlled slow stream round 1, kept running so it can be stopped after enqueueing.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Asserting that stop preserves queue requires a stable running window (stop after enqueueing two items)."
+    }
+  ]
+}

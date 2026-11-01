@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-goal-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-goal-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-goal-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-goal-queue-base-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "The mixed goal/text queue requires the current turn to stay running; the real provider completing too quickly would prevent inputs from entering the queue."
+    },
+    {
+      "id": "upstream-goal-queue-order-base-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Before consuming queued goals sequentially, the base turn must stay running; the real provider completing too quickly would bypass held queue semantics."
+    },
+    {
+      "id": "upstream-goal-queue-order-first-continuation-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "测试需要在第一条 queued goal 已成为 active target 且仍 streaming 时验证可 stop。"
+    },
+    {
+      "id": "upstream-goal-queue-order-second-continuation-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "The test needs to verify that the final queue is emptied when the second queued goal overrides the first target and is still streaming."
+    },
+    {
+      "id": "upstream-goal-queue-first-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "While running, /goal only enters the local queue; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-goal-queue-text-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "While running, regular text only enters the local queue; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-goal-queue-second-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "While running, the second /goal only enters the local queue; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-goal-queue-second-edited-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "queue edit only modifies local queue items and should not trigger the provider; the fixture only covers the marker contract."
+    }
+  ]
+}

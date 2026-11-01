@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "provider-builtin-refresh-failure",
+  "spec": "./test/e2e/settings/provider-builtin-refresh-failure.test.ts",
+  "providerFixtures": [],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "E2E_BUILTIN_REFRESH_FAILURE_CONTROL",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Local control plane returns invalid HTTP download URL, rejected by real downloader; plan identity reuses local account control plane, with no real account or paid model requests."
+    }
+  ]
+}

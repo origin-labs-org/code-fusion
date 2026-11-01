@@ -1,0 +1,1332 @@
+import { describe, expect, it, vi } from "vitest";
+import {
+  ProviderConfig,
+  ProviderConfigMap,
+  ZhipuAccountAccessConfig,
+  type AccountProviderConfigSnapshot,
+  type ModelSelectionView,
+} from "@origin-ai/cf-provider";
+import { cfProtocolMethods } from "@origin-ai/cf-shared";
+import { V4_METHODS } from "@origin-ai/cf-shared/cf-protocol-v4";
+import { createAccountProviderConfig } from "./providerConfigFixtures.js";
+
+const START_PLAN_PROVIDER_ID = "account:zai-start-plan";
+const BIGMODEL_CODING_PLAN_PROVIDER_ID = "account:bigmodel-individual-coding-plan";
+const protocolModelProperties = {
+  inputFormat: {
+    supportsText: true,
+    supportsImage: false,
+    supportsVideo: false,
+    supportsAudio: false,
+    supportsPdf: false,
+  },
+  outputFormat: { supportsText: true },
+};
+type RegistryFixture = {
+  generatedAt: number;
+  revision: string;
+  providers: Array<{
+    providerId: string;
+    apiFormat?: "anthropic-messages" | "openai-responses" | "openai-chat-completions";
+    baseURL?: string;
+    models: Array<{ modelId: string }>;
+  }>;
+};
+class MockProcessManagerBase {
+  onRuntimeLifecycle() {
+    return { dispose() {} };
+  }
+
+  onRuntimeRestarted() {
+    return { dispose() {} };
+  }
+
+  markReady() {}
+}
+
+function createSessionSnapshot(params: {
+  model: { providerId: string; modelId: string };
+  thoughtLevel?: string;
+}) {
+  return {
+    protocol: { name: "CodeFusion Protocol", version: 1 },
+    session: {
+      sessionId: "sess_1",
+      workspace: {
+        workspacePath: "/workspace/app",
+        workspaceKey: "/workspace/app",
+      },
+      sessionKind: "interactive",
+      title: "Runtime model test",
+      mode: "build",
+      status: "idle",
+      createdAt: 1,
+      updatedAt: 1,
+    },
+    settings: {
+      model: {
+        current: params.model,
+        available: [
+          {
+            ref: params.model,
+            label: params.model.modelId,
+            properties: protocolModelProperties,
+          },
+        ],
+      },
+      thoughtLevel: {
+        enabled: params.thoughtLevel !== undefined,
+        current: params.thoughtLevel,
+        available: params.thoughtLevel
+          ? [{ value: params.thoughtLevel, label: params.thoughtLevel }]
+          : [],
+      },
+      mode: { current: "build" },
+    },
+    projection: {
+      sessionId: "sess_1",
+      status: "idle",
+      mode: "build",
+      turnCount: 0,
+      totalTokenCount: 0,
+      contextUsed: 0,
+      pendingPermissions: [],
+    },
+    runtime: { eventSeq: 0, stateRevision: 1, pendingRequestIds: [] },
+    messages: [],
+  };
+}
+
+function createStartPlanRegistry(params?: {
+  glm52Levels?: string[];
+  revision?: string;
+}): RegistryFixture {
+  const glm52Levels = params?.glm52Levels ?? ["max", "off"];
+  return {
+    generatedAt: 2,
+    providers: [
+      {
+        providerId: START_PLAN_PROVIDER_ID,
+        apiKeyRequired: false,
+        kind: "openai-compatible",
+        baseURL: "https://cf.z.ai/api/v1/cf-plan",
+        models: [
+          {
+            modelId: "GLM-5.2",
+            reasoning: {
+              enabled: true,
+              ...(glm52Levels[0] ? { defaultLevel: glm52Levels[0] } : {}),
+              levels: glm52Levels.map((level) => ({ value: level, label: level })),
+            },
+          },
+          {
+            modelId: "GLM-5.1",
+            reasoning: {
+              enabled: true,
+              defaultLevel: "enabled",
+              levels: [
+                { value: "enabled", label: "enabled" },
+                { value: "off", label: "off" },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    revision: params?.revision ?? "sha256:start-plan-registry-1",
+  };
+}
+
+function createBigModelCodingPlanRegistry(params?: { revision?: string }): RegistryFixture {
+  return {
+    generatedAt: 2,
+    providers: [
+      {
+        providerId: BIGMODEL_CODING_PLAN_PROVIDER_ID,
+        apiKeyRequired: false,
+        kind: "anthropic",
+        baseURL: "https://open.bigmodel.cn/api/anthropic",
+        models: [{ modelId: "GLM-5.2" }],
+      },
+    ],
+    revision: params?.revision ?? "sha256:bigmodel-coding-plan-registry-1",
+  };
+}
+
+function createAccountProviderConfigChangeSource(initial: AccountProviderConfigSnapshot) {
+  let snapshot = initial;
+  let listener: ((reason: string) => void) | undefined;
+  return {
+    source: {
+      async read() {
+        return snapshot;
+      },
+      onDidChange(callback: (reason: string) => void) {
+        listener = callback;
+        return () => {
+          if (listener === callback) listener = undefined;
+        };
+      },
+    },
+    emit(reason: string, next: AccountProviderConfigSnapshot) {
+      snapshot = next;
+      listener?.(reason);
+    },
+  };
+}
+
+function createModelSelectionChangeSource(initial: ModelSelectionView) {
+  let view = initial;
+  let listener: ((next: ModelSelectionView) => void) | undefined;
+  return {
+    source: {
+      async getView() {
+        return view;
+      },
+      onDidChange(callback: (next: ModelSelectionView) => void) {
+        listener = callback;
+        return {
+          dispose() {
+            if (listener === callback) listener = undefined;
+          },
+        };
+      },
+    },
+    emit(next: ModelSelectionView) {
+      view = next;
+      listener?.(next);
+    },
+  };
+}
+
+function createModelSelectionViewFromRegistry(snapshot: RegistryFixture): ModelSelectionView {
+  return {
+    revision: snapshot.generatedAt,
+    providers: snapshot.providers.map((provider) => ({
+      providerId: provider.providerId,
+      config: {
+        kind: "api" as const,
+        api: {
+          type: provider.apiFormat ?? "openai-chat-completions",
+          baseUrl: provider.baseURL,
+        },
+        models: provider.models.map((model) => model.modelId),
+      },
+      models: provider.models.map((model) => ({ modelId: model.modelId, config: {} })),
+    })),
+  };
+}
+
+function createReadyModelSelectionSource() {
+  return createModelSelectionChangeSource(
+    createModelSelectionViewFromRegistry(createStartPlanRegistry()),
+  ).source;
+}
+
+describe("createCfAgentService provider registry", () => {
+  it("uses the process model selection view for local startup without sending runtimeModel", async () => {
+    const selectionSource = createModelSelectionChangeSource({
+      revision: 1,
+      providers: [
+        {
+          providerId: "custom-openai",
+          config: {
+            kind: "api",
+            apiFormat: "openai-chat-completions",
+            baseURL: "https://api.example.com/v1",
+            models: ["agent-model"],
+          },
+          models: [{ modelId: "agent-model", config: {} }],
+        },
+      ],
+    });
+    const request = vi.fn(async (method: string, params?: unknown) => {
+      if (method === cfProtocolMethods.sessionCreate) {
+        const model = (params as { model: { providerId: string; modelId: string } }).model;
+        return createSessionSnapshot({ model, thoughtLevel: "high" });
+      }
+      throw new Error(`Unexpected method ${method}`);
+    });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request,
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: () => ({ dispose() {} }),
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+
+    await service.createSession({
+      workspacePath: "/workspace/app",
+      model: { providerId: "custom-openai", modelId: "agent-model" },
+      thoughtLevel: "high",
+    });
+
+    const createCall = request.mock.calls.find(
+      ([method]) => method === cfProtocolMethods.sessionCreate,
+    );
+    expect(createCall?.[1]).toMatchObject({
+      model: { providerId: "custom-openai", modelId: "agent-model" },
+      thoughtLevel: "high",
+    });
+    expect(
+      (createCall?.[1] as { runtimeModel?: unknown } | undefined)?.runtimeModel,
+    ).toBeUndefined();
+    service.disposeAll();
+  });
+
+  it("starts a waiting local worker after the process model selection view becomes ready", async () => {
+    const selectionSource = createModelSelectionChangeSource({
+      revision: 1,
+      providers: [],
+    });
+    const getClient = vi.fn(async () => ({
+      request: vi.fn(async () => {
+        throw new Error("Unexpected request");
+      }),
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+
+    await expect(service.initialize({ workspacePath: "/workspace/app" })).resolves.toMatchObject({
+      available: false,
+    });
+    expect(getClient).not.toHaveBeenCalled();
+
+    selectionSource.emit({
+      revision: 2,
+      providers: [
+        {
+          providerId: "custom-openai",
+          config: {
+            kind: "api",
+            apiFormat: "openai-chat-completions",
+            baseURL: "https://api.example.com/v1",
+            models: ["agent-model"],
+          },
+          models: [{ modelId: "agent-model", config: {} }],
+        },
+      ],
+    });
+
+    await vi.waitFor(() => expect(getClient).toHaveBeenCalledTimes(1));
+    await expect(service.initialize({ workspacePath: "/workspace/app" })).resolves.toMatchObject({
+      available: true,
+    });
+    service.disposeAll();
+  });
+
+  it("resolves account provider request auth without a renderer round trip", async () => {
+    let requestListener: ((request: unknown) => void) | undefined;
+    const respond = vi.fn(async () => {});
+    const resolveCurrent = vi.fn(async () => ({ apiKey: "team-runtime-key" }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request: vi.fn(async (method: string) => {
+              if (method === cfProtocolMethods.initialize) {
+                return {
+                  available: true,
+                  protocolName: "CodeFusion Protocol",
+                  protocolVersion: 1,
+                  workspaceKey: "/workspace/app",
+                };
+              }
+              throw new Error(`Unexpected method ${method}`);
+            }),
+            respond,
+            respondError: vi.fn(async () => {}),
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: (listener: (request: unknown) => void) => {
+              requestListener = listener;
+              return { dispose() {} };
+            },
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      accountRequestAuthService: { resolveCurrent },
+      modelSelectionReadinessSource: createModelSelectionChangeSource(
+        createModelSelectionViewFromRegistry(createBigModelCodingPlanRegistry()),
+      ).source,
+    });
+
+    await service.initialize({ workspacePath: "/workspace/app" });
+    requestListener?.({
+      id: "agent-request-team-auth",
+      method: cfProtocolMethods.interactionRequestProviderRuntimeHeaders,
+      params: {
+        requestId: "team-auth-1",
+        sessionId: "sess_1",
+        workspace: {
+          workspacePath: "/workspace/app",
+          workspaceKey: "/workspace/app",
+        },
+        modelSelection: {
+          providerId: BIGMODEL_CODING_PLAN_PROVIDER_ID,
+          modelId: "GLM-5.2",
+        },
+        providerId: BIGMODEL_CODING_PLAN_PROVIDER_ID,
+        accountAccess: {
+          type: "zhipu-account",
+          accountType: "bigmodel",
+          mode: "team-coding-plan",
+          entitled: true,
+        },
+        reason: "model-request",
+      },
+    });
+
+    await vi.waitFor(() => {
+      expect(respond).toHaveBeenCalledWith("agent-request-team-auth", {
+        headersApplied: true,
+        requestAuth: { apiKey: "team-runtime-key" },
+      });
+    });
+    expect(resolveCurrent).toHaveBeenCalledWith({
+      providerId: BIGMODEL_CODING_PLAN_PROVIDER_ID,
+      modelId: "GLM-5.2",
+      accountAccess: {
+        type: "zhipu-account",
+        accountType: "bigmodel",
+        mode: "team-coding-plan",
+        entitled: true,
+      },
+      reason: "model-request",
+    });
+    service.disposeAll();
+  });
+
+  it("keeps initialize waiting without creating a client when provider/model is unavailable", async () => {
+    const getClient = vi.fn();
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createModelSelectionChangeSource({
+        revision: 1,
+        providers: [],
+      }).source,
+    });
+
+    await expect(
+      Promise.all([
+        service.initialize({ workspacePath: "/workspace/app" }),
+        service.initialize({ workspacePath: "/workspace/app" }),
+      ]),
+    ).resolves.toEqual([
+      expect.objectContaining({ available: false, reasonCode: "provider_not_ready" }),
+      expect.objectContaining({ available: false, reasonCode: "provider_not_ready" }),
+    ]);
+    expect(getClient).not.toHaveBeenCalled();
+    service.disposeAll();
+  });
+
+  it("keeps concurrent callers on the same ready startup generation available", async () => {
+    const getClient = vi.fn(async () => ({
+      request: vi.fn(),
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createModelSelectionChangeSource(
+        createModelSelectionViewFromRegistry(
+          createStartPlanRegistry({ revision: "sha256:ready-concurrent" }),
+        ),
+      ).source,
+    });
+    const workspace = { workspacePath: "/workspace/concurrent-ready" };
+
+    await expect(
+      Promise.all([service.initialize(workspace), service.initialize(workspace)]),
+    ).resolves.toEqual([
+      expect.objectContaining({ available: true }),
+      expect.objectContaining({ available: true }),
+    ]);
+    service.disposeAll();
+  });
+
+  it.each(["desktop-continuous", "web-remote-replayable"] as const)(
+    "并发预热完成不能让迟到的首条命令误判 runtime 已释放：%s",
+    async (clientMode) => {
+      const ready = createModelSelectionViewFromRegistry(createStartPlanRegistry());
+      let finishLateRead!: (view: ModelSelectionView) => void;
+      const lateRead = new Promise<ModelSelectionView>((resolve) => {
+        finishLateRead = resolve;
+      });
+      const getView = vi.fn().mockResolvedValueOnce(ready).mockReturnValue(lateRead);
+      const request = vi.fn(async () => ({
+        commandId: "first-input",
+        status: "accepted" as const,
+        revisionAtDecision: 1,
+      }));
+      const getClient = vi.fn(async () => ({
+        request,
+        transportKind: "stdio" as const,
+        onNotification: () => ({ dispose() {} }),
+        onRequest: () => ({ dispose() {} }),
+        onClose: () => ({ dispose() {} }),
+      }));
+      vi.resetModules();
+      vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+        CfAgentProcessManager: class extends MockProcessManagerBase {
+          getClient = getClient;
+          disposeAll() {}
+        },
+      }));
+      const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+      const service = createCfAgentService({ modelSelectionReadinessSource: { getView } });
+      const workspace = {
+        workspacePath: "/workspace/concurrent-first-input",
+        ...(clientMode === "web-remote-replayable"
+          ? { workspaceIdentity: "remote:ssh:first:/workspace/concurrent-first-input" }
+          : {}),
+      };
+      try {
+        const warmup = service.initialize(workspace);
+        const command = service.sendConversationCommandV4({
+          ...workspace,
+          clientMode,
+          envelope: {
+            commandId: "first-input",
+            clientId: clientMode,
+            sessionId: "sess_1",
+            type: "sendText",
+            payload: { text: "first input" },
+            issuedAt: 1,
+          },
+        });
+        await expect(warmup).resolves.toMatchObject({ available: true });
+        finishLateRead(ready);
+        await expect(command).resolves.toMatchObject({ status: "accepted" });
+        expect(getView).toHaveBeenCalledTimes(1);
+        expect(getClient).toHaveBeenCalledTimes(1);
+        expect(request).toHaveBeenCalledExactlyOnceWith(
+          V4_METHODS.command,
+          expect.objectContaining({ commandId: "first-input", type: "sendText" }),
+          expect.anything(),
+        );
+      } finally {
+        finishLateRead(ready);
+        service.disposeAll();
+      }
+    },
+  );
+
+  it("释放并重新打开 workspace 后，旧 readiness 回调不能借用新 runtime", async () => {
+    const ready = createModelSelectionViewFromRegistry(createStartPlanRegistry());
+    let finishOldRead!: (view: ModelSelectionView) => void;
+    const oldRead = new Promise<ModelSelectionView>((resolve) => {
+      finishOldRead = resolve;
+    });
+    const getView = vi.fn().mockReturnValueOnce(oldRead).mockResolvedValue(ready);
+    const getClient = vi.fn(async () => ({
+      request: vi.fn(),
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        async disposeWorkspace() {}
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({ modelSelectionReadinessSource: { getView } });
+    const workspace = { workspacePath: "/workspace/reopen-during-readiness" };
+    try {
+      const oldStartup = service.initialize(workspace);
+      await service.disposeWorkspace(workspace);
+      await expect(service.initialize(workspace)).resolves.toMatchObject({ available: true });
+      finishOldRead(ready);
+      await expect(oldStartup).resolves.toMatchObject({ available: false });
+      expect(getClient).toHaveBeenCalledTimes(1);
+    } finally {
+      finishOldRead(ready);
+      service.disposeAll();
+    }
+  });
+
+  it("starts each waiting workspace identity once when provider/model becomes ready", async () => {
+    const clients: Array<{
+      request: ReturnType<typeof vi.fn>;
+      transportKind: "stdio";
+      onNotification: () => { dispose(): void };
+      onRequest: () => { dispose(): void };
+      onClose: () => { dispose(): void };
+    }> = [];
+    const getClient = vi.fn(async () => {
+      const request = vi.fn(async (method: string) => {
+        throw new Error(`Unexpected method ${method}`);
+      });
+      const client = {
+        request,
+        transportKind: "stdio" as const,
+        onNotification: () => ({ dispose() {} }),
+        onRequest: () => ({ dispose() {} }),
+        onClose: () => ({ dispose() {} }),
+      };
+      clients.push(client);
+      return client;
+    });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const selectionSource = createModelSelectionChangeSource({
+      revision: 1,
+      providers: [],
+    });
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+    const firstIdentity = "remote:ssh:first:/workspace/app";
+    const secondIdentity = "remote:ssh:second:/workspace/app";
+
+    await service.initialize({
+      workspacePath: "/workspace/app",
+      workspaceIdentity: firstIdentity,
+    });
+    await service.initialize({
+      workspacePath: "/workspace/app",
+      workspaceIdentity: secondIdentity,
+    });
+    expect(getClient).not.toHaveBeenCalled();
+
+    const ready = createStartPlanRegistry({ revision: "sha256:ready" });
+    selectionSource.emit(createModelSelectionViewFromRegistry(ready));
+    await vi.waitFor(() => expect(getClient).toHaveBeenCalledTimes(2));
+    expect(getClient).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceIdentity: firstIdentity }),
+    );
+    expect(getClient).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceIdentity: secondIdentity }),
+    );
+    expect(clients.every((client) => client.request.mock.calls.length === 0)).toBe(true);
+
+    selectionSource.emit(
+      createModelSelectionViewFromRegistry({
+        ...ready,
+        generatedAt: ready.generatedAt + 1,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(getClient).toHaveBeenCalledTimes(2);
+    service.disposeAll();
+  });
+
+  it("readiness 读取中到达 ready 事件时，失败的旧启动不能吞掉新事件", async () => {
+    const getClient = vi.fn(async () => ({
+      request: vi.fn(),
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const selectionSource = createModelSelectionChangeSource({ revision: 1, providers: [] });
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+    try {
+      const initial = service.initialize({ workspacePath: "/workspace/ready-during-startup" });
+      selectionSource.emit(createModelSelectionViewFromRegistry(createStartPlanRegistry()));
+      await expect(initial).resolves.toMatchObject({ available: false });
+      await vi.waitFor(() => expect(getClient).toHaveBeenCalledTimes(1));
+    } finally {
+      service.disposeAll();
+    }
+  });
+
+  it("does not restart a released workspace from an already queued provider-ready event", async () => {
+    const getClient = vi.fn(async () => ({
+      request: vi.fn(),
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    const disposeWorkspace = vi.fn(async () => {});
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeWorkspace = disposeWorkspace;
+        disposeAll() {}
+      },
+    }));
+    const selectionSource = createModelSelectionChangeSource({
+      revision: 1,
+      providers: [],
+    });
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+    const workspace = { workspacePath: "/workspace/released-before-ready" };
+
+    await expect(service.initialize(workspace)).resolves.toMatchObject({
+      available: false,
+      reasonCode: "provider_not_ready",
+    });
+    selectionSource.emit(
+      createModelSelectionViewFromRegistry(
+        createStartPlanRegistry({ revision: "sha256:ready-after-release" }),
+      ),
+    );
+    await service.disposeWorkspace(workspace);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(disposeWorkspace).toHaveBeenCalledWith(workspace);
+    expect(getClient).not.toHaveBeenCalled();
+    service.disposeAll();
+  });
+
+  it("reuses a read-only sessions-index client when provider/model becomes ready", async () => {
+    const request = vi.fn(async (method: string) => {
+      if (method === "v4/conversation/subscribe") {
+        return {
+          ack: {
+            subscriptionId: "sub-readonly",
+            mode: "snapshot" as const,
+            logEpoch: "epoch-readonly",
+          },
+        };
+      }
+      throw new Error(`Unexpected method ${method}`);
+    });
+    const getClient = vi.fn(async () => ({
+      request,
+      transportKind: "stdio" as const,
+      onNotification: () => ({ dispose() {} }),
+      onRequest: () => ({ dispose() {} }),
+      onClose: () => ({ dispose() {} }),
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        getClient = getClient;
+        disposeAll() {}
+      },
+    }));
+    const selectionSource = createModelSelectionChangeSource({
+      revision: 1,
+      providers: [],
+    });
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: selectionSource.source,
+    });
+    const workspacePath = "/workspace/read-only-then-ready";
+
+    await service.subscribeSessionsIndexV4({ workspacePath });
+    await expect(service.initialize({ workspacePath })).resolves.toMatchObject({
+      available: false,
+      reasonCode: "provider_not_ready",
+    });
+    expect(getClient).toHaveBeenCalledTimes(1);
+
+    selectionSource.emit(
+      createModelSelectionViewFromRegistry(
+        createStartPlanRegistry({ revision: "sha256:ready-after-readonly" }),
+      ),
+    );
+    await expect(service.initialize({ workspacePath })).resolves.toMatchObject({
+      available: true,
+    });
+    expect(getClient).toHaveBeenCalledTimes(1);
+    expect(request).not.toHaveBeenCalledWith(
+      "workspace/updateProviderRegistry",
+      expect.anything(),
+      expect.anything(),
+    );
+    service.disposeAll();
+  });
+
+  it("syncs the current Environment Account Config before remote session/create", async () => {
+    const calls: string[] = [];
+    const request = vi.fn(async (method: string) => {
+      calls.push(method);
+      if (method === cfProtocolMethods.providerUpdateAccountConfig) {
+        return {
+          receivedRevision: "account-1",
+          status: "received" as const,
+          providerCount: 1,
+        };
+      }
+      if (method === cfProtocolMethods.providerRefreshRegistry) {
+        return { refreshed: true as const };
+      }
+      if (method === cfProtocolMethods.sessionCreate) {
+        return createSessionSnapshot({
+          model: { providerId: "e2e-primary", modelId: "deepseek-v4-flash" },
+        });
+      }
+      throw new Error(`Unexpected method ${method}`);
+    });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request,
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: () => ({ dispose() {} }),
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const accountSnapshot: AccountProviderConfigSnapshot = {
+      revision: "account-1",
+      basedOnCfBuiltinRevision: "cf-builtin:1",
+      states: {
+        "account:zai-individual-coding-plan": {
+          availability: "available",
+          entitled: true,
+          current: false,
+        },
+      },
+      providers: new ProviderConfigMap([
+        [
+          "account:zai-individual-coding-plan",
+          new ProviderConfig({
+            access: new ZhipuAccountAccessConfig({ entitled: true }),
+            builtinModelIds: ["GLM-5.2"],
+          }),
+        ],
+      ]),
+    };
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createReadyModelSelectionSource(),
+      accountProviderConfigSource: {
+        async read() {
+          return accountSnapshot;
+        },
+        onDidChange() {
+          return () => {};
+        },
+      },
+    });
+
+    await service.createSession({
+      workspacePath: "/workspace/app",
+      workspaceIdentity: "remote:ssh:dev:/workspace/app",
+      model: { providerId: "e2e-primary", modelId: "deepseek-v4-flash" },
+    });
+
+    expect(calls).toEqual([
+      cfProtocolMethods.providerUpdateAccountConfig,
+      cfProtocolMethods.providerRefreshRegistry,
+      cfProtocolMethods.sessionCreate,
+    ]);
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      cfProtocolMethods.providerUpdateAccountConfig,
+      {
+        revision: "account-1",
+        basedOnCfBuiltinRevision: "cf-builtin:1",
+        states: accountSnapshot.states,
+        providers: {
+          "account:zai-individual-coding-plan": {
+            access: {
+              type: "zhipu-account",
+              entitled: true,
+            },
+            builtinModelIds: ["GLM-5.2"],
+          },
+        },
+      },
+      expect.any(Object),
+    );
+    service.disposeAll();
+  });
+
+  it("pushes changed Account Config without rebuilding the Workspace Snapshot", async () => {
+    const accountSource = createAccountProviderConfigChangeSource({
+      revision: "account-1",
+      basedOnCfBuiltinRevision: "cf-builtin:1",
+      providers: new ProviderConfigMap([
+        [
+          "account:zai-individual-coding-plan",
+          createAccountProviderConfig({
+            models: ["GLM-5.2"],
+          }),
+        ],
+      ]),
+    });
+    const request = vi.fn(async (method: string, params?: unknown) => {
+      if (method === cfProtocolMethods.providerUpdateAccountConfig) {
+        const revision = (params as { revision: string }).revision;
+        return { receivedRevision: revision, providerCount: 1, status: "received" as const };
+      }
+      if (method === cfProtocolMethods.providerRefreshRegistry) {
+        return { refreshed: true as const };
+      }
+      if (method === cfProtocolMethods.sessionCreate) {
+        return createSessionSnapshot({
+          model: { providerId: "e2e-primary", modelId: "model-a" },
+        });
+      }
+      throw new Error(`Unexpected method ${method}`);
+    });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request,
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: () => ({ dispose() {} }),
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createReadyModelSelectionSource(),
+      accountProviderConfigSource: accountSource.source,
+    });
+    await service.createSession({
+      workspacePath: "/workspace/app",
+      model: { providerId: "e2e-primary", modelId: "model-a" },
+    });
+    request.mockClear();
+
+    accountSource.emit("team-plan-selected", {
+      revision: "account-2",
+      basedOnCfBuiltinRevision: "cf-builtin:1",
+      providers: new ProviderConfigMap([
+        [
+          "account:zai-individual-coding-plan",
+          createAccountProviderConfig({
+            models: ["GLM-5.2"],
+          }),
+        ],
+      ]),
+    });
+
+    await vi.waitFor(() => {
+      expect(request).toHaveBeenCalledWith(
+        cfProtocolMethods.providerUpdateAccountConfig,
+        expect.objectContaining({ revision: "account-2" }),
+        expect.any(Object),
+      );
+    });
+    expect(request).not.toHaveBeenCalledWith(
+      "workspace/updateProviderRegistry",
+      expect.anything(),
+      expect.anything(),
+    );
+    const latest = await accountSource.source.read();
+    let releaseOldRead!: (value: AccountProviderConfigSnapshot) => void;
+    const read = vi.spyOn(accountSource.source, "read").mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseOldRead = resolve;
+        }),
+    );
+    request.mockClear();
+    accountSource.emit("slow-account-query", { ...latest, revision: "account-3" });
+    await vi.waitFor(() => expect(read).toHaveBeenCalledTimes(1));
+    accountSource.emit("new-account-query", { ...latest, revision: "account-4" });
+    await Promise.resolve();
+    await Promise.resolve();
+    const readsBeforeRelease = read.mock.calls.length;
+    releaseOldRead({ ...latest, revision: "account-3" });
+    await vi.waitFor(() => {
+      expect(
+        request.mock.calls.filter(
+          ([method]) => method === cfProtocolMethods.providerUpdateAccountConfig,
+        ),
+      ).toHaveLength(2);
+    });
+    const delivered = request.mock.calls
+      .filter(([method]) => method === cfProtocolMethods.providerUpdateAccountConfig)
+      .map(([, params]) => (params as { revision: string }).revision);
+    service.disposeAll();
+    expect(readsBeforeRelease).toBe(1);
+    expect(delivered).toEqual(["account-3", "account-4"]);
+  });
+
+  it("does not push the full local registry before a V4 draft createSession command", async () => {
+    const calls: string[] = [];
+    const request = vi.fn(async (method: string, params?: unknown) => {
+      calls.push(method);
+      if (method === V4_METHODS.command) {
+        const envelope = params as { commandId: string };
+        return {
+          commandId: envelope.commandId,
+          status: "accepted" as const,
+          revisionAtDecision: 1,
+          result: { type: "createSession" as const, sessionId: "sess_v4_draft" },
+        };
+      }
+      throw new Error(`Unexpected method ${method}`);
+    });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request,
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: () => ({ dispose() {} }),
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createReadyModelSelectionSource(),
+    });
+
+    const createPromise = service.sendConversationCommandV4({
+      workspacePath: "/workspace/app",
+      envelope: {
+        commandId: "cmd-v4-draft-custom-model",
+        clientId: "client-v4-draft",
+        sessionId: null,
+        type: "createSession",
+        payload: {
+          workspaceId: "/workspace/app",
+          config: {
+            provider: "custom:glm",
+            model: "glm-5.2",
+            thought: "max",
+          },
+        },
+        issuedAt: 1,
+      },
+    });
+
+    await expect(createPromise).resolves.toMatchObject({
+      status: "accepted",
+      result: { type: "createSession", sessionId: "sess_v4_draft" },
+    });
+    expect(calls).toEqual([V4_METHODS.command]);
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      V4_METHODS.command,
+      expect.objectContaining({
+        type: "createSession",
+        payload: expect.objectContaining({
+          config: expect.objectContaining({
+            provider: "custom:glm",
+            model: "glm-5.2",
+          }),
+        }),
+      }),
+      expect.any(Object),
+    );
+    service.disposeAll();
+  });
+
+  it.each(["refreshed", "failed"] as const)(
+    "waits for the worker registry before switching a model with unchanged account config: %s",
+    async (refreshResult) => {
+      const accountSource = createAccountProviderConfigChangeSource({
+        revision: "account-1",
+        basedOnCfBuiltinRevision: "cf-builtin:1",
+        providers: new ProviderConfigMap([]),
+      });
+      let finishRefresh!: () => void;
+      const refreshGate = new Promise<void>((resolve) => {
+        finishRefresh = resolve;
+      });
+      let waitingForRefresh = false;
+      const request = vi.fn(async (method: string, params?: unknown) => {
+        if (method === cfProtocolMethods.providerUpdateAccountConfig) {
+          return { receivedRevision: "account-1", status: "received", providerCount: 0 };
+        }
+        if (method === cfProtocolMethods.providerRefreshRegistry) {
+          if (waitingForRefresh) {
+            await refreshGate;
+            if (refreshResult === "failed") throw new Error("registry refresh failed");
+          }
+          return { refreshed: true };
+        }
+        if (method === V4_METHODS.command) {
+          return {
+            commandId: (params as { commandId: string }).commandId,
+            status: "accepted" as const,
+            revisionAtDecision: 1,
+          };
+        }
+        throw new Error(`Unexpected method ${method}`);
+      });
+      const client = {
+        request,
+        transportKind: "stdio",
+        onNotification: () => ({ dispose() {} }),
+        onRequest: () => ({ dispose() {} }),
+        onClose: () => ({ dispose() {} }),
+      };
+      vi.resetModules();
+      vi.doMock("#src/cf-agent/cfAgentProcessManager.js", () => ({
+        CfAgentProcessManager: class extends MockProcessManagerBase {
+          async getClient() {
+            return client;
+          }
+          disposeAll() {}
+        },
+      }));
+      const { createCfAgentService } = await import("#src/cf-agent/cfAgentService.js");
+      const service = createCfAgentService({
+        modelSelectionReadinessSource: createReadyModelSelectionSource(),
+        accountProviderConfigSource: accountSource.source,
+      });
+      const workspace = { workspacePath: "/workspace/app" };
+      try {
+        await service.sendConversationCommandV4({
+          ...workspace,
+          envelope: {
+            commandId: "warmup",
+            clientId: "host-client",
+            sessionId: "sess_1",
+            type: "compact",
+            payload: {},
+            issuedAt: 1,
+          },
+        });
+        request.mockClear();
+        waitingForRefresh = true;
+        const switching = service.sendConversationCommandV4({
+          ...workspace,
+          envelope: {
+            commandId: "switch-model",
+            clientId: "host-client",
+            sessionId: "sess_1",
+            type: "switchModelConfig",
+            payload: { provider: "provisioned-provider", model: "model-a", thought: "" },
+            issuedAt: 2,
+          },
+        });
+        const outcome = switching.then(
+          (ack) => ({ ack }),
+          (error: unknown) => ({ error }),
+        );
+        await vi.waitFor(() => expect(request).toHaveBeenCalled());
+        expect(request.mock.calls.map(([method]) => method)).toEqual([
+          cfProtocolMethods.providerRefreshRegistry,
+        ]);
+        finishRefresh();
+        await expect(outcome).resolves.toMatchObject(
+          refreshResult === "failed"
+            ? { error: new Error("registry refresh failed") }
+            : { ack: { status: "accepted" } },
+        );
+        expect(
+          request.mock.calls.map(([method, params]) =>
+            method === V4_METHODS.command
+              ? `${method}:${(params as { type: string }).type}`
+              : method,
+          ),
+        ).toEqual(
+          refreshResult === "failed"
+            ? [cfProtocolMethods.providerRefreshRegistry]
+            : [
+                cfProtocolMethods.providerRefreshRegistry,
+                `${V4_METHODS.command}:switchModelConfig`,
+              ],
+        );
+      } finally {
+        finishRefresh();
+        service.disposeAll();
+      }
+    },
+  );
+
+  it("workspace presentation does not attach Host-derived model facts", async () => {
+    const request = vi.fn(async () => ({
+      workspace: {
+        workspacePath: "/workspace/app",
+        workspaceKey: "/workspace/app",
+      },
+      mode: "build",
+      slashCommands: [],
+    }));
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class extends MockProcessManagerBase {
+        async getClient() {
+          return {
+            request,
+            transportKind: "stdio",
+            onNotification: () => ({ dispose() {} }),
+            onRequest: () => ({ dispose() {} }),
+            onClose: () => ({ dispose() {} }),
+          };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createReadyModelSelectionSource(),
+    });
+
+    await service.readWorkspacePresentation({ workspacePath: "/workspace/app" });
+
+    const readPresentationCall = request.mock.calls.find(
+      ([method]) => method === cfProtocolMethods.workspaceReadPresentation,
+    );
+    expect(readPresentationCall?.[1]).toMatchObject({
+      workspace: {
+        workspacePath: "/workspace/app",
+        workspaceKey: "/workspace/app",
+      },
+    });
+    expect(readPresentationCall?.[1]).not.toHaveProperty("model");
+  });
+
+  it("workspace presentation 在 stdio 关闭竞态下重新获取 client 并重试一次", async () => {
+    const workspacePresentation = {
+      workspace: {
+        workspacePath: "/workspace/app",
+        workspaceKey: "/workspace/app",
+      },
+      mode: "build",
+      slashCommands: [],
+    };
+    const firstRequest = vi.fn(async (method: string) => {
+      if (method === cfProtocolMethods.workspaceReadPresentation) {
+        throw new Error("CodeFusion agent stdio transport is closed");
+      }
+      return {
+        workspace: workspacePresentation.workspace,
+        status: "applied",
+        providerCount: 1,
+      };
+    });
+    const secondRequest = vi.fn(async (method: string) => {
+      if (method === cfProtocolMethods.workspaceReadPresentation) {
+        return workspacePresentation;
+      }
+      return {
+        workspace: workspacePresentation.workspace,
+        status: "applied",
+        providerCount: 1,
+      };
+    });
+    const getClient = vi
+      .fn()
+      .mockResolvedValueOnce({
+        request: firstRequest,
+        transportKind: "stdio",
+        onNotification: () => ({ dispose() {} }),
+        onRequest: () => ({ dispose() {} }),
+        onClose: () => ({ dispose() {} }),
+      })
+      .mockResolvedValue({
+        request: secondRequest,
+        transportKind: "stdio",
+        onNotification: () => ({ dispose() {} }),
+        onRequest: () => ({ dispose() {} }),
+        onClose: () => ({ dispose() {} }),
+      });
+    vi.resetModules();
+    vi.doMock("../src/cf-agent/cfAgentProcessManager.js", () => ({
+      CfAgentProcessManager: class {
+        getClient = getClient;
+        onRuntimeLifecycle() {
+          return { dispose() {} };
+        }
+        onRuntimeRestarted() {
+          return { dispose() {} };
+        }
+        disposeAll() {}
+      },
+    }));
+    const { createCfAgentService } = await import("../src/cf-agent/cfAgentService.js");
+    const service = createCfAgentService({
+      modelSelectionReadinessSource: createReadyModelSelectionSource(),
+    });
+
+    await expect(
+      service.readWorkspacePresentation({ workspacePath: "/workspace/app" }),
+    ).resolves.toMatchObject(workspacePresentation);
+
+    expect(getClient).toHaveBeenCalledTimes(2);
+    expect(firstRequest).toHaveBeenCalledWith(
+      cfProtocolMethods.workspaceReadPresentation,
+      expect.anything(),
+      expect.anything(),
+    );
+    expect(secondRequest).toHaveBeenCalledWith(
+      cfProtocolMethods.workspaceReadPresentation,
+      expect.anything(),
+      expect.anything(),
+    );
+  });
+});

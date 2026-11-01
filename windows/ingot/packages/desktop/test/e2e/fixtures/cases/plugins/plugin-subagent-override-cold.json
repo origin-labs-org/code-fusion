@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "plugin-subagent-override-cold",
+  "spec": "./test/e2e/plugins/plugin-subagent-override-cold.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/plugin-management/plugin-subagent-override-cold.json"
+  ],
+  "fileFixtures": [
+    {
+      "kind": "app-config",
+      "path": "~/.cf/v2/agents-state.json",
+      "description": "Structured plugin coverage verified by SE-04, specifying alternate/high for judge in test copy; does not rewrite plugin Markdown after cold start.",
+      "source": "created-by-helper"
+    }
+  ],
+  "requests": [
+    {
+      "id": "plugin-override-cold-parent",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "确定性触发插件 child，模型与档位以实际请求为证据。"
+    },
+    {
+      "id": "plugin-override-cold-child",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Check child\'s actual model and high parameter without relying on model output randomness."
+    },
+    {
+      "id": "plugin-override-cold-final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "验证子结果回到父执行，父 continuation 不继承 child 模型或档位。"
+    }
+  ]
+}

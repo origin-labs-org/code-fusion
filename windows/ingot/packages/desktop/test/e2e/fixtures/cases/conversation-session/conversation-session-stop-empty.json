@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-stop-empty",
+  "spec": "./test/e2e/conversation-session/conversation-session-stop-empty.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-stop-empty.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-stop-empty-running-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stop empty-queue semantics only depend on the current turn remaining running; real providers may finish too quickly, causing the stop button window to disappear."
+    },
+    {
+      "id": "upstream-stop-empty-next-fast-text",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that queue=0 after stop does not block the next turn; the response just needs to complete reliably."
+    },
+    {
+      "id": "upstream-stop-empty-toolcall-bash",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stopping and re-sending during an active tool call requires reliably creating a local tool execution window; real models might choose plain text or finish too quickly."
+    },
+    {
+      "id": "upstream-stop-empty-toolcall-next-fast-text",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that queue=0 after tool call stop does not block the next turn; the response just needs to complete reliably."
+    }
+  ]
+}

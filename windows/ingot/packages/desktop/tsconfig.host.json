@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out/host",
+    "rootDir": "src/host",
+    "lib": ["es2024"]
+  },
+  "include": ["src/host"],
+  "references": [{ "path": "../shared" }, { "path": "../services" }, { "path": "../rpc" }]
+}

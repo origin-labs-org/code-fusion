@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-task-faults",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-task-faults.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-task-faults.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-faults-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-faults-http-429-once",
+      "description": "真实HTTP 429限流响应",
+      "kind": "main",
+      "timingPolicy": "fault-stream",
+      "source": "synthetic",
+      "syntheticReason": "Trigger rate limit once and recover; verify HTTP status and request counts to support current retry policy."
+    },
+    {
+      "id": "r3-faults-http-429-recover",
+      "description": "限流后的自动或显式重试恢复",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Forms explicit [429,200] recovery sequence with single 429."
+    },
+    {
+      "id": "r3-faults-auth-once",
+      "description": "Initial request 401 auth error (non-retryable), consumed only once",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Remote model errors must be displayed as explicit errors and preserve input"
+    },
+    {
+      "id": "r3-faults-rate-limit-recover",
+      "description": "Normal reply after retry",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "重试恢复"
+    },
+    {
+      "id": "r3-faults-truncated-once",
+      "description": "Stream disconnected halfway (no message_stop)",
+      "kind": "main",
+      "timingPolicy": "fault-stream",
+      "source": "synthetic",
+      "syntheticReason": "truncated stream cannot falsely show completed or permanently stay running"
+    },
+    {
+      "id": "r3-faults-truncated-recover",
+      "description": "Normal reply after retry",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "重试恢复"
+    },
+    {
+      "id": "r3-faults-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "首发"
+    }
+  ]
+}

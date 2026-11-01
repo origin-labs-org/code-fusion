@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-attachment-layout",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-attachment-layout.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-attachment-layout.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-attachment-layout-send",
+      "description": "AL01-AL14: Initial send with attachments, context, and visible text.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix attachments and four context combinations to reliably verify layout and edit parsing. Image requests use cached paths rather than original filenames; original filenames are covered by UI assertions."
+    },
+    {
+      "id": "v4-attachment-layout-edit",
+      "description": "AL15: Reserialization after deleting web context.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "bodyExcludes the web URL, proving the edit branch does not retain deleted context."
+    },
+    {
+      "id": "v4-attachment-context-only",
+      "description": "AL02/AL14: Conversation selection alone does not produce an empty bubble.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "仅 context prompt 是确定性 renderer/provider 合同。"
+    },
+    {
+      "id": "v4-attachment-failed-image",
+      "description": "AL18/AL19: Static fallback for failed images; gallery maintains per-message isolation.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the second image message to reliably verify renderer thumbnail failures and cross-message gallery boundaries."
+    }
+  ]
+}

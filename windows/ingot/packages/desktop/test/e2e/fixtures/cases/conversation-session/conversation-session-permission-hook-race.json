@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-permission-hook-race",
+  "spec": "./test/e2e/conversation-session/conversation-session-permission-hook-race.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-permission-hook-race.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-permission-hook-race/write-output.txt",
+      "source": "created-by-provider-tool",
+      "description": "spec 创建父目录，fixture 驱动 Write 工具在用户批准胜出后创建目标文件。"
+    },
+    {
+      "path": ".cf/permission-hook-race-blocker.mjs",
+      "source": "created-by-helper",
+      "description": "Blocking PermissionRequest hook script: logs started, sleeps for 120s, and outputs no decision; referenced by an absolute path in user config (.cf/cli/config.json in the isolated E2E HOME)."
+    },
+    {
+      "path": ".cf/permission-hook-race-trace.jsonl",
+      "source": "created-by-helper",
+      "description": "Hook lifecycle trace: appended at runtime by the blocking hook installed via helper; the spec uses the started log to prove the race is real, and uses the absence of settled-without-decision to prove the hook did not participate in the decision."
+    }
+  ],
+  "requests": [
+    {
+      "id": "permission-hook-race-title",
+      "description": "Case-local title generation response for the initial E2E_PERMISSION_HOOK_RACE message.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The initial E2E_PERMISSION_HOOK_RACE message triggers the default title sidecar; pins the case-local title response to prevent default replay from falling back to legacy provider-basic, and uses this initial marker to isolate cross-case matching."
+    },
+    {
+      "id": "permission-hook-race-write-call",
+      "description": "HK16 race regression: Write tool_use triggers a permission dialog in default mode while simultaneously launching a blocking PermissionRequest hook.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Write is a destructive tool requiring approval; after the confirmation dialog and blocking hook appear concurrently, the spec approves from the UI side to verify first-to-respond wins in the permission-responder-race."
+    },
+    {
+      "id": "permission-hook-race-final",
+      "description": "HK16 race regression: tool_result fed back after user approval wins → final text.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "When the broker response wins while the hook is still blocked, the tool executes immediately; the model produces final text based on tool_result, proving the turn no longer waits for hook completion."
+    }
+  ]
+}

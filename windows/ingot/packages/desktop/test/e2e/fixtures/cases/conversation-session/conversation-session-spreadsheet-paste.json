@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-spreadsheet-paste",
+  "spec": "./test/e2e/conversation-session/conversation-session-spreadsheet-paste.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-spreadsheet-paste.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "spreadsheet-paste-text-priority",
+      "description": "T11: Excel multi-representation clipboard only sends TSV to the provider.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The provider text matcher and synthetic PNG filename exclusion jointly prove that clipboard text takes priority."
+    }
+  ]
+}

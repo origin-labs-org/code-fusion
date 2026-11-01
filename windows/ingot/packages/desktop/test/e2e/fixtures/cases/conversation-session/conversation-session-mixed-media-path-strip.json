@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-mixed-media-path-strip",
+  "spec": "./test/e2e/conversation-session/conversation-session-mixed-media-path-strip.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-mixed-media-path-strip.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "mixed-media-path-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title content is outside the media path/strip contract; it only needs isolation from the main request."
+    },
+    {
+      "id": "mixed-media-path-supported",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only reliably wraps up; E2E asserts the count, order, and MCS boundaries of mixed-media block/path on actually captured requestJson."
+    },
+    {
+      "id": "mixed-media-path-text-only",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only reliably wraps up; fixture and structured packet captures jointly require the request to have no media data/block while preserving dual omitted + dual paths."
+    }
+  ]
+}

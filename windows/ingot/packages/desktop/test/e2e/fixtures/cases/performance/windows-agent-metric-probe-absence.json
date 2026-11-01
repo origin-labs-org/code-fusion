@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "caseName": "windows-agent-metric-probe-absence",
+  "spec": "./test/e2e/windows-agent-metric-probe-absence.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "cli-session-seed",
+      "path": "~/.cf/cli/db/db.sqlite",
+      "purpose": "Preset interactive Agent history so cold start follows the real read-only Agent registration pipeline."
+    },
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/tasks-index.sqlite",
+      "purpose": "Preset same task membership so sidebar reads history through real cold start."
+    }
+  ],
+  "requests": []
+}

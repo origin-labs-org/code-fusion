@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-development-p0",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-development-p0.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-development-p0.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "SSH-P0-DEV-01/02/03 verifies workspace service routing via real remote file/tree/preview, Terminal, and Git UI, without initiating model requests. Remote data is created and cleaned up by the case under the isolated .cf-e2e directory of the workspace.",
+  "requests": []
+}

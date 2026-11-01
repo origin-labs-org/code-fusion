@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-detail-toggle-stability",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-detail-toggle-stability.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-tool-detail-toggle-read-call",
+      "description": "P08: emit two consecutive Read tool uses that project to an Explore group.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "tool-use",
+        "syntheticReason": "Deterministically trigger two consecutive Reads to satisfy the product contract of creating an Explore parent group only with at least two tools of the same kind."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TOOL_DETAIL_TOGGLE_READ"],
+        "bodyIncludes": ["E2E_TOOL_DETAIL_TOGGLE_READ"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "toolu_e2e_tool_detail_toggle_read_1",
+          "toolu_e2e_tool_detail_toggle_read_2"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_e2e_tool_detail_toggle_read_1",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-detail-toggle-stability/read-fixture-a.txt"
+            }
+          },
+          {
+            "id": "toolu_e2e_tool_detail_toggle_read_2",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-tool-detail-toggle-stability/read-fixture-b.txt"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-tool-detail-toggle-final",
+      "description": "P08: finish the turn after both Read results.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Stably conclude the current turn after backfilling tool results so the test only observes the expand and collapse geometry of completed details."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_TOOL_DETAIL_TOGGLE_READ",
+          "toolu_e2e_tool_detail_toggle_read_1",
+          "toolu_e2e_tool_detail_toggle_read_2"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

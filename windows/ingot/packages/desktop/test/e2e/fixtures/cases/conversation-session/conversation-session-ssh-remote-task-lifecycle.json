@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-task-lifecycle",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-task-lifecycle.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-task-lifecycle.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    { "id": "ssh-task-lifecycle-title", "description": "SSH task lifecycle title auxiliary response.", "kind": "common", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Titles are not part of lifecycle assertions; they only need to keep the task row stable." },
+    { "id": "ssh-task-lifecycle-a-first", "description": "Workspace A initial response.", "kind": "main", "source": "synthetic", "timingPolicy": "slow-stream", "syntheticReason": "Stably verify initial turn and task creation for A." },
+    { "id": "ssh-task-lifecycle-b-first", "description": "Workspace B initial response.", "kind": "main", "source": "synthetic", "timingPolicy": "slow-stream", "syntheticReason": "Stably verify initial turn and task creation for B." },
+    { "id": "ssh-task-lifecycle-a-follow", "description": "workspace A 重开后的续发响应。", "kind": "main", "source": "synthetic", "timingPolicy": "slow-stream", "syntheticReason": "Stably verify that reopening A still targets the original task." },
+    { "id": "ssh-task-lifecycle-b-follow", "description": "Workspace B follow-up response.", "kind": "main", "source": "synthetic", "timingPolicy": "slow-stream", "syntheticReason": "稳定验证 A 关闭期间 B 仍可继续工作。" }
+  ]
+}

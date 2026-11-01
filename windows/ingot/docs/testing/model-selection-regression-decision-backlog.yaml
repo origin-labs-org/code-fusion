@@ -1,0 +1,1854 @@
+schemaVersion: 1
+backlogId: model-selection-regression-decisions
+title: Model Selection回归矩阵的隐含决策与契About核验清单
+status: planning
+language: zh-CN
+purpose: >-
+  kModel Provider、Model Selection、Thinking深度、Registry、Request投影、Session、Queue、Remote恢复and
+  下游Model消费者Medium不能安全假设的 edge case 单独列出，供产品Adjudication、Documentation收敛、Implementation核验and后续剪枝使用。
+statusValues:
+  undefined: "Product behavior is not yet clear enough and requires a decision"
+  contract-conflict: "Existing specs, implementations, or cases conflict and require converging on an authoritative definition first"
+  resolved-needs-proof: "Design intent or implementation exists, but still requires test/log/request evidence to prove"
+  pruned-by-contract: "Pruned by a clear invariant; keeping record to prevent accidental re-addition in the future"
+decisionRule: >-
+  undefined and contract-conflict 不得直接生成会断言产品行为的 formal E2E；resolved-needs-proof
+  进入验证Queue而不Yes再次向UserAsk；pruned-by-contract 只能在引用 invariant 后剪枝。
+summary:
+  totalEntries: 114
+  decisionEntries: 64
+  contractConflictEntries: 12
+  proofEntries: 38
+  note: "decisionEntries only indicates undefined items requiring product/contract decisions, not that only these items need testing."
+evidenceConventions:
+  - "newer-design: 较新的 Provider refactor interaction/selection design"
+  - "state-space: conversation-product-state-space.md"
+  - "protocol: conversation-product-protocol.md 或 conversation-protocol-declaration.md"
+  - "runtime: 当前 live code 的 resolver、input-intent、ModelFactory 或 handler"
+  - "case-catalog: conversation-session-case-catalog.md 中已有 case"
+  - "graph: feature-boundary-planner graph; results must not be faked when there is no live codegraph index"
+entries:
+  - id: DEC-001
+    domain: selection
+    status: undefined
+    question: "When opening the picker for the first time in a blank new conversation, what should be displayed if Recent is invalid and Host preferred is also invalid?"
+    options:
+      [
+        "空状态并阻止发送",
+        "Picker displays the reason for unavailability but allows user to enter Provider settings",
+        "自动选择任意可用模型",
+      ]
+    recommendation: "Prioritize empty state with clear fix entry point; silently selecting arbitrary model is prohibited."
+    evidence:
+      [
+        "runtime: modelSelectionRecent only accepts selectable Recent; otherwise falls back to Host preferred",
+        "blocking: Initial send cannot form a complete selection",
+      ]
+    blockingCases: [MSR-DRAFT-001]
+
+  - id: DEC-002
+    domain: selection
+    status: undefined
+    question: "When Recent records a provider/model but the model is later disabled, should draft retain intent, switch to preferred, or clear?"
+    options: ["Retain intent and display as unavailable", "切到 Host preferred", "Clear and prompt to reselect"]
+    recommendation: "Retain intent by default until the user explicitly reselects; whether sending is allowed must be separately determined by the capability guard."
+    evidence:
+      [
+        "newer-design: selection-state requires existing Sessions not to silently fall back due to unavailability",
+        "runtime: Recent is only used as an initial selection value if it is selectable",
+      ]
+    blockingCases: [MSR-DRAFT-003, MSR-SESSION-007]
+
+  - id: DEC-003
+    domain: selection
+    status: undefined
+    question: "Recent、Host preferred、provider family default 三者同时存在时，优先级是否固定为 Recent > Host preferred > family default？"
+    options: ["固定该优先级", "按 surface 使用不同优先级", "只允许显式 Host preferred"]
+    recommendation: "Maintain unified priority; any exceptions per surface must be explicitly declared."
+    evidence:
+      [
+        "runtime: workspace-keyed fallback chain for modelSelectionRecent",
+        "docs: new-task/manual-switch resolution chain",
+      ]
+    blockingCases: [MSR-DRAFT-001, MSR-SURFACE-007]
+
+  - id: DEC-004
+    domain: selection
+    status: undefined
+    question: "When the user only switches provider without reselecting a model, should the original modelId be retained as cross-provider intent?"
+    options:
+      ["provider 改变即清空 modelId 并重新解析", "按同名模型迁移", "Retain original modelId until validation fails"]
+    recommendation: "Do not automatically migrate by matching string name; re-resolve model after provider changes."
+    evidence:
+      [
+        "runtime: ModelSelection's providerId/modelId is the complete identity",
+        "risk: Two Providers may have models with the same name",
+      ]
+    blockingCases: [MSR-SELECT-002, MSR-REG-002]
+
+  - id: DEC-005
+    domain: selection
+    status: resolved-needs-proof
+    question: "Can the model selection display value directly use provider/model$variant as an inter-process and persistence value?"
+    options:
+      [
+        "Display encoding only; protocol uses structured ModelSelection",
+        "Allow string as a compatibility format",
+        "Uniformly use display strings everywhere",
+      ]
+    recommendation: "Adopt the first option; round-trip proof for slash, colon, dollar, and empty values is required."
+    evidence:
+      [
+        "runtime: packages/shared/src/model-selection.ts",
+        "newer-design: sparse intent 与 canonical submission 分离",
+      ]
+    blockingCases: [MSR-REG-002, MSR-REG-003]
+
+  - id: DEC-006
+    domain: selection
+    status: undefined
+    question: "When a single operation changes provider, model, and thought simultaneously, should validation failure roll back entirely or retain partial draft?"
+    options:
+      ["Atomically roll back to authoritative draft", "Retain acceptable fields and clear failed fields", "Retain user input and highlight in red"]
+    recommendation: "commit uses atomic semantics; whether renderer draft retains uncommitted intent must be defined separately."
+    evidence:
+      [
+        "newer-design: authoritative draft model config 与 CAS",
+        "runtime: composer draft 具有 renderer-local reactive intent",
+      ]
+    blockingCases: [MSR-DRAFT-004, MSR-SESSION-002]
+
+  - id: DEC-007
+    domain: selection
+    status: undefined
+    question: "If model capability changes after picker opens, should send use the open snapshot or the submission-time Registry?"
+    options: ["Revalidate Registry upon submission", "Reuse snapshot from when picker opened", "Block and require refresh when inconsistent"]
+    recommendation: "Revalidate upon submission; if selected value becomes invalid, retain intent and provide an explainable error."
+    evidence:
+      ["runtime: target Host Registry is the authority", "risk: remote Registry loading/revision 变化"]
+    blockingCases: [MSR-DRAFT-005, MSR-REG-006]
+
+  - id: DEC-008
+    domain: selection
+    status: undefined
+    question: "When selectable, disabled, and deprecated versions of the same modelId coexist, how are picker grouping and default resolution determined?"
+    options:
+      [
+        "Only include selectable in default candidates; historical values locked separately",
+        "Display all mixed together and sort by revision",
+        "Automatically map deprecated to new model",
+      ]
+    recommendation: "Separate candidate and historical display; implicit revision migration is prohibited."
+    evidence:
+      ["registry: model membership and enablement design", "blocking: disabled-current UI 仍有冲突"]
+    blockingCases: [MSR-REG-005, MSR-UI-003]
+
+  - id: DEC-009
+    domain: selection
+    status: undefined
+    question: "When a model\'s default thought/variant changes, should empty options in existing sparse selections follow the new default?"
+    options:
+      [
+        "Resolve the latest default for empty options each time ModelFactory creates",
+        "Freeze into Session after initial resolution",
+        "Write back to Session selection upon updating Registry",
+      ]
+    recommendation: "Empty options do not persist specific defaults; resolved according to current design at execution, but explicit overrides are never overwritten."
+    evidence:
+      [
+        "newer-design: ModelSelection sparse intent, missing options resolved at ModelFactory creation",
+      ]
+    blockingCases: [MSR-REASON-006, MSR-SESSION-008]
+
+  - id: DEC-010
+    domain: selection
+    status: undefined
+    question: "When user switches to a different model, should the previous thought override be cleared, migrated, or retained and validated against the new model?"
+    options: ["跨 model 清空 thought override", "保留并校验，不兼容时阻止", "Migrate by matching thought name"]
+    recommendation: "Clear thought override across models; this is the current composer fact, but needs unification across all surfaces."
+    evidence:
+      [
+        "runtime: useDraftConfigControl cross-model clears thought",
+        "risk: Automation/Off-Peak/CLI 可能有不同路径",
+      ]
+    blockingCases: [MSR-REASON-007, MSR-SURFACE-009]
+
+  - id: DEC-011
+    domain: selection
+    status: resolved-needs-proof
+    question: "Does model menu selection update Recent immediately, or only when Submission is accepted?"
+    options:
+      [
+        "Only write Recent on accepted Submission",
+        "Write Recent immediately when menu item is selected",
+        "Write Recent after first real response",
+      ]
+    recommendation: "Only write Recent on accepted Submission; desktop, remote, and failure/cancellation path evidence required."
+    evidence:
+      [
+        "newer-design: App Recent update point is App accepts Submission",
+        "runtime: SessionPane writes recent after accepted ACK",
+      ]
+    blockingCases: [MSR-DRAFT-006, MSR-SESSION-009]
+
+  - id: DEC-012
+    domain: selection
+    status: resolved-needs-proof
+    question: "When Edit/Retry/Guide/Queue copies model selection from source Submission, is the user allowed to explicitly choose 'use current model'?"
+    options:
+      [
+        "Inherit source Submission by default; using the current model must be an explicit new selection",
+        "总是读取当前 Session",
+        "Edit/Retry inherits while Queue does not",
+      ]
+    recommendation: "Inherit source Submission by default; current-model as explicit SelectionSource in the future."
+    evidence:
+      [
+        "newer-design: edit/retry inherit source Submission ModelSelection",
+        "state-space: queue freezes model/thought Selection",
+      ]
+    blockingCases: [MSR-QUEUE-003, MSR-EDIT-001]
+
+  - id: DEC-013
+    domain: registry
+    status: undefined
+    question: "When the three Provider tiers (Built-in, Account, Personal) define the same providerId/modelId simultaneously, what are the override order and field merge rules?"
+    options: ["Entirely override by explicit precedence", "按字段 merge", "Detect conflict and hide the provider"]
+    recommendation: "provider identity first converges by explicit precedence; field merge only allows fields explicitly listed in the schema."
+    evidence:
+      [
+        "registry: provider-and-model-configuration-overview",
+        "runtime: ProviderConfigResolver source overlays",
+      ]
+    blockingCases: [MSR-REG-004, MSR-REG-007]
+
+  - id: DEC-014
+    domain: registry
+    status: undefined
+    question: "When a Provider configuration has an old revision, current revision, and unknown revision simultaneously, does Registry publish atomically?"
+    options:
+      ["只发布完整且 revision 一致的 snapshot", "部分字段先发布", "回退旧 revision 并继续可用"]
+    recommendation: "Only publish complete and consistent snapshots; retain previous available snapshot and log reason on failure."
+    evidence:
+      ["registry: atomic Registry publish seed case", "risk: built-in/account revision mismatch"]
+    blockingCases: [MSR-REG-004, MSR-REG-008]
+
+  - id: DEC-015
+    domain: registry
+    status: undefined
+    question: "When provider config is missing but model membership exists, should candidates be hidden, shown as unavailable, or allowed to be saved pending config?"
+    options: ["显示 unavailable 并阻止发送", "隐藏候选", "Allow saving the selection, but fail at execution"]
+    recommendation: "保存 intent 可以允许，执行前必须 fail closed；展示态保留不可用原因。"
+    evidence:
+      [
+        "registry: separate layers for membership/enablement and complete config",
+        "runtime: target Host Registry authority",
+      ]
+    blockingCases: [MSR-REG-009, MSR-AUTH-004]
+
+  - id: DEC-016
+    domain: registry
+    status: undefined
+    question: "After provider endpoint/baseURL changes, should existing Active Models be hot-reloaded, or only affect subsequent ModelFactory instances?"
+    options:
+      [
+        "Active Model immutable，只影响后续 model",
+        "Hot-reload on the next chunk",
+        "终止旧 model 并自动重试新 endpoint",
+      ]
+    recommendation: "Active Model is immutable; endpoint changes only affect future creations, in-flight requests are not rewritten."
+    evidence:
+      [
+        "newer-design: active Model immutable; provider config changes apply to future Model creation",
+      ]
+    blockingCases: [MSR-REG-010, MSR-SESSION-005]
+
+  - id: DEC-017
+    domain: registry
+    status: undefined
+    question: "Registry loading、refresh、publish 期间，picker 应显示旧 snapshot、空状态还是 loading lock？"
+    options: ["显示旧 snapshot 并标记 stale", "清空并锁定选择", "Continue showing merged candidates while loading"]
+    recommendation: "Stale-read when an old snapshot is available; block Registry-dependent submissions when no snapshot exists."
+    evidence:
+      [
+        "runtime: remote Registry loading must not fallback local",
+        "state: registry revision/readiness dimension",
+      ]
+    blockingCases: [MSR-REG-003, MSR-REG-011]
+
+  - id: DEC-018
+    domain: registry
+    status: undefined
+    question: "Is cache sharing allowed between remote workspace and local workspace provider registries?"
+    options: ["按 workspaceKey 严格隔离", "Same providerId can share read-only facts", "按 workspacePath 共享"]
+    recommendation: "按 workspaceKey 隔离；任何共享必须经过明确 immutable facts cache 设计。"
+    evidence:
+      [
+        "AGENTS: semantic separation of workspaceIdentity and workspacePath",
+        "runtime: model-selection-recent key uses workspaceKey",
+      ]
+    blockingCases: [MSR-REMOTE-001, MSR-REMOTE-004]
+
+  - id: DEC-019
+    domain: registry
+    status: contract-conflict
+    question: "旧 client-config/magic_name/fallback/tombstone 路径是否仍是当前 Registry 的语义来源？"
+    options:
+      [
+        "Provider Registry is the sole current source; legacy paths are only for migration",
+        "旧路径与 Registry 双向兼容",
+        "按 surface 继续分别读取",
+      ]
+    recommendation: "Adopt Registry as the single current source; maintain migration compatibility but forbid new cases from relying on legacy semantics."
+    evidence:
+      [
+        "newer-design: design-v2 authority order",
+        "planning: graph drift marks legacy references stale",
+      ]
+    blockingCases: [MSR-REG-012, MSR-MIGRATION-001]
+
+  - id: DEC-020
+    domain: registry
+    status: contract-conflict
+    question: "Does the provider identity in the Provider registry include account, workspace, host, and endpoint, rather than just providerId?"
+    options:
+      [
+        "Identity consists of providerId plus host/workspace/account scope",
+        "Use only providerId",
+        "Generate a new providerId when endpoint changes",
+      ]
+    recommendation: "Separate selection identity from config scope; authority across workspaces/hosts must carry identity."
+    evidence:
+      ["AGENTS: remote workspaceIdentity must be carried through", "newer-design: target Host Registry authority"]
+    blockingCases: [MSR-REG-003, MSR-REMOTE-001]
+
+  - id: DEC-021
+    domain: registry
+    status: contract-conflict
+    question: "Registry publish 失败时，消费者是否可以看到混合的新旧 provider/model snapshot？"
+    options:
+      [
+        "Disallow partial publish; continue using the previous snapshot",
+        "Allow updates per provider",
+        "允许 renderer 先看到 optimistic snapshot",
+      ]
+    recommendation: "Disallow partial publish; renderer optimistic only represents intent and must not masquerade as Registry authority."
+    evidence:
+      [
+        "registry: atomic Registry publish design/case",
+        "AGENTS: UI cannot call Repo and Host is authority",
+      ]
+    blockingCases: [MSR-REG-004, MSR-REG-013]
+
+  - id: DEC-022
+    domain: registry
+    status: resolved-needs-proof
+    question: "Do provider config and credential updates only affect subsequent ModelFactory instances without modifying persisted historical provenance?"
+    options:
+      [
+        "Historical provenance is immutable; future models read the latest config",
+        "历史按 provider config 回溯重算",
+        "Rerun current task upon update",
+      ]
+    recommendation: "Historical provenance is immutable; supplement request/usage evidence for the same Session before and after config updates."
+    evidence:
+      ["newer-design: active Model immutable", "planning: provenance is a separate assertion layer"]
+    blockingCases: [MSR-REG-010, MSR-RECOVERY-004]
+
+  - id: DEC-023
+    domain: registry
+    status: resolved-needs-proof
+    question: "When provider/model display label, opaque modelId, and wire model name differ, which one enters provenance?"
+    options:
+      ["保存结构化 providerId/modelId 与最终 wire name", "只保存 display label", "只保存 wire name"]
+    recommendation: "至少保存结构化 identity 和 wire projection；展示 label 只能是派生值。"
+    evidence:
+      [
+        "runtime: model selection type and adapter request projection",
+        "risk: opaque IDs contain reserved display characters",
+      ]
+    blockingCases: [MSR-REG-002, MSR-REQ-004]
+
+  - id: DEC-024
+    domain: entitlement
+    status: undefined
+    question: "When a provider is connected but plan entitlement is still loading, can saved selections still be displayed and queued?"
+    options:
+      [
+        "Preserve intent, block execution until entitlement is ready",
+        "Fall back to preferred immediately",
+        "Allow request and let the server reject it",
+      ]
+    recommendation: "Preserve intent, fail closed before execution; do not disrupt user selection due to temporary loading."
+    evidence:
+      [
+        "factor: entitlement loading is separate from provider auth",
+        "seed: MSR-AUTH-002 preserves saved selection",
+      ]
+    blockingCases: [MSR-AUTH-002, MSR-QUEUE-004]
+
+  - id: DEC-025
+    domain: entitlement
+    status: undefined
+    question: "When entitlement changes from allowed to denied, how should existing Sessions, queued Submissions, and Automation records be handled?"
+    options:
+      ["Preserve history; block future executions with a prompt", "全部迁移到可用 preferred", "Clean up all unavailable selections"]
+    recommendation: "Preserve intent in history and records, fail closed for future executions by scope; automatic migration requires an explicit product contract."
+    evidence:
+      [
+        "planning: Session/Automation/Off-Peak records are separate authorities",
+        "risk: saved explicit models must not silently change",
+      ]
+    blockingCases: [MSR-AUTH-005, MSR-QUEUE-005, MSR-SURFACE-002]
+
+  - id: DEC-026
+    domain: entitlement
+    status: undefined
+    question: "When a model appears selectable but the operation (e.g., tools, image, long context) exceeds entitlement, does validation occur in the picker or request preflight?"
+    options:
+      [
+        "Picker performs static capability filtering, preflight performs final validation",
+        "只在 picker 过滤",
+        "只在 network response 后处理",
+      ]
+    recommendation: "Two-layer validation with static filtering plus pre-execution preflight; server rejection must not be treated as normal pruning."
+    evidence:
+      [
+        "planning: adapter preflight + request body",
+        "factor: entitlement and model capability are independent dimensions",
+      ]
+    blockingCases: [MSR-AUTH-006, MSR-REQ-001]
+
+  - id: DEC-027
+    domain: entitlement
+    status: undefined
+    question: "During account switching, OAuth refresh, or coding-plan changes, should the current Active Model continue completing in-flight requests?"
+    options:
+      ["in-flight 使用已绑定 auth，后续请求使用新 auth", "立即中止并重试", "共享最新 auth token"]
+    recommendation: "Auth context bound to the request is not rewritten mid-flight; subsequent ModelFactory uses the latest credentials."
+    evidence:
+      [
+        "planning: request auth is execution-local and dynamic",
+        "AGENTS: fail before network for auth failure",
+      ]
+    blockingCases: [MSR-AUTH-007, MSR-SESSION-010]
+
+  - id: DEC-028
+    domain: entitlement
+    status: undefined
+    question: "同一 provider 的个人 key、OAuth、团队代理同时可用时，选择是按 auth priority 还是按 provider config priority？"
+    options:
+      ["Auth sources have explicit priority and record provenance", "Last-written credentials take priority", "Try one by one after request failure"]
+    recommendation: "Forbid unbounded retries; choose a single auth context and keep it observable before failure."
+    evidence:
+      [
+        "planning: provider/account/personal config are separate layers",
+        "risk: retry can duplicate side effects",
+      ]
+    blockingCases: [MSR-AUTH-008, MSR-REQ-006]
+
+  - id: DEC-029
+    domain: entitlement
+    status: undefined
+    question: "When organization policy bans a model but the user has historical records, is the history page readable, retryable, editable, or completely locked?"
+    options: ["History is readable; retries and new submissions are blocked by policy", "Hide history as well", "历史自动迁移到允许模型"]
+    recommendation: "Separate read and write; forbid silently altering historical provenance."
+    evidence:
+      [
+        "planning: provenance/history is immutable",
+        "factor: policy, access, operation and recovery are separate",
+      ]
+    blockingCases: [MSR-AUTH-009, MSR-EDIT-002]
+
+  - id: DEC-030
+    domain: entitlement
+    status: contract-conflict
+    question: "When a model is unavailable, is the existing behavior of \'fallback to an available model and promote to last-selected\' still the current contract?"
+    options:
+      [
+        "Preserve explicit intent, forbid silent fallback",
+        "保留旧 fallback 并更新 Recent",
+        "Fall back only for new chats; existing Sessions do not fall back",
+      ]
+    recommendation: "Follow the newer selection-state: no silent fallback; legacy I56/I58/I61 must be marked legacy or rewritten."
+    evidence:
+      [
+        "newer-design: existing Session unavailable selection preserves intent",
+        "case-catalog: I56/I58/I61 define fallback behavior",
+      ]
+    blockingCases: [MSR-SESSION-007, MSR-REG-005]
+
+  - id: DEC-031
+    domain: entitlement
+    status: resolved-needs-proof
+    question: "entitlement 在 execution 前变更时，失败是否保证不写 Recent、Session Selection、usage 和 provenance？"
+    options:
+      [
+        "Fail closed before admission/commit; none of the four side effects are written",
+        "先写 selection 再异步失败",
+        "fallback 后写新 provenance",
+      ]
+    recommendation: "Produce no accepted Submission side effects before failure; provide failure ledger evidence."
+    evidence:
+      [
+        "newer-design: Recent and Session Selection update on accepted Submission",
+        "planning: auth fail before network",
+      ]
+    blockingCases: [MSR-AUTH-005, MSR-SESSION-009]
+
+  - id: DEC-032
+    domain: entitlement
+    status: resolved-needs-proof
+    question: "Can candidate signatures still be reused for the same model capability under different account entitlements?"
+    options:
+      [
+        "capability signature 可复用，entitlement 另作 access dimension",
+        "整个候选对象按账号隔离",
+        "Reuse only by display label",
+      ]
+    recommendation: "Model capability and access separately; tests must prove pruning does not leak selectable state across accounts."
+    evidence:
+      [
+        "catalog: model expansion by capability-and-wire signature",
+        "factor: provider access profile is independent dimension",
+      ]
+    blockingCases: [MSR-AUTH-006, MSR-REMOTE-005]
+
+  - id: DEC-033
+    domain: reasoning
+    status: undefined
+    question: "Must the four states of thought options—missing, null, default, and explicit-off—be distinguished?"
+    options:
+      [
+        "Distinguish missing/default/explicit-off/explicit-value",
+        "null 与 missing 等价",
+        "Retain only the final wire value",
+      ]
+    recommendation: "Retain at least the distinction between missing and explicit-off in sparse intent; map to provider at the wire layer."
+    evidence:
+      [
+        "newer-design: sparse ModelSelection intent",
+        "factor: reasoning source and wire profile are separate",
+      ]
+    blockingCases: [MSR-REASON-001, MSR-REASON-008]
+
+  - id: DEC-034
+    domain: reasoning
+    status: undefined
+    question: "When both reasoning effort and thinking budget are set by the user, which is authoritative?"
+    options:
+      [
+        "provider-specific mapping 产生一个 canonical budget",
+        "budget 覆盖 effort",
+        "effort 覆盖 budget",
+      ]
+    recommendation: "Define canonical mappings per provider first; the generic layer must not guess priority from field names."
+    evidence:
+      [
+        "planning: provider reasoning wire profile",
+        "seed: Anthropic fixed/adaptive budget and GLM max/high",
+      ]
+    blockingCases: [MSR-REASON-003, MSR-REASON-009]
+
+  - id: DEC-035
+    domain: reasoning
+    status: undefined
+    question: "Do identical high/medium/low names across providers share the same product semantics, or are they merely provider-local enums?"
+    options:
+      [
+        "Product layer represents intent; adapters allow provider-local mapping",
+        "同名值必须 wire 完全相同",
+        "Picker displays separate labels per provider",
+      ]
+    recommendation: "产品层保留 intent 但 provenance 必须记录最终 wire mapping；同名不等价。"
+    evidence:
+      [
+        "factor: reasoning profile and provider wire profile are separate",
+        "seed: Qwen/Kimi/MiMo and GLM mappings differ",
+      ]
+    blockingCases: [MSR-REASON-001, MSR-REASON-002]
+
+  - id: DEC-036
+    domain: reasoning
+    status: undefined
+    question: "When switching to a model without reasoning support, should explicit thought be cleared, throw an error, or downgrade to no-think?"
+    options: ["清空并要求确认", "自动降级 no-think", "Retain and block on send"]
+    recommendation: "Clear draft override across models; retain existing explicit Session intent and explain the failure during execution preflight."
+    evidence:
+      [
+        "runtime: composer cross-model clears thought",
+        "risk: existing Session intent must not silently mutate",
+      ]
+    blockingCases: [MSR-REASON-010, MSR-SESSION-008]
+
+  - id: DEC-037
+    domain: reasoning
+    status: undefined
+    question: "Can reasoning parameters be used concurrently with tools, structured output, and JSON mode?"
+    options:
+      [
+        "Explicitly allowed/disallowed by adapter capability matrix",
+        "Unconditionally allowed by generic layer",
+        "Disable tools/schema whenever reasoning is present",
+      ]
+    recommendation: "Run preflight per adapter capability matrix; every conflicting combination must have wire assertions."
+    evidence:
+      [
+        "planning: modality/tool/structured output is a high-risk projection",
+        "factor: capability cross-product",
+      ]
+    blockingCases: [MSR-REQ-001, MSR-REASON-011]
+
+  - id: DEC-038
+    domain: reasoning
+    status: undefined
+    question: "When reasoning max budget conflicts with model max output/context budget, should it truncate, reject, or auto-compress?"
+    options: ["Reject during preflight and explain budget relationships", "Automatically clamp to available upper bound", "Send request first and let provider truncate"]
+    recommendation: "Reject implicit clamping by default; if product requires clamping, effective value must be recorded."
+    evidence:
+      [
+        "factor: context/max-output and reasoning budget are separate dimensions",
+        "seed: Anthropic thinking budget",
+      ]
+    blockingCases: [MSR-REASON-003, MSR-REQ-002]
+
+  - id: DEC-039
+    domain: reasoning
+    status: undefined
+    question: "Are nothink/no-reasoning wire semantics omitting the field, sending false, sending zero budget, or a provider-specific extra body?"
+    options:
+      ["Map per provider wire contract, defaulting to minimal request", "统一发送 false", "统一发送 zero budget"]
+    recommendation: "Follow provider contract; do not use generic false/zero to override adapters that lack field support."
+    evidence:
+      ["seed: GLM-5.2 max/high/nothink", "seed: Qwen/Kimi/MiMo extra-body minimal projection"]
+    blockingCases: [MSR-REASON-001, MSR-REQ-003]
+
+  - id: DEC-040
+    domain: reasoning
+    status: undefined
+    question: "When a provider does not support thought but UI still receives legacy Session thought, is that intent retained in history, snapshot, and usage?"
+    options:
+      ["Retain intent/provenance; do not project to request", "全部清掉", "投影成 provider 默认值并覆盖历史"]
+    recommendation: "Separate historical intent from current request projection; do not write back to history."
+    evidence:
+      [
+        "planning: four-layer assertions include Selection, Active Model, Request Projection, Provenance",
+      ]
+    blockingCases: [MSR-REASON-010, MSR-RECOVERY-005]
+
+  - id: DEC-041
+    domain: reasoning
+    status: contract-conflict
+    question: "When existing protocol/state-space conflicts between 'latest Session config' and 'frozen on enqueue' for queued thought, which is authoritative?"
+    options:
+      [
+        "Freeze model/thought for the full Submission; refresh only Provider facts during execution",
+        "消费时读取最新 Session",
+        "按 delivery kind 区分",
+      ]
+    recommendation: "Adopt newer interaction design, state-space, and input-intent frozen Submission semantics; clean up legacy invariants."
+    evidence:
+      [
+        "newer-design: queue item stores complete Submission",
+        "protocol: queuedPromptUsesLatestSessionConfig conflicts with queuedSubmissionPreservesSelection",
+      ]
+    blockingCases: [MSR-QUEUE-001, MSR-QUEUE-002]
+
+  - id: DEC-042
+    domain: reasoning
+    status: resolved-needs-proof
+    question: "When reasoning wire mapping fails, is it guaranteed not to send a pruned 'approximate request'?"
+    options: ["preflight fail closed", "Drop incompatible fields and continue", "Fall back to model default"]
+    recommendation: "Fail closed; field stripping is only permitted with an explicit adapter contract."
+    evidence:
+      ["planning: adapter preflight", "factor: request projection must be independently asserted"]
+    blockingCases: [MSR-REASON-011, MSR-REQ-003]
+
+  - id: DEC-043
+    domain: reasoning
+    status: resolved-needs-proof
+    question: "Do resend, retry, compact, and title sidecars copy the thought intent of the primary request?"
+    options:
+      [
+        "Follow operation-specific policy; sidecars can enforce no reasoning",
+        "全部复制",
+        "全部使用 provider default",
+      ]
+    recommendation: "按 operation 记录 querySource；title/Git 等 sidecar 不得污染主 Session thought。"
+    evidence:
+      [
+        "planning: title sidecar forces no reasoning; Git commit has querySource-specific behavior",
+        "factor: downstream consumers are separate surfaces",
+      ]
+    blockingCases: [MSR-SIDE-001, MSR-SIDE-002]
+
+  - id: DEC-044
+    domain: reasoning
+    status: resolved-needs-proof
+    question: "When switching thought/model during streaming, must current response, usage, and reasoning trace all attribute to the old Active Model?"
+    options:
+      [
+        "All in-flight state is immutable; switching affects only subsequent Submissions",
+        "Use new model for subsequent chunks",
+        "Wait for response completion before ACKing switch request",
+      ]
+    recommendation: "In-flight is immutable; provide proof that chunks, usage, and provenance belong to the same model."
+    evidence: ["newer-design: active Model immutable", "seed: MSR-SESSION-005 stream model switch"]
+    blockingCases: [MSR-SESSION-005, MSR-RECOVERY-006]
+
+  - id: DEC-045
+    domain: reasoning
+    status: resolved-needs-proof
+    question: "When reasoning trace is unavailable or provider returns an invalid signature, does repair/retry alter original model/thought provenance?"
+    options:
+      [
+        "repair history encoding only，model/thought provenance immutable",
+        "retry with lower reasoning",
+        "fallback model and mark repaired",
+      ]
+    recommendation: "repair only fixes canonical history/request encoding; any model fallback must be an explicit new Submission."
+    evidence:
+      [
+        "seed: MSR-RECOVERY-001 unsigned reasoning repair",
+        "planning: canonical history immutability",
+      ]
+    blockingCases: [MSR-RECOVERY-001, MSR-RECOVERY-007]
+
+  - id: DEC-046
+    domain: session-queue
+    status: contract-conflict
+    question: "busy input 入队后，消费时使用 admission 时冻结的 model/thought，还是读取最新 Session config？"
+    options:
+      [
+        "Freeze complete Submission; refresh only Provider config/credentials upon execution",
+        "消费时读取最新 Session",
+        "desktop and mobile use different semantics",
+      ]
+    recommendation: "Adopt frozen Submission; desktop-continuous and web-remote-replayable differ only in delivery without changing selection semantics."
+    evidence:
+      [
+        "newer-design: Queue item stores complete Submission",
+        "protocol: queuedPromptUsesLatestSessionConfig conflicts with queuedSubmissionPreservesSelection",
+      ]
+    blockingCases: [MSR-QUEUE-001, MSR-QUEUE-002]
+
+  - id: DEC-047
+    domain: session-queue
+    status: undefined
+    question: "If a user modifies a draft before queue admission and edits it again immediately after clicking send, can the latter change affect the enqueued item?"
+    options:
+      [
+        "No, an accepted Submission is an immutable snapshot",
+        "Read draft before execution",
+        "Only thoughts can be modified, not models",
+      ]
+    recommendation: "Cannot affect queued items; renderer drafts only affect future Submissions."
+    evidence:
+      [
+        "newer-design: canonical Submission at acceptance",
+        "AGENTS: renderer keeps draft and optimistic overlay, CLI owns accepted FIFO",
+      ]
+    blockingCases: [MSR-QUEUE-006, MSR-DRAFT-002]
+
+  - id: DEC-048
+    domain: session-queue
+    status: undefined
+    question: "队列项等待期间 Provider config 变化，刷新哪些事实而不刷新哪些选择？"
+    options:
+      [
+        "Refresh credentials/endpoint/revision facts, but do not refresh provider/model/thought intent",
+        "Re-resolve entire item to preferred",
+        "所有字段均冻结",
+      ]
+    recommendation: "Separate selections from provider facts; refresh facts at execution, and fail closed if selection is invalid."
+    evidence:
+      [
+        "newer-design: execution refreshes current Provider config/credentials",
+        "planning: Active Model and Request Projection are separate layers",
+      ]
+    blockingCases: [MSR-QUEUE-007, MSR-REG-010]
+
+  - id: DEC-049
+    domain: session-queue
+    status: undefined
+    question: "If a queue item's explicit thought is no longer supported after a provider revision update, should it be discarded, blocked, or automatically set to default?"
+    options: ["阻止该项并保留可重试 intent", "Discard and log reason", "Automatically switch to provider default"]
+    recommendation: "Retain intent and block execution; generate a new Submission only after explicit user re-selection."
+    evidence:
+      [
+        "newer-design: unavailable explicit selection preserves intent",
+        "factor: queue item stores full Submission",
+      ]
+    blockingCases: [MSR-QUEUE-008, MSR-REASON-010]
+
+  - id: DEC-050
+    domain: session-queue
+    status: contract-conflict
+    question: "Is Session Selection updated when the model switch ACK is accepted, or when a standard Submission is accepted and Loop/Guide begins?"
+    options:
+      [
+        "Update Session Selection only after standard Submission is accepted",
+        "Update immediately once switch ACK is accepted",
+        "Update both, but distinguish by source",
+      ]
+    recommendation: "Adopt newer selection-state: update only after standard Submission is accepted; switch ACK only alters runtime intent."
+    evidence:
+      [
+        "newer-design: Session Selection updates when ordinary Submission starts Loop or Guide",
+        "case-catalog: I54 says switch ACK updates global recent tuple before Submission",
+      ]
+    blockingCases: [MSR-SESSION-009, MSR-DRAFT-006]
+
+  - id: DEC-051
+    domain: session-queue
+    status: undefined
+    question: "When switchModelConfig and send arrive simultaneously, is send guaranteed to see either the full pre-switch config or the full post-switch config?"
+    options:
+      [
+        "Atomically ordered via CLI CommandInbox barrier",
+        "renderer timestamp 决定",
+        "允许 send 使用混合 provider/model",
+      ]
+    recommendation: "必须是 CommandInbox admission order 的原子 snapshot；禁止 mixed identity。"
+    evidence:
+      [
+        "AGENTS: CLI/runtime CommandInbox is one FIFO authority",
+        "seed: MSR-SESSION-003 switch barrier and send race",
+      ]
+    blockingCases: [MSR-SESSION-003, MSR-QUEUE-009]
+
+  - id: DEC-052
+    domain: session-queue
+    status: undefined
+    question: "switch command stale/noop/duplicate 时，ACK 是否必须带 authoritative effective config，还是只返回 success/failure？"
+    options:
+      ["ACK 返回 authoritative config 与 revision", "Return boolean only", "Force-refresh entire snapshot on failure"]
+    recommendation: "ACK should carry sufficient authoritative config/revision to prevent the renderer from using stale optimistic drafts."
+    evidence:
+      [
+        "runtime: V4 model-config handler and CAS",
+        "seed: MSR-SESSION-002 noop/stale/duplicate/failed switch",
+      ]
+    blockingCases: [MSR-SESSION-002, MSR-SESSION-011]
+
+  - id: DEC-053
+    domain: session-queue
+    status: undefined
+    question: "When a model switch command is accepted but the subsequent first Submission is rejected, are Recent and Session Selection rolled back?"
+    options:
+      [
+        "No rollback needed if not written or committed solely on accepted Submission",
+        "先写再回滚",
+        "Retain model switch result but mark as unused",
+      ]
+    recommendation: "Do not write Recent/Session Selection without Submission side effects; runtime switch persistence follows command contract."
+    evidence:
+      [
+        "newer-design: Recent/Session Selection are tied to accepted Submission",
+        "risk: failure after switch ACK",
+      ]
+    blockingCases: [MSR-SESSION-009, MSR-SESSION-012]
+
+  - id: DEC-054
+    domain: session-queue
+    status: undefined
+    question: "When Queue, Guide, and standard send share a FIFO, can Guide's model-step switch bypass queued standard Submissions?"
+    options:
+      [
+        "严格 FIFO，不越过 accepted item",
+        "Guide boundary 有优先级",
+        "Merge and execute using current Session model",
+      ]
+    recommendation: "Maintain a single FIFO; Guide switches only at its own model-step boundaries."
+    evidence:
+      [
+        "newer-design: Queue and Guide use Submission fixed selection; Guide switches at model-step boundary",
+        "AGENTS: FIFO follows CLI serial admission order",
+      ]
+    blockingCases: [MSR-QUEUE-010, MSR-SURFACE-010]
+
+  - id: DEC-055
+    domain: session-queue
+    status: undefined
+    question: "If cancellation, stop, timeout, or provider failure occurs between admission and execution, does the queue item retain its original model intent?"
+    options:
+      ["Retain in discard/failure ledger; cannot overwrite with new model", "Delete without record", "自动用当前 model 重试"]
+    recommendation: "Retain auditable original intent; retries must create an explicit new Submission."
+    evidence: ["planning: queue facts/discard ledger", "factor: exactly-once output and provenance"]
+    blockingCases: [MSR-QUEUE-011, MSR-RECOVERY-008]
+
+  - id: DEC-056
+    domain: session-queue
+    status: resolved-needs-proof
+    question: "Does a new Submission generated by Edit/Retry fully copy the source provider/model/thought, rather than just text?"
+    options: ["Fully copy selection intent", "只复制 provider/model", "读取当前 Session config"]
+    recommendation: "Fully copy source selection; supplement with three-tier provenance: source, new submission, and request."
+    evidence:
+      [
+        "newer-design: Edit/Retry inherit source Submission ModelSelection",
+        "runtime: composerSubmissionConfig freezes at click",
+      ]
+    blockingCases: [MSR-EDIT-001, MSR-QUEUE-003]
+
+  - id: DEC-057
+    domain: session-queue
+    status: resolved-needs-proof
+    question: "When a Queue item switches from desktop continuous stream to mobile replayable recovery, does the selection snapshot remain fully consistent?"
+    options:
+      [
+        "Keep Submission selection consistent, only backfill replay gap/snapshot",
+        "恢复时读取最新 Session",
+        "Mobile uses its own model default",
+      ]
+    recommendation: "Maintain selection consistency; delivery affects only recovery and event dispatch, not model semantics."
+    evidence:
+      [
+        "AGENTS: continuous/replayable boundary",
+        "newer-design: same CLI Session runtime and frozen Submission",
+      ]
+    blockingCases: [MSR-QUEUE-002, MSR-REMOTE-006]
+
+  - id: DEC-058
+    domain: session-queue
+    status: resolved-needs-proof
+    question: "If a workspace identity mismatch is found when executing a queued Submission, reject it instead of falling back to a workspace with the same path?"
+    options:
+      ["Reject mismatch based on workspaceKey and remoteSessionId", "Attempt match based on workspacePath", "Reuse latest host"]
+    recommendation: "Reject mismatches; workspacePath is only used for execution and must not serve as identity isolation."
+    evidence:
+      [
+        "AGENTS: workspaceIdentity is isolation identity, workspacePath is execution path",
+        "remote constraint: remoteSessionId must be carried",
+      ]
+    blockingCases: [MSR-REMOTE-001, MSR-REMOTE-004]
+
+  - id: DEC-059
+    domain: session-queue
+    status: resolved-needs-proof
+    question: "Can the same accepted Submission execute twice after reconnect/replay, resulting in two model provenances?"
+    options:
+      [
+        "Admission ID/idempotency guarantees exactly once admission",
+        "允许重复但合并输出",
+        "Execute based on last replay",
+      ]
+    recommendation: "以 accepted Submission/admission identity 去重；重放只恢复事实，不重新 admission。"
+    evidence:
+      [
+        "AGENTS: stale run/owner protection and replayable recovery",
+        "factor: command result/idempotency dimension",
+      ]
+    blockingCases: [MSR-REMOTE-006, MSR-RECOVERY-008]
+
+  - id: DEC-060
+    domain: session-queue
+    status: resolved-needs-proof
+    question: "During Session restore when Registry is not yet ready, is temporarily populating the model with local preferred allowed?"
+    options:
+      [
+        "Cross-Host fallback not allowed; retain unbound intent",
+        "允许临时本地 preferred",
+        "Automatically fall back after timeout",
+      ]
+    recommendation: "Cross-Host fallback not allowed; await target Host readiness or fail explicitly."
+    evidence:
+      [
+        "newer-design: cold resume preserves unavailable selection and reports unbound",
+        "seed: MSR-REG-003 remote loading does not fallback local",
+      ]
+    blockingCases: [MSR-REG-003, MSR-RECOVERY-009]
+
+  - id: DEC-061
+    domain: session-queue
+    status: undefined
+    question: "Can concurrent Submissions in the same Session use different models, or must they complete a model switch barrier first?"
+    options:
+      [
+        "Each Submission can carry independent selection",
+        "必须共享 Session Active Model",
+        "Only queue can differ; standard send cannot",
+      ]
+    recommendation: "Submission selection governs, but clarify whether runtime executes serially; do not rely on UI restrictions instead of protocol definitions."
+    evidence:
+      [
+        "newer-design: canonical Submission carries ModelSelection",
+        "risk: active model versus submission intent",
+      ]
+    blockingCases: [MSR-SESSION-013, MSR-QUEUE-012]
+
+  - id: DEC-062
+    domain: session-queue
+    status: undefined
+    question: "When compact occurs before or after queued Submissions, which model/thought does compact use, and does it affect queued items?"
+    options:
+      [
+        "compact 是 request-local policy，不改 queued Submission",
+        "compact uses queue item model",
+        "compact 后重写队列 model",
+      ]
+    recommendation: "compact 不改既有 Submission；其自身 model policy 独立记录。"
+    evidence:
+      [
+        "planning: Compact is a request-local downstream consumer",
+        "factor: compact and queue are separate operations",
+      ]
+    blockingCases: [MSR-QUEUE-013, MSR-SIDE-003]
+
+  - id: DEC-063
+    domain: session-queue
+    status: undefined
+    question: "Goal、Guide 或 Automation 产生的内部 Submission 是否和用户普通 Submission 共用 Recent/Session Selection 更新规则？"
+    options:
+      [
+        "内部 Submission 不污染 App Recent，按 surface record 更新",
+        "Update all Recents",
+        "Update all Session Selections",
+      ]
+    recommendation: "Isolate side effects by source/surface; only standard Chat Submissions with an explicit contract update Chat Recent."
+    evidence:
+      [
+        "newer-design: Off-Peak does not write App Recent/Configured Default/Session Selection",
+        "planning: downstream consumers have isolated persistence",
+      ]
+    blockingCases: [MSR-SURFACE-003, MSR-SIDE-004]
+
+  - id: DEC-064
+    domain: session-queue
+    status: undefined
+    question: "When a session switch, task restore, and remote reconnect occur simultaneously, is the authority for model selection the timeline, the snapshot, or the current runtime?"
+    options:
+      [
+        "runtime command/result serves as execution authority, snapshot/timeline as restoration evidence",
+        "最新 timeline row 覆盖 runtime",
+        "renderer snapshot 覆盖 runtime",
+      ]
+    recommendation: "runtime is the execution authority; restoration must validate the snapshot revision and stale runs."
+    evidence:
+      [
+        "AGENTS: owner/lease/stale run protection",
+        "planning: Session runtime, Snapshot and timeline have separate roles",
+      ]
+    blockingCases: [MSR-RECOVERY-009, MSR-REMOTE-007]
+
+  - id: DEC-065
+    domain: product-surface
+    status: contract-conflict
+    question: "When an Automation's modelSelection is missing, does it follow Workspace, follow Host preferred, or resolve and freeze at save time?"
+    options:
+      [
+        "Missing indicates follow Workspace, resolving Host preferred at dispatch time",
+        "Freeze current model at save time",
+        "每次 run 读取 Chat Session",
+      ]
+    recommendation: "采用 follow Workspace；显式 model 才持久化，dispatch 只读取 Automation record 和 Host facts。"
+    evidence:
+      [
+        "newer-design: Automation missing modelSelection means follow Workspace",
+        "planning: Automation record/run snapshot is separate from Chat Draft",
+      ]
+    blockingCases: [MSR-SURFACE-001, MSR-AUTH-010]
+
+  - id: DEC-066
+    domain: product-surface
+    status: contract-conflict
+    question: "When a Subagent lacks an explicit model, does it inherit the Parent Active Model, the Parent Submission model, or the Workspace preferred?"
+    options:
+      ["继承 Parent Active Model", "继承触发它的 Parent Submission", "使用 Workspace preferred"]
+    recommendation: "采用 Parent Active Model；显式 child override 才打破继承，并记录 child provenance。"
+    evidence:
+      [
+        "newer-design: Subagent no explicit model inherits Parent Active Model",
+        "planning: Subagent has child runtime/timeline authority",
+      ]
+    blockingCases: [MSR-SURFACE-002, MSR-SUBAGENT-001]
+
+  - id: DEC-067
+    domain: product-surface
+    status: contract-conflict
+    question: "App Recent 的写入时点是 picker selection、switch ACK accepted，还是 ordinary Submission accepted？"
+    options: ["ordinary Submission accepted", "switch ACK accepted", "picker selection"]
+    recommendation: "采用 ordinary Submission accepted；旧 I54 需要重分类或更新。"
+    evidence:
+      [
+        "newer-design: App Recent updates when App accepts Submission",
+        "case-catalog: I54 records switch ACK as earlier update point",
+      ]
+    blockingCases: [MSR-DRAFT-006, MSR-SESSION-009]
+
+  - id: DEC-068
+    domain: product-surface
+    status: undefined
+    question: "When a hidden Off-Peak model option becomes invalid, should the edit page display the record, auto-fix it, or reject saving?"
+    options:
+      ["Keep the hidden exact model and display an unavailable state", "Automatically switch to preferred upon opening edit", "Reject loading this task"]
+    recommendation: "Preserve record intent, performing entitlement and Registry checks before saving/executing."
+    evidence:
+      [
+        "planning: Off-Peak uses hidden exact model and separate task record",
+        "factor: Off-Peak is not ordinary Chat runtime",
+      ]
+    blockingCases: [MSR-OFF-001, MSR-AUTH-005]
+
+  - id: DEC-069
+    domain: product-surface
+    status: undefined
+    question: "Does Off-Peak execution keep the creation-time thought, or use the latest provider default on each schedule?"
+    options:
+      [
+        "Freeze explicit thoughts; resolve empty thoughts to dispatch-time defaults",
+        "Entire item is completely frozen at creation time",
+        "整项按 dispatch-time Session config",
+      ]
+    recommendation: "沿用 sparse selection 语义：explicit 冻结，missing 在执行时解析。"
+    evidence:
+      [
+        "newer-design: sparse intent and ModelFactory-time default resolution",
+        "planning: task record and run snapshot are distinct",
+      ]
+    blockingCases: [MSR-OFF-002, MSR-REASON-006]
+
+  - id: DEC-070
+    domain: product-surface
+    status: undefined
+    question: "Project memory、Title sidecar 使用的 model 是否需要在 UI 中可见、可配置、可审计？"
+    options:
+      [
+        "Audit provenance at minimum; configure according to operation policy",
+        "Fully reuse main session selection and make it visible",
+        "Completely hidden and unrecorded",
+      ]
+    recommendation: "Record provenance at minimum; whether to expose configuration is decided by each operation owner."
+    evidence:
+      [
+        "planning: downstream consumers include Wiki, title, memory",
+        "factor: sidecar must not create ordinary user turn",
+      ]
+    blockingCases: [MSR-SURFACE-003, MSR-SIDE-005]
+
+  - id: DEC-071
+    domain: product-surface
+    status: undefined
+    question: "Are sidecars like Git commit, Title, Goal verifier, and Compact allowed to fall back independently when unsupported by the primary model?"
+    options:
+      [
+        "Only fall back per respective explicit policy, defaulting to fail closed",
+        "统一 fallback Workspace preferred",
+        "Uniformly keep using main Active Model",
+      ]
+    recommendation: "Operation-specific; sidecar fallbacks must not be written back to Chat Session or Recent."
+    evidence:
+      [
+        "planning: title/Git/Goal/Compact each have separate policy",
+        "risk: fallback can corrupt provenance",
+      ]
+    blockingCases: [MSR-SIDE-001, MSR-SIDE-002, MSR-SIDE-006]
+
+  - id: DEC-072
+    domain: product-surface
+    status: undefined
+    question: "Do /model, /effort, and /variant across Bot, TUI, and CLI share schema and default chain with V4 ModelSelection?"
+    options:
+      [
+        "Share canonical schema, surface-local adapter",
+        "完全独立 schema",
+        "CLI acts as global authority, overriding UI",
+      ]
+    recommendation: "共享 canonical type/resolver，保留 surface-local commit/persistence。"
+    evidence:
+      [
+        "catalog: tui is a distinct surface",
+        "planning: shared UI/source does not imply shared behavior",
+      ]
+    blockingCases: [MSR-SURFACE-011, MSR-CLI-001]
+
+  - id: DEC-073
+    domain: product-surface
+    status: undefined
+    question: "官方 MCP Coding Plan 的 provider/account facts 是否可以直接注入普通 Model Registry？"
+    options:
+      [
+        "只共享 auth facts，不共享普通模型 authority",
+        "Fully reuse standard Registry",
+        "MCP facts 覆盖普通 provider config",
+      ]
+    recommendation: "只共享明确的 auth/access capability；MCP credential owner 不变成普通 model owner。"
+    evidence:
+      [
+        "planning: official MCP is a separate auth context",
+        "AGENTS: domain boundaries prohibit cross-domain non-types imports",
+      ]
+    blockingCases: [MSR-AUTH-011, MSR-SURFACE-012]
+
+  - id: DEC-074
+    domain: product-surface
+    status: resolved-needs-proof
+    question: "After an Automation saves an explicit model, does changing Host preferred affect the next run?"
+    options:
+      [
+        "Does not affect explicit records; only affects follow Workspace",
+        "所有 Automation 跟随 preferred",
+        "保存时和运行时都复制一份",
+      ]
+    recommendation: "Explicit records are unaffected by preferred changes; run snapshot and provenance evidence required."
+    evidence:
+      ["newer-design: explicit models persist; missing follows Workspace", "seed: MSR-SURFACE-001"]
+    blockingCases: [MSR-SURFACE-001, MSR-AUTH-010]
+
+  - id: DEC-075
+    domain: product-surface
+    status: resolved-needs-proof
+    question: "Does a Subagent explicit model pollute parent Session Selection, App Recent, or parent timeline?"
+    options:
+      [
+        "只写 child runtime/timeline provenance",
+        "更新 parent Recent",
+        "更新 parent Session Selection",
+      ]
+    recommendation: "Isolate child authority from parent selection; add dual child/parent provenance assertions."
+    evidence:
+      [
+        "newer-design: child explicit model and parent inheritance",
+        "planning: child runtime/timeline is separate owner",
+      ]
+    blockingCases: [MSR-SURFACE-002, MSR-SUBAGENT-002]
+
+  - id: DEC-076
+    domain: product-surface
+    status: resolved-needs-proof
+    question: "Can model request failures in internal operations like Off-Peak, Wiki, or Title trigger a main Session fallback?"
+    options:
+      [
+        "No; fail per operation and keep isolated",
+        "Can fall back to main Active Model",
+        "Can fall back without recording",
+      ]
+    recommendation: "Cannot fall back across operations; failures and provenance must be locally auditable."
+    evidence:
+      [
+        "newer-design: Off-Peak does not write Chat Session state",
+        "planning: separate downstream consumers and persistence",
+      ]
+    blockingCases: [MSR-OFF-001, MSR-SURFACE-003, MSR-SIDE-001]
+
+  - id: DEC-077
+    domain: remote
+    status: undefined
+    question: "When opening the picker on mobile /remote, are candidate sources the shared host snapshot, the remote workspace Registry, or the renderer cache?"
+    options:
+      [
+        "trusted shared host/target workspace Registry",
+        "mobile local cache",
+        "relay 聚合 provider facts",
+      ]
+    recommendation: "Must use target Host authority only; relay/main does not own model business state."
+    evidence:
+      [
+        "AGENTS: mobile attaches existing shared host; relay/main only transport and attachment",
+        "planning: remote Registry is target-host authority",
+      ]
+    blockingCases: [MSR-REMOTE-002, MSR-REG-003]
+
+  - id: DEC-078
+    domain: remote
+    status: undefined
+    question: "After reconnecting from a disconnect, is an optimistic selection in remote picker restored, discarded, or merged with the snapshot?"
+    options:
+      [
+        "Only restore accepted Submissions; discard or keep uncommitted drafts locally",
+        "Force merge into runtime",
+        "Override host snapshot with mobile draft",
+      ]
+    recommendation: "Separate accepted from draft; replayables only restore accepted facts without promoting drafts to commands."
+    evidence:
+      [
+        "AGENTS: renderer keeps unsubmitted draft; replayable recovery has snapshot/gap boundary",
+        "planning: delivery profile is trusted host attachment",
+      ]
+    blockingCases: [MSR-REMOTE-003, MSR-REMOTE-006]
+
+  - id: DEC-079
+    domain: remote
+    status: undefined
+    question: "When a stale revision occurs on a remote Session provider/model selection, should the client auto-refresh, replay command, or prompt user to reselect?"
+    options:
+      ["One authoritative refresh; require reselection if still invalid", "Infinite automatic replay", "Force override using local draft"]
+    recommendation: "Single refresh/retry; cannot bypass revision/CAS or replay infinitely."
+    evidence:
+      [
+        "seed: MSR-SESSION-004 provider.notInRegistry refresh/retry",
+        "AGENTS: stale run and owner protection",
+      ]
+    blockingCases: [MSR-REMOTE-003, MSR-SESSION-004]
+
+  - id: DEC-080
+    domain: remote
+    status: undefined
+    question: "同一 workspacePath 在两个远端 identity 上可达时，远控重连是否允许路径匹配？"
+    options:
+      [
+        "Must match workspaceIdentity + remoteSessionId exactly",
+        "Prompt user after path match",
+        "Prefer most recent connections",
+      ]
+    recommendation: "Requires exact identity match; paths are only for command cwd and display."
+    evidence:
+      [
+        "AGENTS: remote identity must not be replaced by workspacePath",
+        "planning: workspace identity dimension",
+      ]
+    blockingCases: [MSR-REMOTE-001, MSR-REMOTE-004]
+
+  - id: DEC-081
+    domain: remote
+    status: resolved-needs-proof
+    question: "desktop-continuous 与 web-remote-replayable 是否共享同一 accepted Submission 和 model provenance？"
+    options:
+      [
+        "Share business facts; only distinguish delivery/recovery",
+        "各端各自产生 Submission",
+        "Re-resolve model on mobile restore",
+      ]
+    recommendation: "Share the same CLI Session Runtime and Submission; add identity/provenance evidence for cross-client handoffs."
+    evidence:
+      [
+        "AGENTS: desktop continuous vs mobile replayable boundary",
+        "planning: same CLI Session Runtime",
+      ]
+    blockingCases: [MSR-QUEUE-002, MSR-REMOTE-006]
+
+  - id: DEC-082
+    domain: remote
+    status: resolved-needs-proof
+    question: "Can remote owner/lease changes alter the model selection or rebind the provider of a queued Submission?"
+    options:
+      [
+        "owner/lease 只负责路由，不改变 selection",
+        "新 owner 重新解析",
+        "Cancel and fall back upon lease change",
+      ]
+    recommendation: "只负责 routing/stale-run protection；selection 和 provider intent 由 accepted Submission 保持。"
+    evidence:
+      [
+        "AGENTS: owner/lease routes commands and protects stale runs; must not delete owner checks",
+        "newer-design: queue freezes selection",
+      ]
+    blockingCases: [MSR-REMOTE-007, MSR-QUEUE-002]
+
+  - id: DEC-083
+    domain: remote
+    status: resolved-needs-proof
+    question: "When a replay gap misses a model-switch ACK or provider Registry update, which snapshot should recovery resend?"
+    options:
+      [
+        "Restore from runtime authoritative snapshot, then fill gaps",
+        "Rebuild from renderer local events",
+        "Rebuild from relay cache",
+      ]
+    recommendation: "runtime snapshot is the authority; relay only passes through and cannot fabricate model facts."
+    evidence:
+      [
+        "AGENTS: relay/main do not own Session/Task/Snapshot state",
+        "planning: recovery snapshot and timeline roles",
+      ]
+    blockingCases: [MSR-REMOTE-006, MSR-RECOVERY-009]
+
+  - id: DEC-084
+    domain: remote
+    status: resolved-needs-proof
+    question: "After a remote model request failure, can replay show an incorrect fallback candidate as the accepted selection?"
+    options:
+      [
+        "failure/replay retains original intent; only an accepted new command changes selection",
+        "Display current preferred",
+        "Display the last successfully requested model",
+      ]
+    recommendation: "Retain original intent; failure ledger, snapshot, and renderer must remain consistent."
+    evidence:
+      [
+        "newer-design: unavailable selection preserves intent",
+        "AGENTS: replayable recovery must not bypass accepted command boundary",
+      ]
+    blockingCases: [MSR-REMOTE-003, MSR-RECOVERY-009]
+
+  - id: DEC-085
+    domain: presentation
+    status: undefined
+    question: "When the model list is long with many homonymous models, do sorting, grouping, search, and keyboard navigation affect selection identity?"
+    options:
+      [
+        "Display sorting is purely derived; submissions always use structured identity",
+        "排序决定默认 model",
+        "Search results can reverse-resolve model via label",
+      ]
+    recommendation: "Display behavior must not alter identity; search must carry the original candidate key."
+    evidence:
+      [
+        "planning: shared ModelConfigSelect only shares candidate/display conventions",
+        "risk: two providers can have same model name",
+      ]
+    blockingCases: [MSR-REG-002, MSR-UI-004]
+
+  - id: DEC-086
+    domain: presentation
+    status: undefined
+    question: "disabled/unavailable 当前模型在键盘、屏幕阅读器、触摸和鼠标四种输入下是否必须有相同语义？"
+    options: ["Unify locked/unavailable semantics", "只保证鼠标行为", "Selectable via keyboard but not mouse"]
+    recommendation: "Unify accessibility semantics; input methods must not bypass capability/entitlement guards."
+    evidence:
+      [
+        "factor: presentation dimensions include keyboard/mouse/touch/a11y",
+        "blocking: disabled current model UI contract unresolved",
+      ]
+    blockingCases: [MSR-UI-003, MSR-UI-005]
+
+  - id: DEC-087
+    domain: presentation
+    status: undefined
+    question: "Must error, loading, stale, and unavailable states for provider/model/reasoning be displayed separately, or merged into unavailable?"
+    options: ["Distinguish at least loading/stale/unavailable/error", "Unify as disabled", "只显示 provider error"]
+    recommendation: "Separate state semantics; copy can be shared but must not drop recovery actions and authority info."
+    evidence:
+      [
+        "planning: Registry readiness, entitlement, capability and request failure are distinct",
+        "factor: state dimensions",
+      ]
+    blockingCases: [MSR-REG-003, MSR-AUTH-002, MSR-UI-006]
+
+  - id: DEC-088
+    domain: presentation
+    status: undefined
+    question: "How are pending optimistic overlays for model/reasoning effort changes cleared upon ACK, failure, disconnect, and stale responses?"
+    options:
+      ["以 command ID/revision 精确清理", "任何 snapshot 到达即清理", "Clean up on timeout and keep local values"]
+    recommendation: "按 command identity 和 authoritative revision 清理；不能由无关 snapshot 覆盖。"
+    evidence:
+      [
+        "AGENTS: renderer keeps pending optimistic overlay; host owner/lease is routing only",
+        "runtime: V4 command/CAS path",
+      ]
+    blockingCases: [MSR-UI-007, MSR-REMOTE-003]
+
+  - id: DEC-089
+    domain: presentation
+    status: undefined
+    question: "Must model identity and unavailable reason remain fully visible under themes, locales, narrow viewports, and mobile bottom sheets?"
+    options:
+      [
+        "identity and reason cannot be omitted; responsive folding is permitted",
+        "窄屏只显示 model label",
+        "移动端使用简化候选 identity",
+      ]
+    recommendation: "Full identity is retained in accessible label/detail; visually collapsible but label cannot substitute for key."
+    evidence:
+      [
+        "AGENTS: UI changes must support desktop/mobile, two themes and i18n",
+        "planning: presentation is low-weight cross dimension",
+      ]
+    blockingCases: [MSR-UI-004, MSR-REMOTE-002]
+
+  - id: DEC-090
+    domain: presentation
+    status: resolved-needs-proof
+    question: "model switch、Submission accepted、request projection 和最终 provenance 在 UI 与日志中是否能被关联到同一 operation ID？"
+    options:
+      [
+        "使用 command/submission/request/provenance correlation IDs",
+        "只依赖 sessionId",
+        "Record only final model label",
+      ]
+    recommendation: "Use hierarchical correlation IDs; route high-frequency stream details to debug, and keep lifecycle outcomes at info/warn/error."
+    evidence:
+      [
+        "AGENTS: service logger level rules and RPC logging middleware",
+        "planning: four-layer assertions and provenance",
+      ]
+    blockingCases: [MSR-OBS-001, MSR-OBS-002]
+
+  - id: DEC-091
+    domain: migration
+    status: contract-conflict
+    question: "When historical Session snapshots from earlier versions or legacy formats only have model string and lack providerId/thought source, how should recovery backfill them?"
+    options:
+      [
+        "Backfill via explicit legacy decoder and tag migration provenance",
+        "Backfill using current preferred",
+        "Reject recovery and require rebuild",
+      ]
+    recommendation: "Allow reversible legacy decode; keep unbound when identity cannot be verified, without silently guessing preferred."
+    evidence:
+      [
+        "planning: opaque model IDs and legacy migration boundary",
+        "risk: old snapshots may lack structured Selection",
+      ]
+    blockingCases: [MSR-MIGRATION-002, MSR-RECOVERY-009]
+
+  - id: DEC-092
+    domain: migration
+    status: contract-conflict
+    question: "How should early accepted cases already written to conversation case catalog (fallback, latest Session queue, switch ACK writing Recent) be handled?"
+    options:
+      [
+        "Reclassify as legacy/undefined per newer accepted design and update",
+        "Keep as current regression contract",
+        "Retain both behaviors as compatibility branches",
+      ]
+    recommendation: "Legacy cases must not override newer accepted design; decide compatibility windows and migration tests after reclassification."
+    evidence:
+      [
+        "design-v2 README: authority order puts newer accepted design and current proof above old design",
+        "case-catalog: I04/I54/I56/I58/I61 conflict with newer selection-state",
+      ]
+    blockingCases: [MSR-MIGRATION-003, MSR-QUEUE-001, MSR-SESSION-007]
+
+  - id: DEC-093
+    domain: migration
+    status: resolved-needs-proof
+    question: "When legacy persisted Recent uses workspacePath key, how can migrating to workspaceIdentity key prevent cross-workspace data bleed?"
+    options:
+      [
+        "Local paths allow compatibility migration; remote identities do not use fuzzy migration",
+        "所有 path 直接迁移到 identity",
+        "清空所有 Recent",
+      ]
+    recommendation: "Allow explicit fallback locally; remote must verify via identity/session before migrating."
+    evidence:
+      [
+        "runtime: modelSelectionRecent key is workspaceIdentity?.trim() || workspacePath",
+        "AGENTS: remote identity must not be replaced by path",
+      ]
+    blockingCases: [MSR-REMOTE-001, MSR-MIGRATION-004]
+
+  - id: DEC-094
+    domain: migration
+    status: resolved-needs-proof
+    question: "旧 provider config 中的 magic_name、fallback 和 tombstone 字段迁移后，是否仍能改变当前 model candidate？"
+    options:
+      [
+        "Only generate migration audit, without participating in new resolver",
+        "Continue serving as implicit fallback",
+        "Maintain field-by-field compatibility with new schema",
+      ]
+    recommendation: "New resolver ignores legacy semantics; migration tool outputs audit and explicitly alerts on unmappable entries."
+    evidence:
+      [
+        "planning: legacy paths are migration-only",
+        "design-v2 README: old design is lower authority than current resolver/tests",
+      ]
+    blockingCases: [MSR-MIGRATION-001, MSR-REG-012]
+
+  - id: DEC-095
+    domain: observability
+    status: resolved-needs-proof
+    question: "What secret-free facts must model selection regression log to distinguish selection, Registry, auth, and adapter projection failures?"
+    options:
+      [
+        "Log hashed identity, revision, selection source, capability, and wire shape summary",
+        "Log full request/auth",
+        "Log only error string",
+      ]
+    recommendation: "Log redactable structured summaries; never persist dynamic credentials or full sensitive requests."
+    evidence:
+      [
+        "AGENTS: logger production volume and secret boundaries",
+        "planning: evidence layers include request/provenance without credentials",
+      ]
+    blockingCases: [MSR-OBS-003, MSR-AUTH-007]
+
+  - id: DEC-096
+    domain: observability
+    status: resolved-needs-proof
+    question: "Does error classification affect retry/fallback policy when provider adapter returns model mismatch, reasoning mismatch, or empty completion?"
+    options:
+      [
+        "Classify as projection/auth/transport/content, with retry defined separately for each",
+        "Retry all provider errors identically",
+        "所有 error fallback model",
+      ]
+    recommendation: "Error classification must precede retry/fallback; empty completions must not be conflated with auth failures."
+    evidence:
+      [
+        "seed: MSR-RECOVERY-002 empty completion retry",
+        "planning: adapter preflight, auth fail-before-network and exactly-once output",
+      ]
+    blockingCases: [MSR-RECOVERY-002, MSR-RECOVERY-010]
+
+  - id: DEC-097
+    domain: observability
+    status: resolved-needs-proof
+    question: "Must the test generator's pruning report record pruned combinations, the underlying invariants, and uncovered pairs/triples?"
+    options: ["三者都记录并可回放", "只记录保留 case", "只记录总数量"]
+    recommendation: "Prune reasons and coverage gaps must be recorded; otherwise Cartesian pruning cannot be proven safe."
+    evidence:
+      [
+        "feature-boundary-planner: every prune needs named guard/invariant",
+        "planning: pairwise/3-wise strategy and formal-state-space handoff",
+      ]
+    blockingCases: [MSR-GEN-001, MSR-GEN-002]
+
+  - id: DEC-098
+    domain: config-release
+    status: undefined
+    question: "When the Configured Default file has an unknown schemaVersion or corrupt JSON/schema, should it be deleted, quarantined, retained with an alert, or fall back to legacy?"
+    options:
+      [
+        "Delete only confirmed corrupt content, and quarantine unknown versions first",
+        "所有解析失败都删除",
+        "Fall back to legacy on all parse failures",
+      ]
+    recommendation: "Distinguish corruption from future versions to avoid deleting unrecognized newer versions as corrupt data."
+    evidence:
+      [
+        "runtime: model-selection-config-file-codec rejects unsupported version",
+        "runtime: repository currently removes decode failures under file lock",
+      ]
+    blockingCases: [MSR-MIGRATION-005, MSR-REG-014]
+
+  - id: DEC-099
+    domain: config-release
+    status: resolved-needs-proof
+    question: "Must reading Configured Default emit distinct observable reasons for lock failures, permission failures, ENOENT, and decoding failures?"
+    options:
+      [
+        "Distinguish unavailable/empty/corrupt, and maintain a safe fallback",
+        "所有失败都返回 undefined",
+        "失败即阻止 Registry 启动",
+      ]
+    recommendation: "Distinguish causes; watcher/lock unavailability must not masquerade as content corruption."
+    evidence:
+      [
+        "runtime: NodeModelSelectionConfigRepository catches outer IO/lock errors separately from locked decode",
+        "code comment: lock/read/import failure cannot prove corruption",
+      ]
+    blockingCases: [MSR-REG-014, MSR-OBS-004]
+
+  - id: DEC-100
+    domain: config-release
+    status: undefined
+    question: "Should the Legacy importer run only when the file does not exist, or also attempt an import on corrupt/unsupported versions?"
+    options: ["只在明确 ENOENT 时导入", "所有读取失败都导入", "先 quarantine 再导入"]
+    recommendation: "Import only on ENOENT by default; otherwise, explicitly saved new configurations might be overwritten with stale values."
+    evidence:
+      [
+        "runtime: #readLocked invokes importLegacy only when readTextIfExists returns null",
+        "risk: corrupt/new config must not be silently overwritten",
+      ]
+    blockingCases: [MSR-MIGRATION-005, MSR-REG-014]
+
+  - id: DEC-101
+    domain: config-release
+    status: resolved-needs-proof
+    question: "If the Configured Default file watcher is unavailable, must preference reads/writes and Registry startup continue working?"
+    options: ["Watcher only handles invalidation notifications; reads and writes continue", "watcher 失败即阻止启动", "回退内存值并停止落盘"]
+    recommendation: "Use a non-blocking watcher; add event evidence for Linux/macOS/Windows and rename/atomic-write."
+    evidence:
+      [
+        "runtime: repository explicitly treats watcher as invalidation-only",
+        "AGENTS: multi-OS and async IO constraints",
+      ]
+    blockingCases: [MSR-REG-015, MSR-REMOTE-008]
+
+  - id: DEC-102
+    domain: config-release
+    status: undefined
+    question: "If the Config repository is disposed while read/save/watch refresh is in-flight, should promises resolve, cancel, or reject?"
+    options:
+      [
+        "Started I/O completes without further emits; subsequent calls reject",
+        "全部 abort",
+        "dispose waits for all watchers/I/O to complete",
+      ]
+    recommendation: "定义明确的 lifecycle contract，避免 dispose 后 emit 或写入错误 workspace。"
+    evidence:
+      [
+        "runtime: repository has #disposed checks and watcher close but no universal abort signal",
+        "risk: async lifecycle affects model default visibility",
+      ]
+    blockingCases: [MSR-REG-016, MSR-REMOTE-008]
+
+  - id: DEC-103
+    domain: config-release
+    status: resolved-needs-proof
+    question: "When Bundled and Active/LKG Built-in Release share the same revision but have different content, should we trust Bundled, keep Active, or block startup?"
+    options: ["信任 Bundled 并原子修复 Active", "信任 Active/LKG", "整份 release 无效并阻止启动"]
+    recommendation: "The current implementation leans toward Bundled as the trusted baseline; add evidence for source, rewrite, and Registry snapshot on same-revision conflicts."
+    evidence:
+      [
+        "runtime: selectReleaseCandidate returns bundled on same-revision content conflict",
+        "code comment: Active cache invalidation must not block trusted Bundled",
+      ]
+    blockingCases: [MSR-REG-017, MSR-MIGRATION-006]
+
+  - id: DEC-104
+    domain: config-release
+    status: undefined
+    question: "When Active/LKG revision is higher than the current Bundled revision, is it allowed to drive candidates, or must it wait for a bundled upgrade?"
+    options:
+      [
+        "允许 newer valid Active/LKG，Bundled 作为 fallback",
+        "只信 Bundled",
+        "Always treat higher revisions as future versions and quarantine them",
+      ]
+    recommendation: "An explicit release compatibility policy is required; the implementation detail of 'pick latest revision' cannot substitute for a product contract."
+    evidence:
+      [
+        "runtime: selectReleaseCandidate chooses highest valid revision",
+        "risk: downgrade, forward-compatibility and offline startup",
+      ]
+    blockingCases: [MSR-REG-018, MSR-MIGRATION-006]
+
+  - id: DEC-105
+    domain: config-release
+    status: resolved-needs-proof
+    question: "When a Built-in Release contains a retired Provider (e.g., builtin:zapi), should the entire release be rejected or individual providers filtered?"
+    options:
+      [
+        "Reject the entire release and fall back to a compatible candidate",
+        "Filter out retired providers and publish the rest",
+        "Retain all but disable them",
+      ]
+    recommendation: "The current implementation leans toward rejecting the entire release; add consistency evidence across remote, active, and bundled sources."
+    evidence:
+      [
+        "runtime: decodeCfBuiltinRelease rejects RETIRED_ZAPI_PROVIDER_ID",
+        "code comment: prevent re-publishing retired provider through Host Registry",
+      ]
+    blockingCases: [MSR-REG-019, MSR-MIGRATION-007]
+
+  - id: DEC-106
+    domain: config-release
+    status: resolved-needs-proof
+    question: "If endpointKey changes during a remote release fetch, must the stale response be discarded without writing to Active/LKG?"
+    options:
+      [
+        "Discard stale response and release stale lease",
+        "Still write and let the new endpoint overwrite",
+        "合并两个 endpoint 的 provider facts",
+      ]
+    recommendation: "Discard stale response; endpoint is part of release identity and cannot be merged."
+    evidence:
+      [
+        "runtime: synchronizer re-resolves endpointKey after fetch and returns skipped on change",
+        "AGENTS: remote identity and workspace boundaries",
+      ]
+    blockingCases: [MSR-REMOTE-008, MSR-REG-018]
+
+  - id: DEC-107
+    domain: config-release
+    status: resolved-needs-proof
+    question: "When the shared refresh control file is corrupt, has an unsupported schema, or has a leftover lease, can it be rebuilt within the lock to continue refreshing?"
+    options:
+      [
+        "Control file is rebuildable coordination state; rebuild within lock",
+        "Permanently block if control file is corrupt",
+        "每个进程忽略文件并并发 refresh",
+      ]
+    recommendation: "Rebuild within lock; network requests do not hold file locks, maintaining a single lease."
+    evidence:
+      [
+        "runtime: readControl invalid JSON/schema returns emptyControl",
+        "runtime: refresh uses withFileLock and releases lease after network",
+      ]
+    blockingCases: [MSR-REMOTE-008, MSR-OBS-005]
+
+  - id: DEC-108
+    domain: config-release
+    status: undefined
+    question: "Can force refresh bypass nextEligibleAt, and can it preempt valid leases from other processes?"
+    options: ["force only bypasses backoff without preempting valid leases", "force can preempt", "force always queues and waits"]
+    recommendation: "force must not break valid leases; otherwise, duplicate fetches and revision races will occur."
+    evidence:
+      [
+        "runtime: refresh distinguishes leaseUntil from nextEligibleAt",
+        "risk: multi-process refresh and duplicate provider release requests",
+      ]
+    blockingCases: [MSR-REMOTE-008, MSR-REG-020]
+
+  - id: DEC-109
+    domain: config-release
+    status: undefined
+    question: "Is the handling of a remote fetch returning null (resource not found) different from network/parsing failures?"
+    options:
+      [
+        "null marks missing and retains existing Active; exceptions enter backoff",
+        "两者都清空 Active",
+        "两者都无限重试",
+      ]
+    recommendation: "Model missing, stale, unchanged, and error separately; a single fetch failure must not clear a usable Registry."
+    evidence:
+      [
+        "runtime: synchronizer has missing result and failureCount/backoff paths",
+        "factor: recovery-state and registry-state are separate dimensions",
+      ]
+    blockingCases: [MSR-REMOTE-009, MSR-REG-021]
+
+  - id: DEC-110
+    domain: config-release
+    status: resolved-needs-proof
+    question: "Do remote releases with same-revision same-content, same-revision different-content, lower-revision, and higher-revision map to stable updated/unchanged/stale/error outcomes?"
+    options: ["Outcomes are strictly distinguishable and do not alter error state", "All are treated as unchanged", "都覆盖 Active"]
+    recommendation: "Keep outcomes distinguishable; same-revision conflicts must fail closed or revert to Bundled, and never overwrite."
+    evidence:
+      [
+        "runtime: applyRemoteRelease implements updated/unchanged/stale and same-revision conflict",
+        "tests: packages/provider-node/test/cf-builtin-release.test.ts",
+      ]
+    blockingCases: [MSR-REG-017, MSR-REMOTE-009]
+
+  - id: DEC-111
+    domain: config-release
+    status: resolved-needs-proof
+    question: "Under atomic write, file permissions, leftover temp files, process crashes, and multi-process reads/writes, could model defaults briefly read a partial config?"
+    options: ["Readers only see complete old/new snapshots", "Allow reading partial and then retrying", "检测 partial 后删除文件"]
+    recommendation: "Require complete old/new snapshots; add crash, permission, and concurrent writer tests."
+    evidence:
+      [
+        "runtime: atomicWritePrivateTextFile plus withFileLock",
+        "AGENTS: file/network IO should be async and persistence boundaries explicit",
+      ]
+    blockingCases: [MSR-REG-014, MSR-REMOTE-008]
+
+  - id: DEC-112
+    domain: config-release
+    status: undefined
+    question: "Configured Default 为空时，文件应省略 configuredDefault、写 null、还是删除文件？"
+    options:
+      ["保留 schemaVersion 并省略 configuredDefault", "write configuredDefault: null", "delete entire file"]
+    recommendation: "Current codec prefers schemaVersion + omitted field; need to verify interaction between null values and legacy import/watch."
+    evidence:
+      [
+        "runtime: encodeModelSelectionConfigFile omits configuredDefault when undefined",
+        "risk: empty persistence affects default chain and file watchers",
+      ]
+    blockingCases: [MSR-DRAFT-001, MSR-MIGRATION-005]
+
+  - id: DEC-113
+    domain: config-release
+    status: resolved-needs-proof
+    question: "When external atomic rename/write triggers a watcher, does the Registry guarantee a single final snapshot emission instead of intermediate events?"
+    options:
+      ["Watch event only triggers re-read; deduplicate final snapshot.", "Publish every FS event.", "Ignore rename events."]
+    recommendation: "Re-read and deduplicate by signature; provide evidence of platform watcher behavior."
+    evidence:
+      [
+        "runtime: both repositories watch directory and emit file-changed; builtin source serializes watch refresh",
+        "risk: atomic write commonly emits multiple filesystem events",
+      ]
+    blockingCases: [MSR-REG-015, MSR-REMOTE-008]
+
+  - id: DEC-114
+    domain: config-release
+    status: undefined
+    question: "Must remote refresh's endpointKey include account/host/workspace scope, or is a bare endpoint URL sufficient?"
+    options:
+      [
+        "endpointKey includes distinct auth/host/workspace scope.",
+        "Use URL only.",
+        "Maintained per-workspace but key still uses URL only.",
+      ]
+    recommendation: "Separate endpoint URL from authority scope; same URL should not automatically share incorrect release leases or caches."
+    evidence:
+      [
+        "runtime: synchronizer control file keys by endpointKey",
+        "AGENTS: workspaceIdentity/remoteSessionId must be carried for remote isolation",
+      ]
+    blockingCases: [MSR-REMOTE-001, MSR-REMOTE-008]

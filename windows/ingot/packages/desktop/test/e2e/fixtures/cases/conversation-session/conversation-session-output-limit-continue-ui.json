@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-ui",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-ui.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-output-limit-continue-ui.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "output-limit-continue-ui-title",
+      "description": "Fixed response for OTC08 title sidecar.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of the product semantics for the Continue UI status probe; fixed response avoids interfering with the three main requests."
+    },
+    {
+      "id": "output-limit-continue-ui-partial-p1",
+      "description": "First main request returns p1 mid-sentence within the same paragraph, truncated by max_tokens.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically generates mid-sentence truncated text in the first paragraph without titles or paragraph breaks to observe Desktop projection after Continue."
+    },
+    {
+      "id": "output-limit-continue-ui-partial-p2",
+      "description": "Second main request directly continues p1 and truncates again via max_tokens mid-sentence within the same paragraph.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically generates mid-sentence truncated text directly continuing p1 without titles or paragraph breaks to observe Desktop chunking across adjacent partials."
+    },
+    {
+      "id": "output-limit-continue-ui-final-p3",
+      "description": "Third main request directly continues p2, completes the same paragraph, and ends turn normally.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Normally terminates the recovery chain with text directly continuing p2 without titles or paragraph breaks, allowing Desktop to display the final assistant paragraph."
+    }
+  ]
+}

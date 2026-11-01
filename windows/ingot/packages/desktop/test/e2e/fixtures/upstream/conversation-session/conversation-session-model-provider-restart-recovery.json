@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-restart-recovery",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-restart-recovery.test.ts",
+  "fixtures": [
+    {
+      "id": "model-provider-restart-title",
+      "description": "Fixed response for title generation in restart recovery case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of model recovery semantics."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"model-provider-restart-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Model restart\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"model-provider-restart-title","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-provider-restart-title-anthropic",
+      "description": "Title response for restart recovery case when launching Anthropic transport.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The restart window may restore startup provider transport before seed provider hydration."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "model-provider-restart-title-anthropic",
+          "inputTokens": 32,
+          "outputTokens": 8,
+          "text": "{\"title\":"Model restart"}"
+        }
+      }
+    },
+    {
+      "id": "model-provider-restart-r01",
+      "description": "I25 preserves available upstream models across restarts.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is the requested model; response is only used for stable closeout."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_RESTART_R01"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"model-provider-restart-r01","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"model-provider-restart-r01","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-provider-restart-r01-anthropic",
+      "description": "I25 preserves available upstream models when launching Anthropic transport.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The case verifies provider/model, allowing startup transport during the restart recovery phase."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_RESTART_R01"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "model-provider-restart-r01-anthropic",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "model-provider-restart-r02",
+      "description": "I26 preserves Plan Highspeed across restarts.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is the requested model; response is only used for stable closeout."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_RESTART_R02"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"model-provider-restart-r02","object":"chat.completion.chunk","created":0,"model":"glm-5.2-highspeed-e2e","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"model-provider-restart-r02","object":"chat.completion.chunk","created":0,"model":"glm-5.2-highspeed-e2e","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-provider-restart-r03",
+      "description": "I27 falls back to Configured Default after stale Start Plan selection invalidates.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is the actual requested model after stale Recent fallback; response is only used for stable closeout."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_RESTART_R03"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"model-provider-restart-r03","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"model-provider-restart-r03","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "model-provider-restart-r04",
+      "description": "I28 falls back to Configured Default after deleted model selection invalidates.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is the actual requested model after stale Recent fallback; response is only used for stable closeout."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MODEL_PROVIDER_RESTART_R04"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"model-provider-restart-r04","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"model-provider-restart-r04","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

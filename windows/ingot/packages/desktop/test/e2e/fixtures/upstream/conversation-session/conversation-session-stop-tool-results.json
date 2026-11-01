@@ -1,0 +1,258 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-stop-tool-results",
+  "spec": "./test/e2e/conversation-session/conversation-session-stop-tool-results.test.ts",
+  "fixtures": [
+    {
+      "id": "stop-results-title",
+      "description": "Auxiliary title for this case",
+      "metadata": {
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_STOP_RESULTS_"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "{\"title\":"Stop tool results"}",
+          "inputTokens": 64,
+          "outputTokens": 8
+        }
+      }
+    },
+    {
+      "id": "stop-results-text-tools",
+      "description": "text real Read batch",
+      "metadata": {
+        "kind": "synthetic",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_TEXT_START"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "toolu_stop_results_text_1"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_stop_results_text_1",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/first.txt"
+            }
+          },
+          {
+            "id": "toolu_stop_results_text_2",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/blocked-2.txt"
+            }
+          },
+          {
+            "id": "toolu_stop_results_text_3",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/blocked-3.txt"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "stop-results-text-followup",
+      "description": "Normal continuation after text Stop",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_TEXT_FOLLOWUP"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "STOP_RESULTS_TEXT_OK",
+          "inputTokens": 96,
+          "outputTokens": 8
+        }
+      }
+    },
+    {
+      "id": "stop-results-image-tools",
+      "description": "image real Read batch",
+      "metadata": {
+        "kind": "synthetic",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_IMAGE_START"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "toolu_stop_results_image_1"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_stop_results_image_1",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/first.png"
+            }
+          },
+          {
+            "id": "toolu_stop_results_image_2",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/blocked-2.txt"
+            }
+          },
+          {
+            "id": "toolu_stop_results_image_3",
+            "name": "Read",
+            "input": {
+              "file_path": "{{e2eRuntimeRoot}}/conversation-session-stop-tool-results/blocked-3.txt"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "stop-results-image-followup",
+      "description": "Normal continuation after image Stop",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fixed three real Reads: the first succeeds, and the latter two are suspended by an isolated PreToolUse Hook; click Stop after the model stream completes. Only changes the first file to text or PNG without mocking tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_IMAGE_FOLLOWUP"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "STOP_RESULTS_IMAGE_OK",
+          "inputTokens": 96,
+          "outputTokens": 8
+        }
+      }
+    },
+    {
+      "id": "stop-results-db-tools",
+      "description": "纯文本 Bash 工具调用",
+      "metadata": {
+        "kind": "synthetic",
+        "source": "synthetic",
+        "timingPolicy": "controlled-stream",
+        "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_DB_START"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "toolu_stop_results_db_bash"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_stop_results_db_bash",
+            "name": "Bash",
+            "input": {
+              "command": "echo E2E_STOP_RESULTS_DB_OUTPUT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "stop-results-db-initial",
+      "description": "Plain text Bash initial turn completed normally",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_STOP_RESULTS_DB_FOLLOWUP"
+        ],
+        "bodyIncludes": [
+          "E2E_STOP_RESULTS_DB_START",
+          "toolu_stop_results_db_bash",
+          "E2E_STOP_RESULTS_DB_OUTPUT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "STOP_RESULTS_DB_INITIAL_OK",
+          "inputTokens": 96,
+          "outputTokens": 8
+        }
+      }
+    },
+    {
+      "id": "stop-results-db-followup",
+      "description": "Continue chat after database recovery",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Independent non-media control: real Bash returns only short text; holds an isolated SQLite write lock after the PostToolUse barrier, releases lock after entering failure cleanup, then continues chat from UI. Control group holds no lock; neither clicks Stop nor mocks tool results or SDK errors."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_STOP_RESULTS_DB_FOLLOWUP"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "text": "STOP_RESULTS_DB_OK",
+          "inputTokens": 96,
+          "outputTokens": 8
+        }
+      }
+    }
+  ]
+}

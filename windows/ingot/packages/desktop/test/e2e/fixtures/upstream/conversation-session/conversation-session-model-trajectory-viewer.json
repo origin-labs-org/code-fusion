@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-trajectory-viewer",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-trajectory-viewer.test.ts",
+  "fixtures": [
+    {
+      "id": "model-trajectory-viewer-title",
+      "description": "Fixed response for title generation in trace viewer case, preventing title requests from occupying main flow fixtures.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of trajectory interaction product semantics; it only needs to complete stably."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_TRJ_TASK_SEED"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-model-trajectory-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Trajectory E2E"}"
+        }
+      }
+    },
+    {
+      "id": "model-trajectory-viewer-task-seed",
+      "description": "Establish a real task/session and verify CLI model-io persistence using a real provider stream with thinking.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fixed thinking/text stream allows reasoningText and body persistence of CLI model-io to be asserted stably; remaining UI states are driven by case-local records."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_TRJ_TASK_SEED"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-model-trajectory-task-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-trajectory-reasoning-signature"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_TRJ_ACTUAL_REASONING"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":"E2E_TRJ_TASK_READY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":12}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    }
+  ]
+}

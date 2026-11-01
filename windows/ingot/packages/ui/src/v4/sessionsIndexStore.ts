@@ -1,0 +1,710 @@
+
+import {
+  isDeterministicContentFault,
+  PROTOCOL_V4_LIMITS,
+  SUBSCRIPTION_CONTENT_REJECTED,
+  type SessionSummary,
+  type SessionsIndexTopicFrame,
+  type TopicFrameDeliveryKind,
+} from "@origin-ai/cf-shared/cf-protocol-v4";
+import { isCfFileLockTimeoutError } from "@origin-ai/cf-shared";
+import { CF_AGENT_RUNTIME_UNAVAILABLE_CODE } from "@origin-ai/cf-services";
+import { logger } from "@/logger.js";
+import type { SessionsIndexTransport } from "@/v4/agentSessionsIndexTransport.js";
+
+export interface SessionsIndexState {
+  
+  workspaceId: string | null;
+  logEpoch: string | null;
+  
+  seq: number;
+  
+  sessions: Map<string, SessionSummary>;
+}
+
+export const EMPTY_SESSIONS_INDEX_STATE: SessionsIndexState = {
+  workspaceId: null,
+  logEpoch: null,
+  seq: 0,
+  sessions: new Map(),
+};
+
+export type SessionsIndexStoreStatus = "idle" | "dormant" | "connecting" | "live" | "error";
+
+const RUNTIME_RESTART_RECONNECT_BASE_DELAY_MS = 100;
+const RUNTIME_RESTART_RECONNECT_MAX_DELAY_MS = 5_000;
+const RUNTIME_RESTART_BURST_RESET_MS = 30_000;
+const TRANSIENT_SUBSCRIBE_RETRY_DELAYS_MS = [250, 1_000, 3_000] as const;
+const ERROR_RECOVERY_RETRY_DELAYS_MS = [5_000, 15_000, 60_000] as const;
+
+function isTransientSubscribeError(error: unknown): boolean {
+  if (isCfFileLockTimeoutError(error)) {
+    return true;
+  }
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? String((error as { code?: unknown }).code ?? "")
+      : "";
+  const message = error instanceof Error ? error.message : String(error);
+  if (["EBUSY", "EMFILE", "ENFILE"].includes(code)) {
+    return true;
+  }
+  if (code === "EEXIST" && message.includes("config.json.lock")) {
+    return true;
+  }
+  return /\b(?:EBUSY|EMFILE|ENFILE)\b/.test(message) || message.includes("config.json.lock");
+}
+
+function isRuntimeUnavailableError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === CF_AGENT_RUNTIME_UNAVAILABLE_CODE
+  );
+}
+
+async function unsubscribeIgnoringFailure(
+  transport: SessionsIndexTransport,
+  subscriptionId: string,
+): Promise<void> {
+  try {
+    await transport.unsubscribe(subscriptionId);
+  } catch (error) {
+    logger.warn(
+      `[v4-sessions-index] unsubscribe ${subscriptionId} Failed（Ignore）: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+}
+
+export interface ApplySessionsIndexResult {
+  state: SessionsIndexState;
+  
+  gap: boolean;
+}
+
+export function applySessionsIndexFrame(
+  current: SessionsIndexState,
+  frame: SessionsIndexTopicFrame,
+): ApplySessionsIndexResult {
+  if (frame.payload.kind === "snapshot") {
+    const snapshot = frame.payload.snapshot;
+    const sessions = new Map<string, SessionSummary>();
+    for (const session of snapshot.sessions) {
+      sessions.set(session.sessionId, session);
+    }
+    return {
+      gap: false,
+      state: {
+        workspaceId: snapshot.workspaceId,
+        logEpoch: snapshot.logEpoch,
+        seq: frame.toSeq,
+        sessions,
+      },
+    };
+  }
+  if (frame.toSeq <= current.seq) {
+    return { state: current, gap: false };
+  }
+  if (frame.fromSeq !== current.seq) {
+    return { state: current, gap: true };
+  }
+  const sessions = new Map(current.sessions);
+  for (const delta of frame.payload.deltas) {
+    if (delta.op === "session.upserted") {
+      sessions.set(delta.session.sessionId, delta.session);
+    } else {
+      sessions.delete(delta.sessionId);
+    }
+  }
+  return {
+    gap: false,
+    state: { ...current, seq: frame.toSeq, sessions },
+  };
+}
+
+export class SessionsIndexStore {
+  private state: SessionsIndexState = EMPTY_SESSIONS_INDEX_STATE;
+  private readonly listeners = new Set<() => void>();
+  
+  private cachedList: SessionSummary[] | null = null;
+  private transport: SessionsIndexTransport | null = null;
+  private frameUnsub: (() => void) | null = null;
+  private faultUnsub: (() => void) | null = null;
+  private restartUnsub: (() => void) | null = null;
+  private lifecycleUnsub: (() => void) | null = null;
+  private subscriptionId: string | null = null;
+  private awaitingInitial: { subscriptionId: string; mode: "snapshot" | "resume" } | null = null;
+  private subscriptionHasAppliedBase = false;
+  private recovery: {
+    subscriptionId: string;
+    requestInFlight: boolean;
+    ackReceived: boolean;
+    validFrameSeen: boolean;
+    upgradePending: boolean;
+    ackMode: "snapshot" | "resume" | null;
+    forceSnapshot: boolean;
+    postRecoveryGapPending: boolean;
+    frameDeadline: ReturnType<typeof setTimeout> | null;
+    
+    contentFault: boolean;
+  } | null = null;
+  private status: SessionsIndexStoreStatus = "idle";
+  private generation = 0;
+  private closed = false;
+  private runtimeRestartReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private runtimeRestartBurstCount = 0;
+  private lastRuntimeRestartAt = 0;
+  private subscribeRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  private errorRecoveryRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  private errorRecoveryRetryAttempt = 0;
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  };
+
+  getState = (): SessionsIndexState => this.state;
+
+  getStatus(): SessionsIndexStoreStatus {
+    return this.status;
+  }
+
+  
+  async connect(
+    transport: SessionsIndexTransport,
+    options: {
+      forceSnapshot?: boolean;
+      initialOverflowRetry?: boolean;
+      subscribeRetryAttempt?: number;
+      errorRecoveryRetryAttempt?: number;
+    } = {},
+  ): Promise<void> {
+    if (this.runtimeRestartReconnectTimer) {
+      clearTimeout(this.runtimeRestartReconnectTimer);
+      this.runtimeRestartReconnectTimer = null;
+    }
+    this.clearSubscribeRetry();
+    if (options.errorRecoveryRetryAttempt === undefined) {
+      this.clearErrorRecoveryRetry();
+      this.errorRecoveryRetryAttempt = 0;
+    }
+    this.closed = false;
+    this.transport = transport;
+    if (!this.frameUnsub) {
+      this.frameUnsub = transport.onFrame((frame, context) => this.handleFrame(frame, context));
+      this.faultUnsub = transport.onAssemblyFault((fault) => {
+        if (fault.subscriptionId === this.subscriptionId) {
+          this.handleAssemblyFault(fault.subscriptionId, fault.deliveryKind, fault.reasonCode);
+        }
+      });
+      if (transport.onRuntimeLifecycle) {
+        this.lifecycleUnsub = transport.onRuntimeLifecycle((state) => {
+          if (state === "available") this.handleRuntimeAvailable();
+          else this.handleRuntimeUnavailable();
+        });
+      } else {
+        this.restartUnsub = transport.onRuntimeRestart(() => this.handleRuntimeRestart());
+      }
+    }
+    const generation = ++this.generation;
+    this.discardRecovery();
+    this.status = "connecting";
+    this.emit();
+    const base =
+      options.forceSnapshot || this.state.logEpoch === null
+        ? undefined
+        : { logEpoch: this.state.logEpoch, seq: this.state.seq };
+    try {
+      const result = await transport.subscribe(base ? { base } : {});
+      if (generation !== this.generation || this.closed) {
+        void unsubscribeIgnoringFailure(transport, result.ack.subscriptionId);
+        return;
+      }
+      this.discardRecovery();
+      this.subscriptionId = result.ack.subscriptionId;
+      this.status = "live";
+      this.clearErrorRecoveryRetry();
+      this.errorRecoveryRetryAttempt = 0;
+      this.subscriptionHasAppliedBase = Boolean(
+        base && result.ack.mode === "resume" && result.ack.logEpoch === base.logEpoch,
+      );
+      this.awaitingInitial = {
+        subscriptionId: result.ack.subscriptionId,
+        mode: result.ack.mode,
+      };
+      transport.activate(result.ack.subscriptionId);
+      this.emit();
+    } catch (error) {
+      if (generation !== this.generation || this.closed) return;
+      this.awaitingInitial = null;
+      this.subscriptionHasAppliedBase = false;
+      if (isRuntimeUnavailableError(error)) {
+        this.handleRuntimeUnavailable();
+        return;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes("fault.subscription.initialFrameStagingOverflow") &&
+        !options.initialOverflowRetry
+      ) {
+        await this.connect(transport, {
+          forceSnapshot: true,
+          initialOverflowRetry: true,
+          ...(options.errorRecoveryRetryAttempt !== undefined
+            ? { errorRecoveryRetryAttempt: options.errorRecoveryRetryAttempt }
+            : {}),
+        });
+        return;
+      }
+      const retryAttempt = options.subscribeRetryAttempt ?? 0;
+      const retryDelay = TRANSIENT_SUBSCRIBE_RETRY_DELAYS_MS[retryAttempt];
+      if (isTransientSubscribeError(error) && retryDelay !== undefined) {
+        this.status = "connecting";
+        logger.warn(`[v4-sessions-index] subscribe 瞬时Failed，${retryDelay}ms 后Retry: ${message}`);
+        this.subscribeRetryTimer = setTimeout(() => {
+          this.subscribeRetryTimer = null;
+          if (this.closed || generation !== this.generation) return;
+          void this.connect(transport, {
+            ...(options.forceSnapshot ? { forceSnapshot: true } : {}),
+            subscribeRetryAttempt: retryAttempt + 1,
+            ...(options.errorRecoveryRetryAttempt !== undefined
+              ? { errorRecoveryRetryAttempt: options.errorRecoveryRetryAttempt }
+              : {}),
+          });
+        }, retryDelay);
+        this.emit();
+        return;
+      }
+      this.failAndScheduleRecovery(`subscribe:${message}`);
+    }
+  }
+
+  
+  async replaceTransport(transport: SessionsIndexTransport): Promise<void> {
+    if (!this.closed && this.transport === transport) return;
+
+    const generation = ++this.generation;
+    const previous = this.detachTransport();
+    this.status = "connecting";
+    this.emit();
+
+    if (previous.transport && previous.subscriptionId) {
+      void unsubscribeIgnoringFailure(previous.transport, previous.subscriptionId);
+    }
+    if (generation !== this.generation || this.closed) return;
+
+    await this.connect(transport, { forceSnapshot: true });
+  }
+
+  
+  handleFrame(
+    frame: SessionsIndexTopicFrame,
+    delivery?: { deliveryKind: TopicFrameDeliveryKind },
+  ): void {
+    if (this.closed) return;
+    if (this.subscriptionId === null || frame.subscriptionId !== this.subscriptionId) {
+      return;
+    }
+    const awaitingInitial =
+      this.awaitingInitial?.subscriptionId === frame.subscriptionId ? this.awaitingInitial : null;
+    const deliveryKind = delivery?.deliveryKind ?? "online";
+    const initial = deliveryKind === "initial" ? awaitingInitial : null;
+    if (initial || (deliveryKind === "recovery" && awaitingInitial)) {
+      this.awaitingInitial = null;
+    }
+    if (deliveryKind === "online" && this.recovery && frame.payload.kind === "snapshot") {
+      const gap = this.applyFrame(frame);
+      if (!gap) this.subscriptionHasAppliedBase = true;
+      return;
+    }
+    if (deliveryKind === "online" && this.recovery) {
+      if (frame.toSeq > this.state.seq) {
+        this.recovery.postRecoveryGapPending ||= this.recovery.validFrameSeen;
+      }
+      return;
+    }
+    if (frame.payload.kind === "deltas" && !this.subscriptionHasAppliedBase) {
+      this.requestRecovery(deliveryKind === "recovery");
+      return;
+    }
+    const gap = this.applyFrame(frame);
+    if (gap && this.transport) {
+      logger.warn(
+        `[v4-sessions-index] 帧断档 fromSeq=${frame.fromSeq} local=${this.state.seq}，重订阅`,
+      );
+      if (initial) void this.connect(this.transport, { forceSnapshot: true });
+      else this.requestRecovery(deliveryKind === "recovery");
+      return;
+    }
+    this.subscriptionHasAppliedBase = true;
+    if (deliveryKind === "recovery") this.markRecoveryFrameSeen();
+  }
+
+  private handleAssemblyFault(
+    subscriptionId: string,
+    deliveryKind?: TopicFrameDeliveryKind,
+    reasonCode?: string,
+  ): void {
+    if (subscriptionId !== this.subscriptionId) return;
+    if (
+      this.awaitingInitial?.subscriptionId === subscriptionId &&
+      (deliveryKind === "initial" || deliveryKind === "recovery" || deliveryKind === undefined)
+    ) {
+      this.awaitingInitial = null;
+    }
+    if (isDeterministicContentFault(reasonCode)) {
+      this.requestRecovery(true, { contentFault: true });
+      return;
+    }
+    if (deliveryKind === "online" && this.recovery) {
+      this.recovery.postRecoveryGapPending ||= this.recovery.validFrameSeen;
+      return;
+    }
+    this.requestRecovery(
+      deliveryKind === "recovery" || (deliveryKind === undefined && this.recovery !== null),
+    );
+  }
+
+  private requestRecovery(recoveryEvent = false, options: { contentFault?: boolean } = {}): void {
+    const transport = this.transport;
+    const subscriptionId = this.subscriptionId;
+    if (this.closed || !transport || !subscriptionId) return;
+    const contentFault = options.contentFault === true;
+    const existing = this.recovery;
+    if (existing) {
+      if (contentFault) existing.contentFault = true;
+      if (!recoveryEvent) return;
+      if (existing.forceSnapshot) {
+        this.failRecovery("fault.subscription.recoveryFailed");
+        return;
+      }
+      if (existing.requestInFlight || !existing.ackReceived) {
+        existing.upgradePending = true;
+        return;
+      }
+      if (existing.ackMode === "resume") this.issueRecovery(existing, true);
+      else this.failRecovery("fault.subscription.recoveryFailed");
+      return;
+    }
+    const recovery = {
+      subscriptionId,
+      requestInFlight: false,
+      ackReceived: false,
+      validFrameSeen: false,
+      upgradePending: false,
+      ackMode: null as "snapshot" | "resume" | null,
+      forceSnapshot: false,
+      postRecoveryGapPending: false,
+      frameDeadline: null,
+      contentFault,
+    };
+    this.recovery = recovery;
+    this.issueRecovery(recovery, contentFault);
+  }
+
+  private issueRecovery(
+    recovery: NonNullable<SessionsIndexStore["recovery"]>,
+    forceSnapshot: boolean,
+  ): void {
+    const transport = this.transport;
+    if (!transport) return;
+    this.clearRecoveryDeadline(recovery);
+    const effectiveForceSnapshot = forceSnapshot || !this.subscriptionHasAppliedBase;
+    recovery.requestInFlight = true;
+    recovery.ackReceived = false;
+    recovery.ackMode = null;
+    recovery.validFrameSeen = false;
+    recovery.upgradePending = false;
+    recovery.forceSnapshot = effectiveForceSnapshot;
+    recovery.postRecoveryGapPending = false;
+    void transport
+      .resync({
+        subscriptionId: recovery.subscriptionId,
+        base:
+          !this.subscriptionHasAppliedBase || this.state.logEpoch === null
+            ? null
+            : { logEpoch: this.state.logEpoch, seq: this.state.seq },
+        ...(effectiveForceSnapshot ? { forceSnapshot: true } : {}),
+      })
+      .then((result) => {
+        if (this.closed || this.recovery !== recovery) return;
+        if (result.ack.subscriptionId !== recovery.subscriptionId) {
+          throw new Error("fault.subscription.resyncGenerationMismatch");
+        }
+        recovery.requestInFlight = false;
+        recovery.ackReceived = true;
+        recovery.ackMode = result.ack.mode;
+        this.settleRecovery(recovery);
+      })
+      .catch((error) => {
+        if (this.closed || this.recovery !== recovery) return;
+        this.clearRecoveryDeadline(recovery);
+        this.recovery = null;
+        const message = error instanceof Error ? error.message : String(error);
+        logger.warn(`[v4-sessions-index] resync Failed: ${message}`);
+        if (isRuntimeUnavailableError(error)) {
+          this.handleRuntimeUnavailable();
+          return;
+        }
+        if (message.includes("fault.subscription.notOwned") && this.transport) {
+          void this.connect(this.transport);
+          return;
+        }
+        this.failAndScheduleRecovery(`resync:${message}`);
+      });
+  }
+
+  private markRecoveryFrameSeen(): void {
+    const recovery = this.recovery;
+    if (!recovery) return;
+    recovery.validFrameSeen = true;
+    this.settleRecovery(recovery);
+  }
+
+  private settleRecovery(recovery: NonNullable<SessionsIndexStore["recovery"]>): void {
+    if (this.recovery !== recovery || !recovery.ackReceived || recovery.requestInFlight) return;
+    if (recovery.upgradePending) {
+      this.clearRecoveryDeadline(recovery);
+      if (!recovery.forceSnapshot && recovery.ackMode === "resume") {
+        this.issueRecovery(recovery, true);
+      } else {
+        this.failRecovery("fault.subscription.recoveryFailed");
+      }
+      return;
+    }
+    if (recovery.validFrameSeen) {
+      this.clearRecoveryDeadline(recovery);
+      if (recovery.postRecoveryGapPending) this.issueRecovery(recovery, false);
+      else this.recovery = null;
+      return;
+    }
+    if (recovery.frameDeadline) return;
+    recovery.frameDeadline = setTimeout(() => {
+      recovery.frameDeadline = null;
+      if (this.closed || this.recovery !== recovery || recovery.validFrameSeen) return;
+      if (!recovery.forceSnapshot) this.issueRecovery(recovery, true);
+      else
+        this.failRecovery("fault.subscription.recoveryFrameTimedOut", { contentEligible: false });
+    }, PROTOCOL_V4_LIMITS.logicalFrameAssemblyTimeoutMs);
+  }
+
+  private clearRecoveryDeadline(recovery: NonNullable<SessionsIndexStore["recovery"]>): void {
+    if (!recovery.frameDeadline) return;
+    clearTimeout(recovery.frameDeadline);
+    recovery.frameDeadline = null;
+  }
+
+  private discardRecovery(): void {
+    if (this.recovery) this.clearRecoveryDeadline(this.recovery);
+    this.recovery = null;
+  }
+
+  private clearSubscribeRetry(): void {
+    if (!this.subscribeRetryTimer) return;
+    clearTimeout(this.subscribeRetryTimer);
+    this.subscribeRetryTimer = null;
+  }
+
+  private clearErrorRecoveryRetry(): void {
+    if (!this.errorRecoveryRetryTimer) return;
+    clearTimeout(this.errorRecoveryRetryTimer);
+    this.errorRecoveryRetryTimer = null;
+  }
+
+  
+  private failRecovery(reasonCode: string, options: { contentEligible?: boolean } = {}): void {
+    const contentFault = this.recovery?.contentFault === true && options.contentEligible !== false;
+    this.failAndScheduleRecovery(contentFault ? SUBSCRIPTION_CONTENT_REJECTED : reasonCode, {
+      scheduleRetry: !contentFault,
+    });
+  }
+
+  
+  private failAndScheduleRecovery(
+    reasonCode: string,
+    options: { scheduleRetry?: boolean } = {},
+  ): void {
+    const transport = this.transport;
+    const previousSubscriptionId = this.subscriptionId;
+    this.discardRecovery();
+    this.subscriptionId = null;
+    this.awaitingInitial = null;
+    this.subscriptionHasAppliedBase = false;
+    this.state = EMPTY_SESSIONS_INDEX_STATE;
+    this.cachedList = null;
+    this.status = "error";
+    logger.warn(`[v4-sessions-index] recovery fail-closed: ${reasonCode}`);
+    if (transport && previousSubscriptionId) {
+      void unsubscribeIgnoringFailure(transport, previousSubscriptionId);
+    }
+    this.clearErrorRecoveryRetry();
+    if (transport && !this.closed && options.scheduleRetry !== false) {
+      const attempt = this.errorRecoveryRetryAttempt;
+      const delayMs =
+        ERROR_RECOVERY_RETRY_DELAYS_MS[
+          Math.min(attempt, ERROR_RECOVERY_RETRY_DELAYS_MS.length - 1)
+        ];
+      const nextAttempt = Math.min(attempt + 1, ERROR_RECOVERY_RETRY_DELAYS_MS.length - 1);
+      const generation = this.generation;
+      this.errorRecoveryRetryAttempt = nextAttempt;
+      this.errorRecoveryRetryTimer = setTimeout(() => {
+        this.errorRecoveryRetryTimer = null;
+        if (this.closed || this.transport !== transport || this.generation !== generation) {
+          return;
+        }
+        void this.connect(transport, {
+          forceSnapshot: true,
+          errorRecoveryRetryAttempt: nextAttempt,
+        });
+      }, delayMs);
+    }
+    this.emit();
+  }
+
+  private handleRuntimeRestart(): void {
+    if (this.closed || !this.transport) return;
+    const transport = this.transport;
+    const now = Date.now();
+    if (now - this.lastRuntimeRestartAt >= RUNTIME_RESTART_BURST_RESET_MS) {
+      this.runtimeRestartBurstCount = 0;
+    }
+    this.lastRuntimeRestartAt = now;
+    const delayMs =
+      this.runtimeRestartBurstCount === 0
+        ? 0
+        : Math.min(
+            RUNTIME_RESTART_RECONNECT_BASE_DELAY_MS *
+              2 ** Math.min(this.runtimeRestartBurstCount - 1, 16),
+            RUNTIME_RESTART_RECONNECT_MAX_DELAY_MS,
+          );
+    this.runtimeRestartBurstCount += 1;
+    this.generation += 1;
+    this.clearErrorRecoveryRetry();
+    this.errorRecoveryRetryAttempt = 0;
+    this.subscriptionId = null;
+    this.awaitingInitial = null;
+    this.discardRecovery();
+    this.subscriptionHasAppliedBase = false;
+    if (this.status !== "connecting") {
+      this.status = "connecting";
+      this.emit();
+    }
+    if (this.runtimeRestartReconnectTimer) {
+      clearTimeout(this.runtimeRestartReconnectTimer);
+    }
+    this.runtimeRestartReconnectTimer = setTimeout(() => {
+      this.runtimeRestartReconnectTimer = null;
+      if (this.closed || this.transport !== transport) return;
+      void this.connect(transport, { forceSnapshot: true });
+    }, delayMs);
+  }
+
+  private handleRuntimeAvailable(): void {
+    if (this.closed || !this.transport) return;
+    this.handleRuntimeRestart();
+  }
+
+  private handleRuntimeUnavailable(): void {
+    if (this.closed) return;
+    this.generation += 1;
+    this.subscriptionId = null;
+    this.awaitingInitial = null;
+    this.discardRecovery();
+    this.subscriptionHasAppliedBase = false;
+    this.clearSubscribeRetry();
+    this.clearErrorRecoveryRetry();
+    this.errorRecoveryRetryAttempt = 0;
+    if (this.runtimeRestartReconnectTimer) {
+      clearTimeout(this.runtimeRestartReconnectTimer);
+      this.runtimeRestartReconnectTimer = null;
+    }
+    this.state = EMPTY_SESSIONS_INDEX_STATE;
+    this.cachedList = null;
+    this.status = "dormant";
+    this.emit();
+  }
+
+  
+  close(): void {
+    this.closed = true;
+    this.generation += 1;
+    this.status = "idle";
+    const previous = this.detachTransport();
+    if (previous.subscriptionId && previous.transport) {
+      void unsubscribeIgnoringFailure(previous.transport, previous.subscriptionId);
+    }
+  }
+
+  private detachTransport(): {
+    transport: SessionsIndexTransport | null;
+    subscriptionId: string | null;
+  } {
+    const previous = {
+      transport: this.transport,
+      subscriptionId: this.subscriptionId,
+    };
+    if (this.runtimeRestartReconnectTimer) {
+      clearTimeout(this.runtimeRestartReconnectTimer);
+      this.runtimeRestartReconnectTimer = null;
+    }
+    this.runtimeRestartBurstCount = 0;
+    this.lastRuntimeRestartAt = 0;
+    this.clearSubscribeRetry();
+    this.clearErrorRecoveryRetry();
+    this.errorRecoveryRetryAttempt = 0;
+    this.frameUnsub?.();
+    this.frameUnsub = null;
+    this.faultUnsub?.();
+    this.faultUnsub = null;
+    this.restartUnsub?.();
+    this.restartUnsub = null;
+    this.lifecycleUnsub?.();
+    this.lifecycleUnsub = null;
+    this.transport = null;
+    this.subscriptionId = null;
+    this.awaitingInitial = null;
+    this.discardRecovery();
+    this.subscriptionHasAppliedBase = false;
+    return previous;
+  }
+
+  
+  applyFrame(frame: SessionsIndexTopicFrame): boolean {
+    const { state, gap } = applySessionsIndexFrame(this.state, frame);
+    if (gap) return true;
+    if (state !== this.state) {
+      this.state = state;
+      this.cachedList = null;
+      this.emit();
+    }
+    return false;
+  }
+
+  
+  reset(): void {
+    this.discardRecovery();
+    this.subscriptionHasAppliedBase = false;
+    this.state = EMPTY_SESSIONS_INDEX_STATE;
+    this.cachedList = null;
+    this.emit();
+  }
+
+  
+  getSessions(): SessionSummary[] {
+    if (this.cachedList === null) {
+      this.cachedList = [...this.state.sessions.values()].sort(
+        (a, b) => b.lastActivityAt - a.lastActivityAt,
+      );
+    }
+    return this.cachedList;
+  }
+
+  private emit(): void {
+    for (const listener of this.listeners) listener();
+  }
+}

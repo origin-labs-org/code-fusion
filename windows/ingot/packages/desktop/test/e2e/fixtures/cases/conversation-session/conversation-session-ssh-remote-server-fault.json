@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-server-fault",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-server-fault.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-server-fault.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    { "id": "ssh-server-fault-title", "description": "SSH server fault task title auxiliary response.", "kind": "common", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Titles are not part of remote server fault assertions." },
+    { "id": "ssh-server-fault-main", "description": "SSH server fault initial and follow-up responses before and after reconnection.", "kind": "main", "source": "synthetic", "timingPolicy": "slow-stream", "syntheticReason": "server fault 后通过 task history 与新 remoteSessionId 断言恢复路由。" }
+  ]
+}

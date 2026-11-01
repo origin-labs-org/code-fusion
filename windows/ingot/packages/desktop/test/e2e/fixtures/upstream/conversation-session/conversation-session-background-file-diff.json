@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-file-diff",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-file-diff.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-background-file-diff-title",
+      "description": "BG41 会话标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title does not participate in model-only file checkpoint semantics; only case marker isolates requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_BACKGROUND_FILE_DIFF"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-background-file-diff-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Background File Diff E2E"}"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-agent-tool",
+      "description": "BG41 父模型启动一个真实 background Agent。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Fix Agent(run_in_background=true) to produce a parent launch turn and subsequent model-only notification turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_FILE_DIFF",
+          "background-file-diff-e2e/result.md"
+        ],
+        "bodyExcludes": [
+          "Async agent launched successfully",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageExcludes": ["<task-notification>"],
+        "lastUserMessageIncludes": ["E2E_BACKGROUND_FILE_DIFF"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_background_file_diff_agent",
+          "messageId": "msg_e2e_background_file_diff_agent",
+          "name": "Agent",
+          "input": {
+            "description": "BG41 update background diff",
+            "prompt": "E2E_BACKGROUND_FILE_DIFF_CHILD: Return exactly E2E_BACKGROUND_FILE_DIFF_CHILD_DONE.",
+            "run_in_background": true
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-launch-ack",
+      "description": "BG41 parent model finishes launch turn after async launch result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Keep parent turn stably idle before child completes to ensure subsequent independent model-only wake."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_FILE_DIFF",
+          "toolu_e2e_background_file_diff_agent",
+          "Async agent launched successfully"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageExcludes": ["<task-notification>"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-background-file-diff-launch-ack",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "background-file-diff-agent-launched-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-child-result",
+      "description": "BG41 child completes with delay to provide a stable observation window for parent launch turn idle.",
+      "metadata": {
+        "kind": "subagent",
+        "timingPolicy": "delayed-text",
+        "source": "synthetic",
+        "syntheticReason": "A 6-second delay ensures the UI stably observes canStop=false before triggering independent notification wake."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BACKGROUND_FILE_DIFF_CHILD"],
+        "bodyExcludes": [
+          "background-file-diff-agent-launched-ok",
+          "Async agent launched successfully",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_BACKGROUND_FILE_DIFF_CHILD"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 6000,
+        "text": {
+          "id": "upstream-background-file-diff-child-result",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_BACKGROUND_FILE_DIFF_CHILD_DONE"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-read",
+      "description": "BG41 standalone model-only notification turn first reads existing file.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Fix Read to establish read-before-edit prerequisite, sourcing checkpoint anchor from hidden notification messageId."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_FILE_DIFF",
+          "<task-notification>",
+          "E2E_BACKGROUND_FILE_DIFF_CHILD_DONE"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_background_file_diff_read",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "<task-notification>",
+          "E2E_BACKGROUND_FILE_DIFF_CHILD_DONE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_background_file_diff_read",
+          "messageId": "msg_e2e_background_file_diff_read",
+          "name": "Read",
+          "input": {
+            "file_path": "background-file-diff-e2e/result.md"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-edit",
+      "description": "BG41 edits single file in the same model-only product turn after Read result.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Fix single-line replacement to precisely assert summary +1/-1 and Review before/after content."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_FILE_DIFF",
+          "<task-notification>",
+          "toolu_e2e_background_file_diff_read",
+          "before-background-diff"
+        ],
+        "bodyExcludes": [
+          "toolu_e2e_background_file_diff_edit",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_background_file_diff_edit",
+          "messageId": "msg_e2e_background_file_diff_edit",
+          "name": "Edit",
+          "input": {
+            "file_path": "background-file-diff-e2e/result.md",
+            "old_string": "before-background-diff",
+            "new_string": "after-background-diff"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-background-file-diff-final",
+      "description": "BG41 ends standalone notification product turn after Edit succeeds.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix final marker to confirm file summary and background result assistant belong to the same product turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_FILE_DIFF",
+          "<task-notification>",
+          "toolu_e2e_background_file_diff_edit",
+          "The file background-file-diff-e2e/result.md has been updated successfully"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-background-file-diff-final",
+          "inputTokens": 160,
+          "outputTokens": 8,
+          "text": "background-file-diff-ok"
+        }
+      }
+    }
+  ]
+}

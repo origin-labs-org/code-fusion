@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-unregistered-tool-cold-snapshot",
+  "spec": "./test/e2e/conversation-session/conversation-session-unregistered-tool-cold-snapshot.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-unregistered-tool-cold-snapshot.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "unregistered-tool-cold-snapshot-title",
+      "description": "Case-local title response for UTL initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is outside O17/CHL09 semantics; fixed responses prevent accidental matching with the main request."
+    },
+    {
+      "id": "unregistered-tool-cold-snapshot-grep-batch",
+      "description": "A single model step returns 60 embedded-search Grep calls and 1 definitely unregistered Grep sentinel.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably reproduce production registry misses and push the same turn past the 60-line snapshot trailing window."
+    },
+    {
+      "id": "unregistered-tool-cold-snapshot-final",
+      "description": "Final reply of the same-turn continuation after fast-failing all search tools.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that the turn completed normally after the provider received failed tool results, isolating terminal UI semantics."
+    }
+  ]
+}

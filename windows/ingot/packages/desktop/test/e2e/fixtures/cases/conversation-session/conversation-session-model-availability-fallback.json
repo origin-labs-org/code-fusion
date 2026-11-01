@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-availability-fallback",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-availability-fallback.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-availability-fallback.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-availability-fallback-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is outside model fallback semantics; it only needs to complete reliably to avoid false hits on main-flow fixtures."
+    },
+    {
+      "id": "model-availability-fallback-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions begin after disabling the provider from a completed source session; the first-round response only needs to complete reliably."
+    },
+    {
+      "id": "model-availability-fallback-target",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions target the target provider/model and UI projection of real follow-up requests; response only needs to complete reliably."
+    },
+    {
+      "id": "model-availability-fallback-draft-target",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion of I61 is that the first real request after not sending prewarm fallback continues using the target provider/model; response text only needs to complete reliably."
+    }
+  ]
+}

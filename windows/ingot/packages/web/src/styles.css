@@ -1,0 +1,3 @@
+@import "@origin-ai/cf-ui/styles.css";
+
+@source "./**/*.{ts,tsx}";

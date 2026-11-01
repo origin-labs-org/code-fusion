@@ -1,0 +1,128 @@
+import {
+  createSharedCfCredentialStore,
+  SHARED_CF_CREDENTIAL_KEYS,
+  type SharedCfCredentialStore,
+} from "@origin-ai/cf-adapters";
+import type { EnvRecord } from "@origin-ai/cf-adapters/model";
+import {
+  NodeModelSelectionConfigRepository,
+  NodePersonalProviderConfigRepository,
+  PERSONAL_PROVIDER_CONFIG_FILE_NAME,
+  CF_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+} from "@origin-ai/cf-provider-node";
+import { dirname, join } from "node:path";
+import type {
+  CodingPlanProviderId,
+  LogoutCfCliOptions,
+  LogoutCfCliResult,
+} from "./auth-login-contract.js";
+import { readLegacyCliPersonalProviderConfig } from "./app/legacy-cli-personal-provider-config-importer.js";
+import {
+  hasStandaloneCodingPlanAccess,
+  readStandaloneCodingPlanProviders,
+  resolveStandaloneCodingPlanProvider,
+  standaloneAccountIdentityCredentialKey,
+  standaloneAccountAuthSourceCredentialKey,
+  standaloneAccountProviderCredentialKey,
+} from "./app/standalone-account-provider-runtime.js";
+
+export interface StandaloneCodingPlanPersistenceResult {
+  readonly mainModel: string;
+  readonly path: string;
+}
+
+export async function persistStandaloneCodingPlanConnection(input: {
+  readonly accountIdentity: string;
+  readonly apiKey?: string;
+  readonly authSource?: "oauth";
+  readonly credentialStore: SharedCfCredentialStore;
+  readonly env: EnvRecord;
+  readonly personalProviderConfigPath?: string;
+  readonly providerId: CodingPlanProviderId;
+}): Promise<StandaloneCodingPlanPersistenceResult> {
+  const configuredProvider = await resolveStandaloneCodingPlanProvider(input.providerId, input.env);
+  const providerId = configuredProvider.providerId;
+  const modelId = configuredProvider.modelId;
+  const credentialKey = standaloneAccountProviderCredentialKey({
+    providerId,
+    accountIdentity: input.accountIdentity,
+  });
+  await input.credentialStore.saveMany({
+    [standaloneAccountIdentityCredentialKey(providerId)]: input.accountIdentity,
+    [standaloneAccountAuthSourceCredentialKey(providerId)]: input.authSource ?? "manual",
+    ...(input.apiKey ? { [credentialKey]: input.apiKey } : {}),
+  });
+  const path =
+    input.personalProviderConfigPath ??
+    input.env[CF_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim() ??
+    join(dirname(input.credentialStore.filePath), PERSONAL_PROVIDER_CONFIG_FILE_NAME);
+  const personalRepository = new NodePersonalProviderConfigRepository({
+    filePath: path,
+    importLegacy: () => readLegacyCliPersonalProviderConfig({}),
+    pollingIntervalMs: false,
+  });
+  const repository = new NodeModelSelectionConfigRepository({
+    personalRepository,
+  });
+  try {
+    await repository.saveConfiguredDefault({ providerId, modelId });
+  } finally {
+    repository.dispose();
+    personalRepository.dispose();
+  }
+  return {
+    mainModel: `${providerId}/${modelId}`,
+    path,
+  };
+}
+
+export async function hasConfiguredStandaloneCodingPlan(
+  options: {
+    credentialStore?: SharedCfCredentialStore;
+    env?: EnvRecord;
+  } = {},
+): Promise<boolean> {
+  const credentialStore =
+    options.credentialStore ?? createSharedCfCredentialStore({ env: options.env });
+  return hasStandaloneCodingPlanAccess(credentialStore, options.env ?? process.env);
+}
+
+export async function logoutCfCli(
+  options: LogoutCfCliOptions = {},
+): Promise<LogoutCfCliResult> {
+  const credentialStore =
+    options.credentialStore ?? createSharedCfCredentialStore({ env: options.env });
+  const providerIds = (await readStandaloneCodingPlanProviders(options.env ?? process.env)).map(
+    ({ providerId }) => providerId,
+  );
+  const identityKeys = providerIds.map(standaloneAccountIdentityCredentialKey);
+  const sourceKeys = providerIds.map(standaloneAccountAuthSourceCredentialKey);
+  const identities = await credentialStore.loadMany([...identityKeys, ...sourceKeys]);
+  const dynamicApiKeyKeys = providerIds.flatMap((providerId) => {
+    if (identities[standaloneAccountAuthSourceCredentialKey(providerId)] !== "manual") return [];
+    const identity = identities[standaloneAccountIdentityCredentialKey(providerId)]?.trim();
+    return identity
+      ? [
+          standaloneAccountProviderCredentialKey({
+            providerId,
+            accountIdentity: identity,
+          }),
+        ]
+      : [];
+  });
+  const keys = [
+    ...Object.values(SHARED_CF_CREDENTIAL_KEYS),
+    ...identityKeys,
+    ...sourceKeys,
+    ...dynamicApiKeyKeys,
+  ];
+  const current = await credentialStore.loadMany(keys);
+  await credentialStore.deleteIfValues(
+    Object.fromEntries(
+      Object.entries(current).flatMap(([key, value]) => (value === null ? [] : [[key, value]])),
+    ),
+  );
+  return {
+    credentialsPath: credentialStore.filePath,
+  };
+}

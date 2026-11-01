@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-context-boundaries",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-context-boundaries.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-context-boundaries.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "scb-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-seed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-seed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-seed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-seed-child-final",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-continuation",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-message-next",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-deliver-running-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-deliver-running-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-cross-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-cross-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-cross-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-background-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-resume-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-resume-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-resume-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-running-resume-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-stable-retry",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-stable-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-stable-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-stable-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-stable-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-next-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-next-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-next-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    },
+    {
+      "id": "scb-next-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Uses only provider playback and test stdio proxies to control timing/read failures; real Settings, Host, CLI, and child runtime execution, with production code and dependencies unchanged."
+    }
+  ]
+}

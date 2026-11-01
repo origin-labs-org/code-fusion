@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "caseName": "provider-readiness-agent-startup",
+  "spec": "./test/e2e/provider-readiness-agent-startup.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "cli-session-seed",
+      "path": "~/.cf/cli/db/db.sqlite",
+      "purpose": "Pre-seed interactive Agent history; body is read via real read-only conversation subscription."
+    },
+    {
+      "kind": "tasks-index-seed",
+      "path": "~/.cf/v2/tasks-index.sqlite",
+      "purpose": "Pre-seed App membership for the same historical task; sidebar does not rely on reverse recovery of CLI-only history."
+    }
+  ],
+  "requests": []
+}

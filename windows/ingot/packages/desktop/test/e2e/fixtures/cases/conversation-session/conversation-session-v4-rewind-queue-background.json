@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-rewind-queue-background",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-rewind-queue-background.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-rewind-queue-background.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "pv4-20-title",
+      "description": "PV4-20 held queue case-local 标题。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不参与 queue 守恒。"
+    },
+    {
+      "id": "pv4-20-original",
+      "description": "PV4-20 compact 覆盖前 latest query 回复。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "编辑后应退出 active branch。"
+    },
+    {
+      "id": "pv4-20-compact-interrupted",
+      "description": "PV4-20 keeps first compact running while queuing future intents and a second compact.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stops after a fixed running window to establish a held queue reachable by the current product."
+    },
+    {
+      "id": "pv4-20-compact-stable",
+      "description": "Second compact sent via send-now from held queue in PV4-20 successfully covers latest query.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verifies that edit after stable compact still retains the other two held future intents."
+    },
+    {
+      "id": "pv4-20-edited",
+      "description": "PV4-20 response to edited intent after queue retention.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "新请求只消费 edited intent，不 drain held queue。"
+    },
+    {
+      "id": "pv4-20-queue-one",
+      "description": "PV4-20 explicitly consumes first retained queue item after rewind.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verifies that after queue identity and order are preserved, it is consumed only once."
+    },
+    {
+      "id": "pv4-20-queue-two",
+      "description": "PV4-20 explicitly consumes second retained queue item after rewind.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verifies that after queue identity and order are preserved, it is consumed only once."
+    },
+    {
+      "id": "pv4-23-title",
+      "description": "PV4-23 background generation case-local 标题。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不参与后台 task generation。"
+    },
+    {
+      "id": "pv4-23-background-tool",
+      "description": "PV4-23 original turn starts long-running background Bash.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Keeps running until canceled by stop barrier of edit."
+    },
+    {
+      "id": "pv4-23-background-final",
+      "description": "PV4-23 end response for original turn after background detachment.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Retains running task after main turn stabilizes, available for edit to cancel."
+    },
+    {
+      "id": "pv4-23-background-edited",
+      "description": "PV4-23 response to edited intent after old Bash cancellation.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "New branch initiates only one provider request."
+    }
+  ]
+}

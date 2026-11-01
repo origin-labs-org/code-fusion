@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-sidebar-unread-clear",
+  "spec": "./test/e2e/conversation-session/conversation-session-sidebar-unread-clear.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-sidebar-unread-clear.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "sidebar-unread-clear-title",
+      "description": "Case-local title generation response for unread clear initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial send triggers the default title sidecar; mock marker response to avoid falling back to shared provider fixtures."
+    },
+    {
+      "id": "sidebar-unread-clear-seed",
+      "description": "建立一个可由侧栏右键标记未读的正式 V4 session。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case validates the local interaction closed loop between the task list and tasks-index; model replies are only used to deterministically establish a formal session."
+    }
+  ]
+}

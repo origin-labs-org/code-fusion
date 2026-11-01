@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-goal-timeline",
+  "spec": "./test/e2e/conversation-session/conversation-session-goal-timeline.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-goal-timeline.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-goal-timeline-first-reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the turn 1 goal continuation text to reproduce the incomplete timeline anchor."
+    },
+    {
+      "id": "upstream-goal-timeline-first-verifier-failed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the 1st verifier incomplete result to drive automatic continuation."
+    },
+    {
+      "id": "upstream-goal-timeline-second-reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the turn 2 assistant text for the same target to verify the anchor for completing the verifier."
+    },
+    {
+      "id": "upstream-goal-timeline-second-verifier-passed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the 2nd verifier completion result for the same target."
+    },
+    {
+      "id": "upstream-goal-timeline-new-target-reply",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the turn 1 assistant text for the new target to verify timeline attribution after target switching."
+    },
+    {
+      "id": "upstream-goal-timeline-new-target-verifier-failed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the 1st verifier incomplete result for the new target to cover the divider order of the second /goal."
+    }
+  ]
+}

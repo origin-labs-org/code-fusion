@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-bash-read-state",
+  "spec": "./test/e2e/conversation-session/conversation-session-bash-read-state.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-bash-read-state-title",
+      "description": "Fixed response for title generation in Bash read-state case to avoid strict case-local replay depending on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation does not belong to Bash read-state product semantics; it only needs to return reliably to prevent title requests from accidentally matching main flow fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_BASH_READ_STATE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-bash-read-state-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Bash Read State E2E\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-cat-call",
+      "description": "O08 first response: return Bash cat tool_use to create Bash read-state producer input.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The real provider may not consistently choose Bash cat; this response deterministically triggers the Bash read-state producer specifically to verify the subsequent Edit read-before-write guard."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BASH_READ_STATE", "cat bash-read-state-e2e/target.txt"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "has been updated successfully",
+          "Call Read before editing"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_bash_read_state_cat",
+          "messageId": "msg_e2e_bash_read_state_cat",
+          "name": "Bash",
+          "input": {
+            "command": "cat bash-read-state-e2e/target.txt",
+            "description": "Read target through Bash cat"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-edit-call",
+      "description": "O08 second response: call Edit after Bash cat tool_result enters history.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response verifies that Bash cat has backfilled read-state, so subsequent Edits no longer trigger unread guards."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BASH_READ_STATE", "alpha", "beta"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "has been updated successfully",
+          "Call Read before editing"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_bash_read_state_edit",
+          "messageId": "msg_e2e_bash_read_state_edit",
+          "name": "Edit",
+          "input": {
+            "file_path": "bash-read-state-e2e/target.txt",
+            "old_string": "alpha",
+            "new_string": "gamma"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-format-call",
+      "description": "O08 third response: run formatter Bash after Edit succeeds to create stale hint.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response deterministically triggers Bash write-like commands with the --fix marker to verify stale hints after read files are rewritten by Bash."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BASH_READ_STATE",
+          "has been updated successfully"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Call Read before editing"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_bash_read_state_format",
+          "messageId": "msg_e2e_bash_read_state_format",
+          "name": "Bash",
+          "input": {
+            "command": "node bash-read-state-e2e/overwrite-target.mjs --fix",
+            "description": "Rewrite the previously read target file"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-bash-read-state-final",
+      "description": "O08 final reply: after formatter Bash tool_result, provider-visible history must include stale hint.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response ends the case only after stale hints enter the provider-visible request; real provider reply content does not affect product semantics."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BASH_READ_STATE",
+          "formatted target",
+          "Call Read before editing"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "File has not been read yet. Read it first before writing to it."
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-bash-read-state-final",
+          "inputTokens": 240,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

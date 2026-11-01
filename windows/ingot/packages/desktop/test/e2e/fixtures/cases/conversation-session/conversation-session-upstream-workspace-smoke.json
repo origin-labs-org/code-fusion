@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-upstream-workspace-smoke",
+  "spec": "./test/e2e/conversation-session/conversation-session-upstream-workspace-smoke.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-upstream-workspace-smoke.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-workspace-smoke-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from mistakenly hitting initial send business fixtures."
+    },
+    {
+      "id": "upstream-workspace-smoke-first-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover model lists, request body/model/thought, and UI replies; the response only needs to complete reliably with the expected text."
+    }
+  ]
+}

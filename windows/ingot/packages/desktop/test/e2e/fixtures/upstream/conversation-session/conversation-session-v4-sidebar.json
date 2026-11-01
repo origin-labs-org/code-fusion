@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-sidebar",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-sidebar.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-sidebar-title",
+      "description": "Case-local title generation response for E2E_V4_SIDEBAR_SEED initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Initial launch of E2E_V4_SIDEBAR_SEED triggers default title sidecar; fix case-local title response to prevent default replay from falling back to legacy provider-basic and use this initial marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_SIDEBAR_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-sidebar-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Sidebar E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-sidebar-seed",
+      "description": "M5 ② sidebar data source gate: Fixed first-round response establishes session, subsequent rename/delete are both local commands.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify sidebar list data source has switched to sessions-index: create -> appear -> rename -> update -> delete -> disappear."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_SIDEBAR_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-sidebar-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_SIDEBAR_SEED_OK"
+        }
+      }
+    }
+  ]
+}

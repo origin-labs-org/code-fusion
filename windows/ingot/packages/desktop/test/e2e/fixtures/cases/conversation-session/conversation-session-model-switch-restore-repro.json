@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-switch-restore-repro",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-switch-restore-repro.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-switch-restore-repro.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-model-switch-restore-repro-quota-failure",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Reproduction probe needs to stably create failure states to avoid relying on real GLM quota."
+    },
+    {
+      "id": "upstream-conversation-model-switch-restore-repro-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reproduction probe only needs to stably produce one completed assistant."
+    }
+  ]
+}

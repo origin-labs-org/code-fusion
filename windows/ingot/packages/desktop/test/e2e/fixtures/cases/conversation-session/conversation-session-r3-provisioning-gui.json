@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-provisioning-gui",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-provisioning-gui.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-provisioning-gui.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-provisioning-gui-reconnect-title",
+      "description": "Auxiliary title response for Provisioning task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-provisioning-gui-reconnect-main",
+      "description": "Provisioning initial turn, new Provider, and follow-up responses after config failure/reconnect/recovery.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only verify config, targets, and task history; sync RPC failures are controlled by real SSH response proxy and directory permissions, no artificial model reply delay needed."
+    }
+  ]
+}

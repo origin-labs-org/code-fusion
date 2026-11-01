@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-first-submit-visibility",
+  "spec": "./test/e2e/conversation-session/conversation-session-first-submit-visibility.test.ts",
+  "fixtures": [
+    {
+      "id": "first-submit-visibility-title",
+      "description": "Background title request for initial visibility test case",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Background title is not involved in initial send timing, only providing stable replies to prevent unmatched request retries from interfering with subsequent cases."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_FIRST_SUBMIT_VISIBILITY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"deepseek-e2e-model-provider-list-filtering-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"First submit visibility\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "first-submit-visibility",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Verify initial send UI submission order; model reply is only used to complete the real send path."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_FIRST_SUBMIT_VISIBILITY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "first-submit-visibility",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "deepseek-e2e-ok"
+        }
+      }
+    }
+  ]
+}

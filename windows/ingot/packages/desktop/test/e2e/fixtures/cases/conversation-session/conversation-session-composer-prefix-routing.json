@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-composer-prefix-routing",
+  "spec": "./test/e2e/conversation-session/conversation-session-composer-prefix-routing.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-composer-prefix-routing.json"
+  ],
+  "fileFixtures": [],
+  "noProviderRequests": true,
+  "providerRequestReason": "Pure UI composer prefix routing case: only verifies suggestion grouping and keyboard entry of mentions, without sending prompts or triggering provider requests.",
+  "requests": []
+}

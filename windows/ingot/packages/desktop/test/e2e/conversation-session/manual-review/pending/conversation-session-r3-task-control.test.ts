@@ -1,0 +1,163 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { clearAppData } from "../../../helpers/desktop-app.js";
+import {
+  getUpstreamRequestRecordCount,
+  waitForUpstreamRequest,
+} from "../../../helpers/conversation-session-network.js";
+import {
+  connectSSHWorkspaceAndSendFirstTurn,
+  prepareSSHLifecycle,
+  type SSHLifecycleProvider,
+} from "../../../helpers/ssh-remote-lifecycle.js";
+import { runSSHCommand } from "../../../helpers/ssh-remote-p0.js";
+import {
+  approveV4Permission,
+  clickV4PausedQueueResume,
+  clickV4QueueItemDelete,
+  clickV4QueueItemEdit,
+  clickV4Stop,
+  getLatestV4CommandAck,
+  getV4ComposerText,
+  getV4PaneSnapshot,
+  getV4QueueAutoDrain,
+  getV4QueueItems,
+  sendV4Prompt,
+  waitForV4AssistantMessageContaining,
+  waitForV4ConversationState,
+  waitForV4Pane,
+  waitForV4PausedQueueBanner,
+  waitForV4PermissionDialogInComposerDock,
+  waitForV4QueueCount,
+  waitForV4TimelineContaining,
+} from "../../../helpers/v4-conversation.js";
+
+const CASE_MARKER = "E2E_R3_TASK_CONTROL";
+const artifactDir = resolve(process.env.CF_E2E_ARTIFACT_DIR ?? ".e2e-artifacts/r3-task-control");
+const REMOTE_PERMISSION_DIR = "/home/dev/r3-workspace-a/.cf-e2e/r3-task-control";
+const REMOTE_PERMISSION_FILE = `${REMOTE_PERMISSION_DIR}/permission-output.txt`;
+
+describe(`${CASE_MARKER}: 远端 running Windowinner的 stop/queue 与Permissions阻塞`, () => {
+  let provider: SSHLifecycleProvider | null = null;
+  const facts: Record<string, unknown> = {};
+
+  after(async () => {
+    await mkdir(artifactDir, { recursive: true });
+    await writeFile(resolve(artifactDir, "task-control.json"), JSON.stringify(facts, null, 2));
+    await provider?.tunnel.close().catch(() => undefined);
+    provider = null;
+    await browser.electron.restoreAllMocks();
+    await clearAppData();
+  });
+
+  it("R3A-TASK-02/03 busy enqueue, delete/edit, stop preserves queue, resume FIFO consumption; permissions block and execute on remote", async function () {
+    this.timeout(30 * 60_000);
+    const prepared = await prepareSSHLifecycle(CASE_MARKER, { apiType: "anthropic-messages" });
+    provider = prepared.provider;
+    const [workspaceA] = prepared.config.workspacePaths;
+    await runSSHCommand(prepared.config, `rm -rf "${REMOTE_PERMISSION_DIR}"`);
+    const taskA = await connectSSHWorkspaceAndSendFirstTurn({
+      caseMarker: CASE_MARKER,
+      config: prepared.config,
+      label: "A",
+      provider,
+      workspacePath: workspaceA,
+    });
+
+    const slowStart = await getUpstreamRequestRecordCount();
+    await sendV4Prompt(`${CASE_MARKER}_SLOW 慢慢Answer`);
+    await waitForV4TimelineContaining("R3_TASK_STREAMING", 60_000);
+    await waitForV4Pane(
+      (s) => s.canStop && s.sessionId === taskA.taskId,
+      "远端 turn 没有进入 running",
+      45_000,
+    );
+    await waitForUpstreamRequest(
+      { lastUserMessageIncludes: [`${CASE_MARKER}_SLOW`] },
+      `${CASE_MARKER}: 慢流Request没有到达回放`,
+      30_000,
+      { afterIndex: slowStart - 1 },
+    );
+
+    await sendV4Prompt(`${CASE_MARKER}_Q1 First itemQueued`);
+    await waitForV4QueueCount(1, 30_000);
+    await sendV4Prompt(`${CASE_MARKER}_Q2 Second itemQueued`);
+    await waitForV4QueueCount(2, 30_000);
+    let queue = await getV4QueueItems();
+    expect(queue.map((item) => item.text.includes("_Q1"))).toEqual([true, false]);
+    facts.queueAfterEnqueue = queue.map((item) => item.text.slice(0, 40));
+
+    expect(await clickV4QueueItemDelete(queue[0]!.queueItemId)).toBe(true);
+    await waitForV4QueueCount(1, 30_000);
+    queue = await getV4QueueItems();
+    expect(queue[0]!.text).toContain("_Q2");
+    const q2Id = queue[0]!.queueItemId;
+    expect(await clickV4QueueItemEdit(q2Id)).toBe(true);
+    await waitForV4QueueCount(0, 30_000);
+    await browser.waitUntil(async () => ((await getV4ComposerText()) ?? "").includes("_Q2"), {
+      timeout: 15_000,
+      timeoutMsg: `${CASE_MARKER}: EditQueue项没有撤回到 composer`,
+    });
+    await sendV4Prompt(`${CASE_MARKER}_Q3 修改后重发`);
+    await waitForV4QueueCount(1, 30_000);
+    queue = await getV4QueueItems();
+    expect(queue[0]!.queueItemId).not.toBe(q2Id);
+    expect(queue[0]!.text).toContain("_Q3");
+    facts.queueAckDelete = await getLatestV4CommandAck("deleteQueueItem").catch(() => null);
+
+    expect((await getV4PaneSnapshot()).canStop).toBe(true);
+    await clickV4Stop();
+    await waitForV4Pane((s) => !s.canStop, `${CASE_MARKER}: stop 后没有收口`, 30_000);
+    await waitForV4PausedQueueBanner(30_000);
+    expect(await getV4QueueAutoDrain()).toBe(false);
+    queue = await getV4QueueItems();
+    expect(queue).toHaveLength(1);
+    expect(queue[0]!.text).toContain("_Q3");
+    facts.stopAck = await getLatestV4CommandAck("stop").catch(() => null);
+
+    const resumeStart = await getUpstreamRequestRecordCount();
+    await clickV4PausedQueueResume();
+    await waitForUpstreamRequest(
+      { lastUserMessageIncludes: [`${CASE_MARKER}_Q3`] },
+      `${CASE_MARKER}: 队首消费Request没有到达回放`,
+      60_000,
+      { afterIndex: resumeStart - 1 },
+    );
+    await waitForV4AssistantMessageContaining("R3_TASK_Q_REPLY", 60_000);
+    await waitForV4QueueCount(0, 30_000);
+    await waitForV4ConversationState(
+      (s) => s.taskId === taskA.taskId && s.state === "idle" && s.queueCount === 0,
+      `${CASE_MARKER}: Queue消费后没有回到 idle`,
+      60_000,
+    );
+
+    const permissionStart = await getUpstreamRequestRecordCount();
+    await sendV4Prompt(`${CASE_MARKER}_PERMISSION 请WriteFile ${REMOTE_PERMISSION_FILE}`);
+    await waitForUpstreamRequest(
+      { lastUserMessageIncludes: [`${CASE_MARKER}_PERMISSION`] },
+      `${CASE_MARKER}: Permission request turn 没有到达回放`,
+      60_000,
+      { afterIndex: permissionStart - 1 },
+    );
+    const dock = await waitForV4PermissionDialogInComposerDock(60_000);
+    expect(dock.inDock).toBe(true);
+    const beforeApprove = await runSSHCommand(
+      prepared.config,
+      `test -f "${REMOTE_PERMISSION_FILE}" && echo exists || echo absent`,
+    );
+    expect(beforeApprove.stdout.trim()).toBe("absent");
+    expect(await approveV4Permission()).toBe(true);
+    await waitForV4TimelineContaining("R3_TASK_PERMISSION_DONE", 90_000);
+    const afterApprove = await runSSHCommand(prepared.config, `cat "${REMOTE_PERMISSION_FILE}"`);
+    expect(afterApprove.stdout).toContain("R3_TASK_PERMISSION_RESULT");
+    facts.permissionFileOnRemote = afterApprove.stdout.trim();
+    facts.permissionAck = await getLatestV4CommandAck("resolveInteraction").catch(() => null);
+    await waitForV4ConversationState(
+      (s) => s.taskId === taskA.taskId && s.state === "idle",
+      `${CASE_MARKER}: Permissions turn 没有回到 idle`,
+      60_000,
+    );
+    const snapshot = await getV4PaneSnapshot();
+    expect(snapshot.canStop).toBe(false);
+  });
+});

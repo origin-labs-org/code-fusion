@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-task-actions",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-task-actions.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-task-actions.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-tact-local-title",
+      "description": "Local control uses default Anthropic-compatible Provider; verify remote pin/archive does not pollute local task after real creation.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Local control uses default Anthropic-compatible Provider; verify remote pin/archive does not pollute local task after real creation."
+    },
+    {
+      "id": "r3-tact-local-reply",
+      "description": "Local control uses default Anthropic-compatible Provider; verify remote pin/archive does not pollute local task after real creation.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Local control uses default Anthropic-compatible Provider; verify remote pin/archive does not pollute local task after real creation."
+    },
+    {
+      "id": "r3-tact-reconnect-title",
+      "description": "Auxiliary title response for R3 task actions task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-tact-reconnect-main",
+      "description": "Generic response for R3 task actions initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "slow-stream",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+    }
+  ]
+}

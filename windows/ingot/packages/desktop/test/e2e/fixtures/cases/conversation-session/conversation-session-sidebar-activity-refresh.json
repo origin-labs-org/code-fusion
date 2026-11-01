@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-sidebar-activity-refresh",
+  "spec": "./test/e2e/conversation-session/conversation-session-sidebar-activity-refresh.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-sidebar-activity-refresh.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "sidebar-activity-title",
+      "description": "TSL40 fixed title, no title changes within the activity sampling window",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial send triggers the default title sidecar; mock marker response to avoid falling back to shared provider fixtures."
+    },
+    {
+      "id": "sidebar-activity-stream",
+      "description": "Retain full desktop sidebar during TSL40 continuous output",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Continuous content updates are used to verify the sidebar does not re-query by activity; Stop is a real user action and does not use model speed as a barrier."
+    }
+  ]
+}

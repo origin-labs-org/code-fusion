@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-assistant-preview-cards.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "assistant-preview-e2e/current turn output/index page.html",
+      "source": "created-by-provider-tool",
+      "description": "HTML created by real Write for APC04/APC05/APC09/APC11, used for current-turn fileChanges, Browser, side pane session preferences, and cold resume."
+    },
+    {
+      "path": "assistant-preview-e2e/current turn output/instruction document.md",
+      "source": "created-by-provider-tool",
+      "description": "Markdown created by real Write for APC05/APC09/APC11, used for current-turn fileChanges, Preview Pane, side pane session preferences, and cold resume."
+    },
+    {
+      "path": "assistant-preview-e2e/office/*.{docx,xlsx,pptx,pdf}",
+      "source": "created-by-spec",
+      "description": "Spec copies from case-local minimal valid binary fixture to workspace to verify real Host stat filtering and auto-opening PPTX renderer in Desktop completion state."
+    },
+    {
+      "path": "assistant-preview-e2e/media/*.{mp4,wav}",
+      "source": "created-by-spec",
+      "description": "Spec writes media fixture to verify APC12 media card, Host stat, local authorized URL, and native audio controls."
+    },
+    {
+      "path": "assistant-preview-e2e/bounds/*.pdf",
+      "source": "created-by-spec",
+      "description": "Spec writes existence candidates; does not open content, only verifies Host stat, 15 candidates, and up to 10 cards."
+    }
+  ],
+  "requests": [
+    {
+      "id": "assistant-preview-cards-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title does not belong to preview card product semantics; only need to avoid sidecar requests mistakenly hitting business fixtures."
+    },
+    {
+      "id": "assistant-preview-cards-local-url",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin dynamic random port URL in assistant text to reliably verify card projection and Browser side pane."
+    },
+    {
+      "id": "assistant-preview-cards-interrupted",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Interrupted cards must trigger Stop within a reproducible mid-stream window; ordinary fast-text cannot provide this boundary."
+    },
+    {
+      "id": "assistant-preview-cards-streaming",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Need to assert no cards when assistant text is visible but the row is not yet terminal."
+    },
+    {
+      "id": "assistant-preview-cards-suppression-write",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin Write tool selection to establish current-turn active HTML fileChanges."
+    },
+    {
+      "id": "assistant-preview-cards-suppression-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin existing business semantics: any local HTTP URL suppresses all HTML cards in the same turn."
+    },
+    {
+      "id": "assistant-preview-cards-office-pptx",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably provide Unicode/whitespace file references and appearance order; file existence and renderer still follow the real product path."
+    },
+    {
+      "id": "assistant-preview-cards-audio",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Split audio out of the PPTX auto-open turn to avoid side pane active tab competition."
+    },
+    {
+      "id": "assistant-preview-cards-video",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Split video out of the PPTX auto-open turn to avoid side pane active tab competition."
+    },
+    {
+      "id": "assistant-preview-cards-max-ten",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin candidate count and text order; actual existence continues to be determined by Host stat."
+    },
+    {
+      "id": "assistant-preview-cards-no-backfill",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the 15-candidate boundary and missing distribution to verify the product does not continue probing just to reach 10 images."
+    },
+    {
+      "id": "assistant-preview-cards-source-write-html",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix Write tool selection to establish persistable HTML fileChanges for the current turn."
+    },
+    {
+      "id": "assistant-preview-cards-source-write-markdown",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the second Write to ensure both HTML and Markdown belong to active fileChanges of the same turn."
+    },
+    {
+      "id": "assistant-preview-cards-source-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The E2E provider's minimal context window triggers auto-compact after the second Write; fix the summary to prevent replay gaps from breaking file preview and cold resume semantics."
+    },
+    {
+      "id": "assistant-preview-cards-source-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix text order to verify reverse card order, open targets, and cold resume reconstruction."
+    },
+    {
+      "id": "assistant-preview-cards-parking",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Explicitly select the target historical task after cold start to avoid miscounting auto-restoring the current task as evidence of cold resume."
+    }
+  ]
+}

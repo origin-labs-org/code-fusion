@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-same-model-draft-provider-identity",
+  "spec": "./test/e2e/conversation-session/conversation-session-same-model-draft-provider-identity.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-same-model-draft-provider-identity.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "same-model-provider-identity-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+    },
+    {
+      "id": "same-model-provider-identity-glm52-primary-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that once a GLM-5.2 primary active session exists, workspace default responses and subsequent requests cannot pull the same-named model back to the old provider; the seed response only needs to complete reliably."
+    },
+    {
+      "id": "same-model-provider-identity-glm52-alternate-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "GLM-5.2 alternate sending is used to verify that the real request URL hits the alternate provider Base URL; the response only needs to complete reliably."
+    },
+    {
+      "id": "same-model-provider-identity-upstream-flash-primary-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that once a deepseek-v4-flash primary active session exists, workspace default responses and subsequent requests cannot pull the same-named model back to the old provider; the seed response only needs to complete reliably."
+    },
+    {
+      "id": "same-model-provider-identity-upstream-flash-alternate-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "deepseek-v4-flash alternate sending is used to verify that the real request URL hits the alternate provider Base URL; the response only needs to complete reliably."
+    }
+  ]
+}

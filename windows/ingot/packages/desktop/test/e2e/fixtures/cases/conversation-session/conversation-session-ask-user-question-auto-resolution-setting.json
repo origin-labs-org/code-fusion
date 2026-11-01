@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-auto-resolution-setting",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-auto-resolution-setting.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-auto-resolution-setting.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-ask-auto-resolution-setting-first-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Reliably produce a GUI window for closing settings mid-countdown, avoiding real model tool selection and drift in stream rate."
+    },
+    {
+      "id": "upstream-ask-auto-resolution-setting-first-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that reopening settings does not retroactively restore deadlines for old questions."
+    },
+    {
+      "id": "upstream-ask-auto-resolution-setting-second-controlled-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Reliably prove that re-enabling only affects newly registered AskUserQuestion instances thereafter."
+    },
+    {
+      "id": "upstream-ask-auto-resolution-setting-second-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The final reply proves newly registered questions resume auto-continuation; detailed timing is covered by fake-clock unit tests."
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+name: quiz_html
+version: 0.1.0
+description: 把题目 JSON 注入Template生成单File HTML 练习Web
+
+entrypoints:
+  build: scripts/build_quiz_html.py
+
+features:
+  - html_quiz_generation
+  - multi_question_type
+  - category_filter
+  - state_filter
+  - exam_mode
+  - keyboard_shortcuts
+  - dark_mode
+  - localstorage_persistence
+  - mobile_responsive
+
+depends_on:
+  - quiz-mastery  # 上游：题目DataSource
+
+triggers:
+  # 直接关键词
+  - "生成Web"
+  - "做成Web"
+  - "做个HTML"
+  - "Web版"
+  - "在Browser练"
+  - "导出HTML"
+  - "在Web做练习"
+
+  # quiz-mastery Completed后的链式触发
+  - quiz_generated  # 出题CompletedEvents
+  - quiz_imported   # 题目导入CompletedEvents
+
+io:
+  input:
+    type: file
+    format: json
+    schema:
+      type: array
+      items:
+        required: [type, prompt, answer]
+        properties:
+          type: {enum: [single_choice, true_false, fill_blank, short_answer]}
+          prompt: {type: string}
+          options: {type: array, items: {type: string}}
+          answer: {type: string}
+          explanation: {type: string}
+          knowledge_point: {type: string}
+          category: {type: string}
+          level: {type: integer, minimum: 1, maximum: 3}
+          memory_tip: {type: string}
+  output:
+    type: file
+    format: html
+    self_contained: true  # 单File，无outer部依赖

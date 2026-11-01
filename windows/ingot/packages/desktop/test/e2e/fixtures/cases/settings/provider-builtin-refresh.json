@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "caseName": "provider-builtin-refresh",
+  "spec": "./test/e2e/settings/provider-builtin-refresh.test.ts",
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "runtime-generated",
+      "path": ".cf-e2e/builtin-refresh",
+      "purpose": "Test HTTPS proxy versioned Release, CA, and network evidence; do not directly overwrite product Active. Both model responses are provided by case-local HTTP server, independent of shared replay fixtures."
+    }
+  ],
+  "requests": [
+    {
+      "id": "E2E_BUILTIN_REFRESH_OLD",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real connection test sends E2E_BUILTIN_REFRESH_MODEL and asserts legacy Built-in top_p=0.17; local server returns fixed ok without calling paid models."
+    },
+    {
+      "id": "E2E_BUILTIN_REFRESH_NEW",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Settings page refreshes and realistically creates model again, asserting same model top_p=0.37; only stubs response without mocking Registry, downloader, or Model."
+    }
+  ]
+}

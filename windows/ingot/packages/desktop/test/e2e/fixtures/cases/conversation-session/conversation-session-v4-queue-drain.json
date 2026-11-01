@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-queue-drain",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-queue-drain.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-queue-drain.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-queue-drain-title",
+      "description": "Case-local title generation response for E2E_V4_DRAIN_SLOW initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_DRAIN_SLOW initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-queue-drain-q1",
+      "description": "C02: second roundtrip reply after head queued item is drained.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Drain consumption requires assertable reply sentinels."
+    },
+    {
+      "id": "v4-queue-drain-slow-turn",
+      "description": "C02: 8s slow stream first round—leaves enqueuing window, runtime auto-drains head after stream ends.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Automatic consumption requires enqueuing within running window + predictable stream end timing."
+    }
+  ]
+}

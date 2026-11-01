@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-provider-registry-prewarm",
+  "spec": "./test/e2e/conversation-session/conversation-session-provider-registry-prewarm.test.ts",
+  "fixtures": [
+    {
+      "id": "provider-registry-prewarm-title",
+      "description": "provider registry 冷启动 case 的标题固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not part of the provider registry cold start barrier semantics."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"provider-registry-prewarm-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Provider prewarm\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"provider-registry-prewarm-title","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "provider-registry-prewarm-main",
+      "description": "Custom GLM initial fixed response after I64 registry revision barrier.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that the first prewarmed session and real request during cold start retain custom GLM; response is only used for stable closure."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_PROVIDER_REGISTRY_PREWARM"],
+        "bodyIncludes": ["E2E_PROVIDER_REGISTRY_PREWARM", "GLM-5.2"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"provider-registry-prewarm-main","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"provider-registry-prewarm-main","object":"chat.completion.chunk","created":0,"model":"GLM-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

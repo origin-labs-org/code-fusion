@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-rewind-files",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-rewind-files.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-rewind-files.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "v4-rewind-files-e2e/safe.txt",
+      "source": "created-by-helper",
+      "description": "PV4-21 creates safe-before within test; restored by composite rewind after Write."
+    },
+    {
+      "path": "v4-rewind-files-e2e/conflict.txt",
+      "source": "created-by-helper",
+      "description": "PV4-22 created within test and externally modified, verifying blocked and fallback."
+    }
+  ],
+  "requests": [
+    {
+      "id": "v4-rewind-files-title",
+      "description": "PV4-21/22 file rewind case-local title response.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title does not participate in workspace rewind semantics; uses generic marker to isolate the two cases."
+    },
+    {
+      "id": "v4-rewind-files-safe-read",
+      "description": "PV4-21 reads safe.txt first to establish read state before Write.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Consistently generates a checkpoint for existing files that can be safely rolled back."
+    },
+    {
+      "id": "v4-rewind-files-safe-write",
+      "description": "PV4-21 writes safe.txt and generates a safe checkpoint.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Actually modifies file for composite rewind to restore beforeContent."
+    },
+    {
+      "id": "v4-rewind-files-safe-final",
+      "description": "PV4-21 original branch response after file write.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Provides visible old response evidence for branch cut."
+    },
+    {
+      "id": "v4-rewind-files-safe-edited",
+      "description": "PV4-21 edit response after file restoration + branch cut.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Confirms composite command only resends edited intent."
+    },
+    {
+      "id": "v4-rewind-files-conflict-read",
+      "description": "PV4-22 reads conflict.txt first to establish checkpoint.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "后续外部改写将使 preview 返回 external_modified。"
+    },
+    {
+      "id": "v4-rewind-files-conflict-write",
+      "description": "PV4-22 writes conflict.txt and generates checkpoint.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "在 edit 前由测试外部改写，触发 fail-closed。"
+    },
+    {
+      "id": "v4-rewind-files-conflict-final",
+      "description": "PV4-22 original branch response before external modification.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "blocked 期间必须继续可见。"
+    },
+    {
+      "id": "v4-rewind-files-conflict-edited",
+      "description": "PV4-22 response for conversation-reset-only fallback command.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Proves that new commandId preserve initiates only one new request."
+    }
+  ]
+}

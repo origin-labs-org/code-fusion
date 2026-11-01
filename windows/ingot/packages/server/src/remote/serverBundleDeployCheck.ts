@@ -1,0 +1,62 @@
+import type { IRemoteBackend, StdioStream } from "@origin-ai/cf-server/remote/backend.js";
+import { quotePosixPathArg, quotePosixShellArg } from "@origin-ai/cf-server/remote/posixShell.js";
+
+const REQUIRED_SERVER_BUNDLE_MARKERS = [
+  "skill-sync",
+  "mcp-sync",
+  "plugin-sync",
+  "__cf_rpc_nested_uint8array_v1",
+  "exportMarketplaceSourceArchive",
+  "importMarketplaceSourceArchive",
+];
+
+export type ServerBundleDeployDecision =
+  | { shouldDeploy: false }
+  | { shouldDeploy: true; reason: string };
+
+export async function checkServerBundleRequiredMarkers(
+  backend: IRemoteBackend,
+  nodePath: string,
+  serverPath: string,
+): Promise<ServerBundleDeployDecision> {
+  const script = `
+const fs = require("fs");
+const content = fs.readFileSync(process.argv[1], "utf8");
+const missing = ${JSON.stringify(REQUIRED_SERVER_BUNDLE_MARKERS)}.filter((marker) => !content.includes(marker));
+if (missing.length > 0) {
+  console.error("missing required server bundle markers: " + missing.join(","));
+  process.exit(2);
+}
+`;
+  const stream = await backend.exec(
+    `${quotePosixPathArg(nodePath)} -e ${quotePosixShellArg(script)} ${quotePosixPathArg(serverPath)}`,
+  );
+  try {
+    await waitForDeployCheckClose(stream);
+    return { shouldDeploy: false };
+  } catch (error) {
+    return {
+      shouldDeploy: true,
+      reason: `remote server bundle missing required markers: ${String(error)}`,
+    };
+  }
+}
+
+function waitForDeployCheckClose(stream: StdioStream): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let stderrText = "";
+    stream.stderr.on("data", (chunk: Buffer | string) => {
+      if (stderrText.length >= 2048) {
+        return;
+      }
+      stderrText += chunk.toString();
+    });
+    stream.onClose((code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(stderrText.trim() || `remote deploy check exited with code ${code}`));
+    });
+  });
+}

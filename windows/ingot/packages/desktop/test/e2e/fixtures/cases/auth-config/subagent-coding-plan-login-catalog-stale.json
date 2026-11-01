@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "caseName": "subagent-coding-plan-login-catalog-stale",
+  "spec": "./test/e2e/subagent-coding-plan-login-catalog-stale.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/credentials.json",
+      "purpose": "Start with empty OAuth credentials, then trigger post-login provider refresh via controlled BigModel callback."
+    },
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/provider_config.json",
+      "purpose": "Pre-seed custom upstream with reasoning metadata via versioned Personal Config before login, serving as a positive control for the same workspace runtime catalog."
+    }
+  ],
+  "requests": []
+}

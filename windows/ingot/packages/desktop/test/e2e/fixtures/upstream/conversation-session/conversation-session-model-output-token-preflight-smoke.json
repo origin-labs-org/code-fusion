@@ -1,0 +1,443 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-output-token-preflight-smoke",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-output-token-preflight-smoke.test.ts",
+  "fixtures": [
+    {
+      "id": "otb11-title",
+      "description": "OTB11 fixed response for first-round title generation.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles are outside budget semantics; their requests are isolated only to avoid interfering with per-turn main request counting."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "otb-preflight-smoke-64k-48k"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Mixed Context Budget\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":32,"completion_tokens":8,"total_tokens":40}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-1",
+      "description": "OTB11 first round sends real request and establishes an 8K provider usage anchor.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pins first-round usage so subsequent mixed-length messages reproducibly cross the cap threshold within a small window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_1"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-1-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":8000,"completion_tokens":8,"total_tokens":8008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-2",
+      "description": "OTB11 second round remains within the 48K baseline range.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pins 14K usage as the provider anchor for entering the preflight cap range in the next round."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_2"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-2-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":14000,"completion_tokens":8,"total_tokens":14008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-3",
+      "description": "OTB11 shrinks max_completion_tokens for the first time after remaining window falls below 48K.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 18.5K usage anchor keeps subsequent requests within the cap range while remaining below the 30K compact threshold."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_3"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-3-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":18500,"completion_tokens":8,"total_tokens":18508}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-4",
+      "description": "OTB11 shrinks max_completion_tokens monotonically for the second time according to higher usage.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 23.5K usage anchor reliably produces a second distinct cap, verifying it is not a single boundary case."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_4"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-4-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":23500,"completion_tokens":8,"total_tokens":23508}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-5",
+      "description": "OTB11 shrinks max_completion_tokens for the third time, pushing provider usage close to the 30K threshold.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 28.5K usage anchor combined with the fixed-seed sixth message deterministically triggers Auto Compact in the next round."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_5"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-5-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":28500,"completion_tokens":8,"total_tokens":28508}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-auto-compact",
+      "description": "OTB11 sixth round performs Auto Compact summary first.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Successful summary pins the compact boundary, verifying the execution order of original pending messages after the 30K threshold."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "E2E_OTB11_TURN_5",
+          "create a detailed summary",
+          "\"max_completion_tokens\":20000",
+          "otb-preflight-smoke-64k-48k"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"<summary>OTB11 retained the first five mixed-length turns.</summary>"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":30754,"completion_tokens":32,"total_tokens":30786}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb11-turn-6-after-compact",
+      "description": "OTB11 continues original sixth-round message after Auto Compact.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "A short successful response proves pending messages were not lost and the prior dynamic cap was not persisted to the compressed main request."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB11_TURN_6"],
+        "bodyIncludes": ["otb-preflight-smoke-64k-48k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb11-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{\"content\":"otb11-turn-6-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb11-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-64k-48k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":2500,"completion_tokens":8,"total_tokens":2508}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-title",
+      "description": "OTB12 fixed response for first-round title generation.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles are outside budget semantics; their requests are isolated only to avoid interfering with per-turn main request counting."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "otb-preflight-smoke-200k-128k"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Large Context Budget\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-title","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":32,"completion_tokens":8,"total_tokens":40}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-1",
+      "description": "OTB12 first round sends real request and establishes a 45K provider usage anchor.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pins first-round usage so the 200K/128K scenario first demonstrates that baseline is still sent when below the 71K cap threshold."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_1"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-1-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-1","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":45000,"completion_tokens":8,"total_tokens":45008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-2",
+      "description": "OTB12 second round remains within the 128K baseline range.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Pins 70K usage as the provider anchor for crossing the 71K preflight cap threshold in the next round."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_2"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-2-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-2","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":70000,"completion_tokens":8,"total_tokens":70008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-3",
+      "description": "OTB12 first reduction of max_completion_tokens after crossing 71K.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 100K usage anchor keeps subsequent requests within the large-window cap range while remaining below the 166K threshold."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_3"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-3-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-3","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":100000,"completion_tokens":8,"total_tokens":100008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-4",
+      "description": "OTB12 second monotonic reduction of max_completion_tokens based on higher usage.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 135K usage anchor produces a second clearly distinct cap, proving scaling still follows the same formula under the 128K baseline."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_4"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-4-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-4","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":135000,"completion_tokens":8,"total_tokens":135008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-5",
+      "description": "OTB12 third reduction of max_completion_tokens, pushing provider usage close to the 166K threshold.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 164K usage anchor allows two subsequent shorter messages to produce critical caps of roughly 34.3K and 33.1K before Compact."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_5"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-5-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-5","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":164000,"completion_tokens":8,"total_tokens":164008}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-6",
+      "description": "OTB12 fourth reduction of max_completion_tokens, advancing to ~34.3K with a shorter message.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 165.1K usage anchor lets the next shorter message continue approaching the 33K critical cap while staying below the 166K threshold."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_6"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-6-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-6","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":165092,"completion_tokens":8,"total_tokens":165100}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-7",
+      "description": "OTB12 fifth reduction of max_completion_tokens, covering the final main request boundary before Compact at ~33.1K.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The 165.8K usage anchor combined with the final short message allows the next round to just cross the 166K threshold and deterministically enter Auto Compact."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_7"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-7","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-7","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-7-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-7","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":165792,"completion_tokens":8,"total_tokens":165800}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-auto-compact",
+      "description": "OTB12 round 8 runs Auto Compact summary first right after crossing the 166K threshold.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Successful summary pins the 166K compact boundary, verifying the execution order of original pending messages under a large window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "E2E_OTB12_TURN_7",
+          "create a detailed summary",
+          "\"max_completion_tokens\":20000",
+          "otb-preflight-smoke-200k-128k"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"<summary>OTB12 retained the first seven mixed-length turns.</summary>"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-compact","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":166024,"completion_tokens":32,"total_tokens":166056}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "otb12-turn-8-after-compact",
+      "description": "OTB12 resumes the original round 8 message after Auto Compact.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "A short successful response proves pending messages were not lost and the 128K baseline is recalculated after compression rather than reusing the old cap."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_OTB12_TURN_8"],
+        "bodyIncludes": ["otb-preflight-smoke-200k-128k"],
+        "bodyExcludes": ["Generate a concise title", "create a detailed summary"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":"chatcmpl-otb12-turn-8","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-8","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{\"content\":"otb12-turn-8-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-otb12-turn-8","object":"chat.completion.chunk","created":0,"model":"otb-preflight-smoke-200k-128k","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":3500,"completion_tokens":8,"total_tokens":3508}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-fork",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-fork.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-fork.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-fork-title",
+      "description": "Case-local title generation response for E2E_V4_FORK_PARENT initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_FORK_PARENT initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-fork-parent-turn",
+      "description": "M4 forkAssistant gate: parent session first round completes, producing forkable assistant rows.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The fork target must be an assistant message stably committed to transcript; use controllable fast stream to ensure stream completion stability."
+    },
+    {
+      "id": "v4-fork-child-followup",
+      "description": "Subsequent inputs of fork child must reuse provider requests with fork-time thought level.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Match child follow-up with independent marker to verify live child runtime and provider wire use the same thought level."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-settings-connection-completion",
+  "spec": "./test/e2e/conversation-session/conversation-session-settings-connection-completion.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-settings-connection-completion.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX15 setup connection only validates real SSH/Docker device management and navigation without sending model requests.",
+  "requests": []
+}

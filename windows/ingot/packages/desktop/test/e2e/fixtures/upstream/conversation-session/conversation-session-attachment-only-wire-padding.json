@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-attachment-only-wire-padding",
+  "spec": "./test/e2e/conversation-session/conversation-session-attachment-only-wire-padding.test.ts",
+  "fixtures": [
+    {
+      "id": "attachment-only-wire-padding",
+      "description": "T06W: After splitting text attachment into prompt reminder, session remains empty body; Anthropic provider wire user content precisely pads a single space.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "matcher locates unique primary request by text attachment content; spec then structurally asserts on network capture that user content parts contain exact space."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "e2e-attachment-wire-padding.txt",
+          "E2E_ATTACHMENT_WIRE_CONTEXT"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "attachment-only-wire-padding",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "ATTACHMENT_WIRE_PADDING_OK"
+        }
+      }
+    }
+  ]
+}

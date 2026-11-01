@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-file-diff",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-file-diff.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background-file-diff.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "background-file-diff-e2e/result.md",
+      "source": "created-by-spec",
+      "description": "Single-line Markdown created by spec in default workspace; after Read in notification product turn, Edit performs +1/-1 replacement."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-background-file-diff-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title does not participate in model-only file checkpoint semantics; only case marker isolates requests."
+    },
+    {
+      "id": "upstream-background-file-diff-agent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Fix Agent(run_in_background=true) to produce a parent launch turn and subsequent model-only notification turn."
+    },
+    {
+      "id": "upstream-background-file-diff-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Keep parent turn stably idle before child completes to ensure subsequent independent model-only wake."
+    },
+    {
+      "id": "upstream-background-file-diff-child-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "A 6-second delay ensures the UI stably observes canStop=false before triggering independent notification wake."
+    },
+    {
+      "id": "upstream-background-file-diff-read",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Fix Read to establish read-before-edit prerequisite, sourcing checkpoint anchor from hidden notification messageId."
+    },
+    {
+      "id": "upstream-background-file-diff-edit",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Fix single-line replacement to precisely assert summary +1/-1 and Review before/after content."
+    },
+    {
+      "id": "upstream-background-file-diff-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix final marker to confirm file summary and background result assistant belong to the same product turn."
+    }
+  ]
+}

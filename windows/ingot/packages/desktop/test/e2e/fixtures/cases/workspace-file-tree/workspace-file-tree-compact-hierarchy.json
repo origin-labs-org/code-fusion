@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "workspace-file-tree-compact-hierarchy",
+  "spec": "./test/e2e/workspace-file-tree/workspace-file-tree-compact-hierarchy.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "runtime-workspace-files",
+      "path": "E2E_FILE_TREE_COMPACT_HIERARCHY/",
+      "purpose": "Construct multi-level compact folders and sufficient child files to verify step indentation, hierarchy guide lines, and sticky folders without extra gaps."
+    }
+  ],
+  "requests": []
+}

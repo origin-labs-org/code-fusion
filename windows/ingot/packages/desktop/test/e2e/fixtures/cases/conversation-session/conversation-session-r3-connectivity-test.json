@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-connectivity-test",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-connectivity-test.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-connectivity-test.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-conn-connectivity",
+      "description": "Settings page \"Test Model\" connectivity request (local replay anthropic route)",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "连通性测试只需 finish"
+    },
+    {
+      "id": "r3-conn-reconnect-title",
+      "description": "Auxiliary title response for R3 connectivity test task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-conn-reconnect-main",
+      "description": "General response for R3 connectivity test initial launch and continuation.",
+      "kind": "main",
+      "timingPolicy": "slow-stream",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+    }
+  ]
+}

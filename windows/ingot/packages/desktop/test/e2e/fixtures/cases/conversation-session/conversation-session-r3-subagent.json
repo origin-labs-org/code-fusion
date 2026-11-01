@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-subagent",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-subagent.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-subagent.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-sub-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-workflow-skill",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-workflow-create",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-workflow-started",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-workflow-child",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-workflow-notification",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-side-chat",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-side-followup",
+      "description": "Regression for remote workflow and auxiliary conversation session ownership",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Mock model output, truly executing Skill, CreateWorkflow, and remote sub-session subscription."
+    },
+    {
+      "id": "r3-sub-parent-agent",
+      "description": "BG25: main launches a long-running background Agent.",
+      "kind": "main",
+      "timingPolicy": "fast-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "Stably start background child and use file barrier to keep running window."
+    },
+    {
+      "id": "r3-sub-parent-launched",
+      "description": "O19: parent finishes the background Agent launch turn.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Let parent start turn return to idle first, then release child input error to avoid completion notification merge race."
+    },
+    {
+      "id": "r3-sub-child-bash",
+      "description": "BG25: child starts a foreground Bash barrier before coordinator steer arrives.",
+      "kind": "main",
+      "timingPolicy": "controlled-tool-use",
+      "source": "synthetic",
+      "syntheticReason": "File barrier stably creates steer window where first child tool call has not completed."
+    },
+    {
+      "id": "r3-sub-child-final",
+      "description": "BG25: child finishes normally after continued work.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify that child continues normal tools after reply and finally wraps up via normal completion."
+    },
+    {
+      "id": "r3-sub-notification",
+      "description": "BG25: parent consumes the child final completion notification.",
+      "kind": "main",
+      "timingPolicy": "task-notification",
+      "source": "synthetic",
+      "syntheticReason": "Verify that child still wraps up via standard background completion notification in the end."
+    },
+    {
+      "id": "r3-sub-memory-noop",
+      "description": "BG25/O18: background Main memory extraction remains non-semantic for this renderer case.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Memory extraction runs asynchronously after successful Main turn by default; this case only uses Nothing to save to conclude, avoiding hidden requests interfering with strict replay without extending Memory product semantics."
+    },
+    {
+      "id": "r3-sub-parent2-slow",
+      "description": "Model A 慢回合",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Keep running window until Stop is explicitly clicked in parent session; stop must truly cancel stream rather than relying on natural 45s completion."
+    },
+    {
+      "id": "r3-sub-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch/fork/edit"
+    }
+  ]
+}

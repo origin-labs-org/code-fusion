@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-timeline-projection",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-timeline-projection.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-compact-timeline-projection-seed",
+      "description": "TP auto compact 投影样本：第一轮固定回复并返回接近 1M context 的高 usage，稳定触发下一轮 auto compact。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertion of TP is the UI projection position of auto compact marker; real model token usage is unstable; DeepSeek v4 may have a 1M context, requiring synthesis of sufficiently high provider usage."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_SEED"
+        ],
+        "bodyIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_SEED"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-compact-timeline-projection-seed",
+          "inputTokens": 950000,
+          "outputTokens": 12,
+          "text": "upstream-e2e-seed-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-compact-timeline-projection-pending",
+      "description": "TP auto compact 完成后继续 pending 主请求的固定回复。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response only needs to stably produce pending assistant; the core assertion is whether compact marker collapses into the same work block."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_PENDING"
+        ],
+        "bodyIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_PENDING"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-compact-timeline-projection-pending",
+          "inputTokens": 96,
+          "outputTokens": 12,
+          "text": "upstream-e2e-pending-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-compact-timeline-projection-manual-split-seed",
+      "description": "TP manual failed 投影样本前置真实 task 的固定回复。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core sample for manual failed compact is injected by renderer store; the real model only needs to create a stable task first."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_MANUAL_SPLIT_SEED"
+        ],
+        "bodyIncludes": [
+          "E2E_COMPACT_TIMELINE_PROJECTION_MANUAL_SPLIT_SEED"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-compact-timeline-projection-manual-split-seed",
+          "inputTokens": 96,
+          "outputTokens": 12,
+          "text": "upstream-e2e-seed-ok"
+        }
+      }
+    }
+  ]
+}

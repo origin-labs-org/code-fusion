@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-runtime-catalog-reasoning",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-runtime-catalog-reasoning.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-runtime-catalog-reasoning.json"
+  ],
+  "fileFixtures": [
+    {
+      "kind": "app-config",
+      "path": "~/.cf/v2/agents-state.json",
+      "description": "写入 Claude builtin model/effort 初始值，验证 runtime catalog 展示、非法值修正、切模清除和冷启动 child 请求。",
+      "source": "created-by-helper"
+    },
+    {
+      "kind": "app-config",
+      "path": "~/.cf/agents/e2e-claude-catalog-reviewer.md",
+      "description": "Write Claude custom agent with illegal thoughtLevel to verify save prevention, valid correction, model-switch clearing, and cold-start child requests.",
+      "source": "created-by-helper"
+    }
+  ],
+  "requests": [
+    {
+      "id": "claude-catalog-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return reliably."
+    },
+    {
+      "id": "claude-catalog-general-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent request only needs to reliably trigger general-purpose; the request itself is verified as low by capture and model-io."
+    },
+    {
+      "id": "claude-catalog-general-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Child response only needs to complete reliably; the request itself verifies high/16000."
+    },
+    {
+      "id": "claude-catalog-general-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that parent session consumes child tool_result and returns to idle."
+    },
+    {
+      "id": "claude-catalog-cold-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "If consecutive scenarios trigger auto-compact, pin the summary to avoid blocking the target path."
+    },
+    {
+      "id": "claude-catalog-explore-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent request only needs to reliably trigger Explore; the request itself is verified as low by capture and model-io."
+    },
+    {
+      "id": "claude-catalog-explore-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Child response only needs to complete reliably; the request itself verifies xhigh catalog 32000, provider-visible 31999, and Explore tool restrictions."
+    },
+    {
+      "id": "claude-catalog-explore-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "If auto-compact is triggered before Explore continuation, pin the summary to retain the current request."
+    },
+    {
+      "id": "claude-catalog-explore-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that parent session consumes Explore child tool_result and returns to idle."
+    },
+    {
+      "id": "claude-catalog-custom-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Parent request only needs to reliably trigger the saved custom agent."
+    },
+    {
+      "id": "claude-catalog-custom-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Child response only needs to complete reliably; the request itself verifies medium/8000."
+    },
+    {
+      "id": "claude-catalog-custom-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that parent session consumes custom child tool_result and returns to idle."
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-model-switch",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-model-switch.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-model-switch-title",
+      "description": "Case-local title generation response for E2E_V4_MODEL_SWITCH_SEED initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_MODEL_SWITCH_SEED initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_MODEL_SWITCH_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-model-switch-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Model Switch E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-model-switch-seed",
+      "description": "M4 switchModelConfig gate: fixed first-round reply to establish session where models can be switched.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Model switching only needs an existing session; first-round text is fixed."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_MODEL_SWITCH_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-model-switch-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_MODEL_SWITCH_SEED_OK"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+import { clearAppData } from "../helpers/desktop-app.js";
+import {
+  clickFirstV4Fork,
+  editFirstV4UserQuery,
+  getV4PaneSnapshot,
+  prepareV4ConversationE2E,
+  sendV4Prompt,
+  waitForV4Edit,
+  waitForV4Fork,
+  waitForV4Pane,
+  waitForV4TimelineContaining,
+} from "../helpers/v4-conversation.js";
+
+describe("v4 catalog E09：fork 使用编辑后的 active branch", () => {
+  after(async () => {
+    await browser.electron.restoreAllMocks();
+    await clearAppData();
+  });
+
+  it("edit 重跑后 fork → child 只含编辑分支，不带旧分支", async () => {
+    await prepareV4ConversationE2E();
+
+    await sendV4Prompt("E2E_V4_BRANCH_T1 原始问题");
+    await waitForV4TimelineContaining("V4_BRANCH_T1_REPLY", 60000);
+    const parent = await waitForV4Pane(
+      (s) => s.sessionId !== "draft" && s.sessionId !== null && !s.canStop,
+      "首轮没有完成",
+      45000,
+    );
+    const parentSessionId = parent.sessionId;
+
+    await waitForV4Edit();
+    await editFirstV4UserQuery("E2E_V4_BRANCH_EDITED 编辑后的问题");
+    await waitForV4TimelineContaining("E2E_V4_BRANCH_EDITED", 30000);
+    await waitForV4TimelineContaining("V4_BRANCH_EDITED_REPLY", 60000);
+    const afterEdit = await getV4PaneSnapshot();
+    expect(afterEdit.timelineText).not.toContain("V4_BRANCH_T1_REPLY");
+    expect(afterEdit.timelineText).not.toContain("E2E_V4_BRANCH_T1");
+
+    await waitForV4Pane((s) => !s.canStop, "edit 重跑没有收口", 45000);
+    await waitForV4Fork();
+    expect(await clickFirstV4Fork()).toBe(true);
+
+    const child = await waitForV4Pane(
+      (s) => s.sessionId !== null && s.sessionId !== "draft" && s.sessionId !== parentSessionId,
+      "fork 后 pane 没有切到 child session",
+      60000,
+    );
+    expect(child.sessionId).not.toBe(parentSessionId);
+
+    await waitForV4TimelineContaining("V4_BRANCH_EDITED_REPLY", 30000);
+    const childSnapshot = await getV4PaneSnapshot();
+    expect(childSnapshot.timelineText).toContain("E2E_V4_BRANCH_EDITED");
+    expect(childSnapshot.timelineText).not.toContain("V4_BRANCH_T1_REPLY");
+  });
+});

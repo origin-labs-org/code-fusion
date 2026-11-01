@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-node-repl-stateless-browser-multisession",
+  "spec": "./test/e2e/conversation-session/conversation-session-node-repl-stateless-browser-multisession.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-node-repl-stateless-browser-multisession.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "node-repl-browser-stateless-title",
+      "description": "Fix async title responses for two Browser Use sessions.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of this case's product semantics; it only needs to avoid accidentally hitting the main request."
+    },
+    {
+      "id": "node-repl-browser-a-initial",
+      "description": "Session A calls node_repl for the first time, creates a real IAB tab, and writes kernel marker.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct prerequisite state for fresh kernel and BrowserControl continuity."
+    },
+    {
+      "id": "node-repl-browser-a-verify",
+      "description": "Session A's second call proves kernel freshness and BrowserControl tab continuity.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Directly cover Browser Use\'s call-level stateless contract."
+    },
+    {
+      "id": "node-repl-browser-a-final",
+      "description": "Session A completes only after both fresh kernel and tab continuity hold true.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that real tool result has entered the same session continuation."
+    },
+    {
+      "id": "node-repl-browser-b-verify",
+      "description": "Session B proves it does not inherit A's kernel or BrowserControl tab, then creates its own tab.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "覆盖共享 frontend 下的跨 session kernel、tab 与结果隔离。"
+    },
+    {
+      "id": "node-repl-browser-b-final",
+      "description": "Session B 只在跨 session 隔离成立后完成。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that B's results only return to B continuation."
+    }
+  ]
+}

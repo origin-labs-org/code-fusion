@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-remote-identity-workspace",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-remote-identity-workspace.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-remote-identity-workspace.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "wpl-010-title",
+      "description": "Pinned response for title generation across two remote tasks.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are not part of the remote Plugin identity contract; only need to keep the task row stable."
+    },
+    {
+      "id": "wpl-010-target-a",
+      "description": "Model response for target A new Session.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably establish session-owned Plugin catalog for target A."
+    },
+    {
+      "id": "wpl-010-target-b",
+      "description": "Model response for target B new Session.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably establish session-owned Plugin catalog for target B."
+    }
+  ]
+}

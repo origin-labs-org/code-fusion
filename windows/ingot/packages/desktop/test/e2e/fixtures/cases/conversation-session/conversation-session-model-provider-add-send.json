@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-add-send",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-add-send.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-add-send.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-add-send-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of this case's product semantics; it only needs to return stably to prevent title requests from mistakenly hitting initial send business fixtures."
+    },
+    {
+      "id": "model-provider-add-send-first-send",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover model advanced settings, provider persistence, model currentValue provider identity, request body/model/thought/max_tokens after explicitly selecting high, and UI reply; response only needs to complete stably with the agreed text."
+    }
+  ]
+}

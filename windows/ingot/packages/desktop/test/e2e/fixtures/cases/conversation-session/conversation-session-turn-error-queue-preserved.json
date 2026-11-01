@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-turn-error-queue-preserved",
+  "spec": "./test/e2e/conversation-session/conversation-session-turn-error-queue-preserved.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-turn-error-queue-preserved.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "turn-error-queue-preserved-source-500",
+      "description": "N05：主 turn 在 queue 入队窗口后返回 500 JSON error。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Real provider 500 response time is uncontrollable; delayMs is only used to reliably create a running admission window and verify the queue retention contract in error final states."
+    },
+    {
+      "id": "turn-error-queue-preserved-followup",
+      "description": "NQ: Post-error head input successfully consumed upon explicit continuation.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Recovery path requires a fixed assistant sentinel to prove the queue was not lost and was sent only after explicit continuation."
+    }
+  ]
+}

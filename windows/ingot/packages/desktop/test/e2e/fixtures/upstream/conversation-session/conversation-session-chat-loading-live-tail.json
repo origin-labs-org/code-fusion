@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-chat-loading-live-tail",
+  "spec": "./test/e2e/conversation-session/conversation-session-chat-loading-live-tail.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-chat-loading-live-tail-controlled-stream",
+      "description": "先输出足够长的可折叠思考历史，再以 550ms 间隔输出长正文，稳定覆盖终态折叠与离底滚动权。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "CHL05/CHL07/CHL08/P08 needs to stably create collapsible assistant history, long body text, continuous loading, and scroll contention among following, user scroll-up, and manual collapsing."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CHAT_LOADING_REAL_LINES"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_CHAT_LOADING_REAL_LINES"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"upstream-e2e-chat-loading-live-tail","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 100,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 450,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"CHAT_LOADING_REASONING_HISTORY This isOne段专门用于Final state折叠回归的LongThinking历史。它不依赖Model遵守换行Point to令，而YesPassed连续、足量、能够Natural换行的TextCharacter稳定撑High工作历史区域。第One部分反复Description：running Phase live tail 处于普通Documentation流，terminal Phase同One轮会迁入虚拟历史；如果只看 scrollTop 的回退，就会把 virtualizer 的测High补偿误认成User上滚。第Two部分ContinueDescription：工作历史由打开的In progress区域承载，主轮结束后Auto折叠为已工作，折叠High度、虚拟list估算High度and真实测量High度可能在不同帧到达，因此吸底意图必须独立于瞬时几何。第Three部分Continue增加足够多的TextCharacter，确保Thinking区域明显High于One个普通DesktopWindow：User没有滚动时应该持续Follow，User已经向上滚动时则必须保持阅读Location，任何 terminal 回调都不能无条件调用Scroll to bottom。第四部分记录同样的产品Boundaries：wheel、touch、键盘and滚动条属于UserInput，inner容增Long、折叠动画、ResizeObserver 与 virtualizer 补偿属于布局Input；同One帧发生时UserInput优先。第五部分仍然使用Natural段Long度而不Yes依赖很多显式换行，避免Data生成过程Ignore换行后样本High度不足。第六部分SupplementMoreDescriptionTextCharacter，让折叠前后的High度差足够大，可以在Run时采样Medium观察 live tail 消失、history open 从 true 变为 false，以及 scrollHeight 明显收敛。第七部分EmphasisFinal body也会保持足够Long，因此User主动离底后，即使Thinking历史折叠，Pages仍有足够滚动范围，不会因为inner容短到One屏而被BrowserNatural钳到最底部。第八部分再次重复Status机Invariants：FOLLOWING 遇到布局变化仍 FOLLOWING，DETACHED 遇到布局变化仍 DETACHED，只有真实User滚回底部or点击回到底部按钮才恢复 FOLLOWING。"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 520,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"signature_delta","signature":"upstream-e2e-chat-loading-terminal-collapse-signature"}}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 580,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "sequence": 5,
+            "offsetMs": 650,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 6,
+            "offsetMs": 1000,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":"CHAT_LOADING_LINE_21 这One段Final body包含足够多的NaturalTextCharacter，用来确保即使没有显式换行，Markdown 容器也会因为正常的Word wrap而稳定增High。它同时Retain清晰 marker，便于 E2E 在 live tail inner确认CurrentStreaming进度，而不Yes误HitPrevious roundCompleted的历史inner容。"}}\n\n"
+          },
+          {
+            "sequence": 7,
+            "offsetMs": 1550,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_22 Second paragraphContinue增加真实排版High度，DescriptionFollow态只代表UserYes否愿意Continue看最NewOutput。只要User没有离开底部，每个Streaming增量、测High修正andTerminal state closure都应该让视口保持在最NewMessages附近。\"}}\n\n"
+          },
+          {
+            "sequence": 8,
+            "offsetMs": 2100,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_23 第Three段ContinueWrite较LongTextCharacter，避免只依赖Model生成很多空行。Browser会在Messages列宽度innerNatural折行，因此每个受控增量都能制造可测量的 live tail High度增Long，并触发 ResizeObserver 的真实布局路径。\"}}\n\n"
+          },
+          {
+            "sequence": 9,
+            "offsetMs": 2650,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_24 第四段用于观察 loading 槽位Yes否下移再回弹。正确Implementation会在绘制前Completed吸底，ErrorImplementation则会先让New增Body把底部Feedback推出原Location，下One帧才把 scrollTop 补回来。\"}}\n\n"
+          },
+          {
+            "sequence": 10,
+            "offsetMs": 3200,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_25 第五段Continue保持Long text。Final state时Thinking历史会被折叠，但这些Final body不会被折叠，所以Pages在收口后仍然保持明显溢出，为User离底后不被强拉到底提供稳定可验证的空间。\"}}\n\n"
+          },
+          {
+            "sequence": 11,
+            "offsetMs": 3750,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_26 第六段明确区分两类Events：ModelOutputandFinal state折叠属于inner容布局，wheel 与 touch 属于User意图。任何Implementation都不能因为两类Events最后都表现为 scrollTop 变化，就把它们当作同One个StatusSource。\"}}\n\n"
+          },
+          {
+            "sequence": 12,
+            "offsetMs": 4300,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_27 第七段Continue铺设足够的inner容High度，并Retain受控时间间隔。Tests可以在Output过程Medium稳定发FromOne次向上滚动，再WaitingRemaining增量andFinal stateEvents到达，从而验证后续布局不会夺回滚动权。\"}}\n\n"
+          },
+          {
+            "sequence": 13,
+            "offsetMs": 4850,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_28 第八段Description回到底部Yes显式恢复动作。User滚回 48 像素容差以inner，or点击回到底部按钮，才重New进入 FOLLOWING；单纯因为inner容收缩后几何暂时靠近底部，不应抹掉 DETACHED 意图。\"}}\n\n"
+          },
+          {
+            "sequence": 14,
+            "offsetMs": 5400,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_29 第九段把Final bodyContinue撑High。即便工作历史在结束时缩短很多，这些仍然可见的TextCharacter也足以让 detached 场景保持大于底部容差的距离，避免Tests把BrowserNatural钳制误报成强制吸底。\"}}\n\n"
+          },
+          {
+            "sequence": 15,
+            "offsetMs": 5950,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_30 第十段ContinueOutput并WaitingTests观察。此时 live tail 应经由 normal flow 持续增Long，following=true 的场景仍在底部，following=false 的场景则保持User选择的历史阅读Location。\"}}\n\n"
+          },
+          {
+            "sequence": 16,
+            "offsetMs": 6500,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_31 第十One段YesUser上滚Window的稳定 marker。Tests在它出现后Send向上的 wheel Events并把视口移离底部，随后仍有五个Body增量and terminal 收口，能够覆盖最危险的E邻时序。\"}}\n\n"
+          },
+          {
+            "sequence": 17,
+            "offsetMs": 7050,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_32 第十Two段Continue延LongBody。后续增量仍须严格遵守此前的 FOLLOWING or DETACHED 滚动权，直到主轮进入 terminal、live tail 消失并迁入虚拟历史，In progressStatusAuto折叠为已工作。\"}}\n\n"
+          },
+          {
+            "sequence": 18,
+            "offsetMs": 7600,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_33 第十Three段ContinueRetain实质性Body，确保断言观察到的不只Yes很多换行，而YesBrowser对CompleteNatural语言Section进行Auto折行之后产生的真实布局增Long。该增量到达时，Follow态仍应同步推进 scrollTop，离底态则不改变User的滚动所有权。\"}}\n\n"
+          },
+          {
+            "sequence": 19,
+            "offsetMs": 8150,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_34 第十四段让溢出后的连续测High次Count覆盖充足样本。ResizeObserver、React commit 与虚拟list测量可能交Wrongexecute，但它们都属于布局Source，不应独自改变 FOLLOWING or DETACHED Status。\"}}\n\n"
+          },
+          {
+            "sequence": 20,
+            "offsetMs": 8700,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_35 第十五段专门延LongUser上滚后的竞争Window。UserInputOne旦声明离底，后续Body、Thinking区折叠and live tail 迁移都只能维护CurrentLocation，不能因为某One帧的几何恰OK接近底部就重New夺回控制权。\"}}\n\n"
+          },
+          {
+            "sequence": 21,
+            "offsetMs": 9250,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"\\n\\nCHAT_LOADING_LINE_36 第十六段结束这份LongBody，并To E2E One个明确的Completed marker。Next step只发生inner容块结束、MessagesEnd止and工作历史Auto折叠，因此Final state样本可以直接判断布局变化Yes否Error修改了滚动意图。\"}}\n\n"
+          },
+          {
+            "sequence": 22,
+            "offsetMs": 9700,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\n"
+          },
+          {
+            "sequence": 23,
+            "offsetMs": 9800,
+            "text": "event: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":128,"output_tokens":1024,"service_tier":"standard"}}\n\n"
+          },
+          {
+            "sequence": 24,
+            "offsetMs": 9900,
+            "text": "event: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+          }
+        ]
+      }
+    }
+  ]
+}

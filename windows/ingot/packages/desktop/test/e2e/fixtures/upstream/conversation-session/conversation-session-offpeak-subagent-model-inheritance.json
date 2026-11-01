@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-offpeak-subagent-model-inheritance",
+  "spec": "./test/e2e/conversation-session/conversation-session-offpeak-subagent-model-inheritance.test.ts",
+  "fixtures": [
+    {
+      "id": "offpeak-subagents-ordinary-prompt",
+      "description": "OP10 UserSendMessages接管后，同Session后续Background唤From也使用Plain provider。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The off-peak mock gateway independently hosts the execution-scoped Active Model; this response merely reliably proves that the next normal prompt has returned to the user provider."
+      },
+      "maxMatches": 8,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OFFPEAK_SUBAGENTS_ORDINARY_PROMPT"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-offpeak-subagents-ordinary",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "E2E_OFFPEAK_SUBAGENTS_ORDINARY_OK"
+        }
+      }
+    }
+  ]
+}

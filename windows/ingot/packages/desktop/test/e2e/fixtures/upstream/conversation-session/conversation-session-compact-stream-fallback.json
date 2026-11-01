@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-stream-fallback",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-stream-fallback.test.ts",
+  "fixtures": [
+    {
+      "id": "compact-stream-fallback-title",
+      "description": "Case-local title response for initial compact stream fallback seed.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Initial launch triggers title sidecar; fix the title response and use case markers to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_COMPACT_STREAM_FALLBACK_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "compact-stream-fallback-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Compact Stream Fallback E2E"}"
+        }
+      }
+    },
+    {
+      "id": "compact-stream-fallback-seed",
+      "description": "Form stable history that can be compacted.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Transport fallback gate only requires a completed history; fixed text prevents real provider drift."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_COMPACT_STREAM_FALLBACK_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "compact-stream-fallback-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "COMPACT_STREAM_FALLBACK_SEED_OK"
+        }
+      }
+    },
+    {
+      "id": "compact-stream-fallback-stream-failure",
+      "description": "Deterministic non-retryable failure of the first stream request in compact.",
+      "metadata": {
+        "kind": "fault",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Fixture matches only when compact body explicitly contains stream:true to stably prove stream-first; 404 prevents adapter internal retry amplification."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_COMPACT_STREAM_FALLBACK_SEED",
+          "COMPACT_STREAM_FALLBACK_SEED_OK",
+          "CRITICAL: Respond with TEXT ONLY",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 404,
+        "statusMessage": "Not Found",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"Streaming is not supported for this compact fixture."}}"
+      }
+    },
+    {
+      "id": "compact-stream-fallback-non-stream-success",
+      "description": "Successful non-stream JSON fallback response for the same logical compact attempt.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fixture explicitly excludes stream:true to prove non-stream is entered only after the first leg fails, and fixes summary to verify the final success marker."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_COMPACT_STREAM_FALLBACK_SEED",
+          "COMPACT_STREAM_FALLBACK_SEED_OK",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "\"stream\":true"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"compact-stream-fallback-summary","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"<analysis>Desktop compact retried the hidden summary over non-stream transport after the stream leg failed before any committed block.</analysis>\\n\\n<summary>Conversation so far: the user requested the compact stream fallback seed response, and the assistant returned COMPACT_STREAM_FALLBACK_SEED_OK. No tools or files were used.</summary>\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":256,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":64}}"
+      }
+    }
+  ]
+}

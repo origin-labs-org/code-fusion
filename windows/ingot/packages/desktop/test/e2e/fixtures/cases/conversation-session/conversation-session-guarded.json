@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-guarded",
+  "spec": "./test/e2e/conversation-session/conversation-session-guarded.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-guarded.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-guarded",
+      "source": "created-by-spec",
+      "description": "Isolated targets, Bash execution sentinels, and one-time approval tests; cleaned up in after."
+    }
+  ],
+  "requests": [
+    {
+      "id": "guarded-title",
+      "description": "Guarded case-local title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Isolate the title sidecar for mode and approval E2E, without relying on the real model."
+    },
+    {
+      "id": "E2E_GUARDED_RM-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_RM-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_STORAGE-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_STORAGE-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_RESET-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_RESET-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_CLEAN-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_CLEAN-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_PUSH-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_PUSH-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_DISCARD-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_DISCARD-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_STASH-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_STASH-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_WORKTREE-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_WORKTREE-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_RSYNC-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_RSYNC-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_ALLOW-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_ALLOW-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_YOLO-call",
+      "description": "Guarded Bash tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix dangerous commands, with authorization executed by the real broker; commands only reference case-owned or non-existent targets."
+    },
+    {
+      "id": "E2E_GUARDED_YOLO-final",
+      "description": "Provider-visible tool result continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Only return the terminal state upon receiving the corresponding tool_result; the spec checks isError and rejection feedback."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_PRESET-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_PRESET-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_CUSTOM-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_CUSTOM-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_EMPTY-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_EMPTY-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_DENY-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_QUESTION_DENY-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_PARENT-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_CHILD-call",
+      "description": "Guarded real interaction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_CHILD-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    },
+    {
+      "id": "E2E_GUARDED_PARENT-final",
+      "description": "Guarded provider-visible continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix tool calls using a real user interaction broker; assert provider-visible answers/rejections and single execution."
+    }
+  ]
+}

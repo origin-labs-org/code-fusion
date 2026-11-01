@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-provider-registry-cold-start",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-provider-registry-cold-start.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-provider-registry-cold-start.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "subagent-provider-registry-cold-start-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is whether the child subagent provider registry exists; parent requests only need to reliably trigger Agent tool_use."
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The child request itself is the verification evidence for this case; the response only needs to complete stably and return sub-result tokens."
+    },
+    {
+      "id": "subagent-provider-registry-cold-start-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The final reply is only used to verify that Agent tool_result continues to be consumed by the parent session and returns to idle."
+    }
+  ]
+}

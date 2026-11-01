@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-keyboard-default-focus",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-keyboard-default-focus.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ask-user-question-keyboard-default-focus.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-ask-default-focus-empty-submit-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion single-choice waiting state to test clicking Submit with mouse without pre-focus to submit an empty answer"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-empty-submit-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Simulate Agent's brief confirmation upon receiving empty answers"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-tab-enter-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion two-question waiting state to test Tab and initial arrow key focus, and Enter selection progression"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-tab-enter-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Simulate Agent's confirmation upon receiving Q1_A and Q2_A"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-enter-skip-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion two-question waiting state to test skipping Q1 with Enter"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-enter-skip-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Simulate Agent's confirmation upon receiving Q2_A with Q1 skipped"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-multiselect-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce AskUserQuestion multiple-choice waiting state to test checking/unchecking with Space and confirming with Enter"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-multiselect-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Simulate Agent's confirmation upon receiving Q2_OPT_A + Q2_OPT_C"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-escape-dismiss-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce single-question AskUserQuestion waiting state to verify Escape at card layer closes the entire Q&A group when no option is focused"
+    },
+    {
+      "id": "upstream-conversation-ask-default-focus-escape-dismiss-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably verify that after dismiss closes the UI, declined tool_result is sent back to the model per current product semantics, avoiding negative timing assertions via 500 retries on fixture misses"
+    }
+  ]
+}

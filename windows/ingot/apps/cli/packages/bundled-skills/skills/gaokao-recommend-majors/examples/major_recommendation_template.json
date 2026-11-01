@@ -1,0 +1,33 @@
+{
+  "student": {
+    "interests": "与 student.json One致的Assist画像",
+    "family_situation": "...",
+    "career_direction": "...",
+    "subject_scores": { "语Text": 0, "Count学": 0 },
+    "preferred_cities": ["Beijing"],
+    "notes": "..."
+  },
+  "intro": "综合测评开篇（Available <strong> Emphasis，结合省份/分Count/选科/兴趣）",
+  "strategy": "整体填报策Omitted（Professional优先还Yes院校优先、冲稳保主线）",
+  "major_directions": [
+    {
+      "icon": "🧑‍💻",
+      "title": "前沿Letter息与硬核Tech类",
+      "match_level": "Extra High | High | 较High | One般",
+      "description": "匹配度Description + 就业出口 + 针对该考生的具体建议（Available HTML）"
+    }
+  ],
+  "recommended_majors": [
+    {
+      "major_name": "必须与 parsed.json 完全One致",
+      "major_class": "Optional",
+      "major_code": "必须与 parsed.json 完全One致",
+      "university_name": "必须与 parsed.json 完全One致",
+      "university_code": "必须与 parsed.json 完全One致",
+      "modal": {
+        "title": "Professional推荐：ProfessionalName",
+        "body": "<h4>核心推荐维度</h4><ul><li><strong>可就业方向：</strong>...</li><li><strong>职业发展路径：</strong>...</li><li><strong>匹配Reason：</strong>...</li></ul>"
+      }
+    }
+  ]
+}

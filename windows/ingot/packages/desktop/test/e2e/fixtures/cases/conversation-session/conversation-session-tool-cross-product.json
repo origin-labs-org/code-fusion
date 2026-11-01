@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-cross-product",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-cross-product.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-cross-product.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-tool-cross-product",
+      "source": "created-by-helper",
+      "description": "Read-write tool sandbox directory created by prepareToolCrossProductFixtures before each tool turn, deleted after the case completes."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-tool-cross-product-read-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin triggering of Read tool to verify interaction between completed tool history and compact/fork/goal."
+    },
+    {
+      "id": "upstream-tool-cross-product-write-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin triggering of Write tool to verify that file-writing tool history does not pollute the default workspace."
+    },
+    {
+      "id": "upstream-tool-cross-product-edit-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin triggering of Edit tool to cover completed history entrypoints for writable tools."
+    },
+    {
+      "id": "upstream-tool-cross-product-bash-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin triggering of Bash tool to avoid real model command choices affecting tool cross-product stability."
+    },
+    {
+      "id": "upstream-tool-cross-product-glob-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the Glob tool to cover the completed history entry for file search tools."
+    },
+    {
+      "id": "upstream-tool-cross-product-grep-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the Grep tool to cover the completed history entry for content search tools."
+    },
+    {
+      "id": "upstream-tool-cross-product-webfetch-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of WebFetch to cover external request tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-todo-read-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the TodoRead tool; when an empty result yields no stably visible card, prove retention via provider-visible structured tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-todo-write-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the TodoWrite tool to cover tool history after writing todo state."
+    },
+    {
+      "id": "upstream-tool-cross-product-goal-read-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the GoalRead tool to cover goal reading tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-enter-plan-mode-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the EnterPlanMode tool; when V4 hides internal mode-switch rows, prove retention via provider-visible structured tool history and switch back to Full access before goal."
+    },
+    {
+      "id": "upstream-tool-cross-product-exit-plan-mode-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the ExitPlanMode tool to cover tool history after exiting plan mode."
+    },
+    {
+      "id": "upstream-tool-cross-product-ask-user-question-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the AskUserQuestion tool to cover user inquiry blocking and auto-selection paths."
+    },
+    {
+      "id": "upstream-tool-cross-product-read-session-context-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of ReadSessionContext to cover session reading tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-send-message-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of SendMessage to cover cross-agent message tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-agent-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of Agent to cover sub-agent tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-skill-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of Skill to cover skill tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-workflow-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger the expected failure path of Workflow to cover workflow tool history."
+    },
+    {
+      "id": "upstream-tool-cross-product-fork-probe-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Hidden tool rows and empty-result tools prove history was copied in the fork child via paired tool_use/tool_result in provider-visible continuation; child toolCallId is remapped according to the stable fork contract."
+    },
+    {
+      "id": "upstream-tool-cross-product-compact-success",
+      "kind": "compact",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically respond to the manual compact explicitly triggered by TX to avoid provider retries caused by missing replay fixtures."
+    },
+    {
+      "id": "upstream-tool-cross-product-tool-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably conclude the current turn after backfilling tool results, ensuring real provider copy does not affect tool history assertions."
+    },
+    {
+      "id": "upstream-tool-cross-product-goal-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "goal continuation only needs to complete stably; real provider copy does not affect goal state assertions."
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-mention",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-mention.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-mention-title",
+      "description": "Case-local title generation response for E2E_V4_MENTION_SEED initial launch.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_MENTION_SEED initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_MENTION_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-mention-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Mention E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-mention-seed",
+      "description": "M5 mention panel gate: fixed first-round reply establishes session matchable by # session mentions (sessions-index data source).",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Mention panel only needs an existing session for # directory matching; first-round text is fixed."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_MENTION_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-mention-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_MENTION_SEED_OK"
+        }
+      }
+    }
+  ]
+}

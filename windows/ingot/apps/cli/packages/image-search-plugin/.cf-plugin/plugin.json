@@ -1,0 +1,24 @@
+{
+  "name": "image-search",
+  "version": "0.1.1",
+  "description": "Official CodeFusion image search MCP server for finding illustrations and reference images.",
+  "description_i18n": {
+    "en": "Official CodeFusion image search MCP server for finding illustrations and reference images.",
+    "zh-CN": "CodeFusion official image search MCP service for finding illustrations and reference images."
+  },
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "Apache-2.0",
+  "mcpServers": {
+    "image_search": {
+      "type": "http",
+      "url": "${CF_BASE_URL}/api/v1/mcp/server/image_search",
+      "auth": {
+        "type": "cf_official",
+        "provider": "jwt_token"
+      },
+      "timeoutMs": 90000
+    }
+  }
+}

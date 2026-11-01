@@ -1,0 +1,287 @@
+import type { Locale } from "@origin-ai/cf-shared";
+
+export type BotMessageLocale = Extract<Locale, "zh-CN" | "en-US">;
+
+type MessageValues = Record<string, string | number | undefined>;
+
+const DEFAULT_BOT_MESSAGE_LOCALE: BotMessageLocale = "zh-CN";
+
+const messages = {
+  "zh-CN": {
+    botDisabled: "当前 bot 未启用。",
+    groupOwnerOnly: "仅绑定机器人的用户可以执行此操作。",
+    groupNotEnabled: "此群尚未启用，请绑定用户 @机器人 /enable。",
+    groupEnabled:
+      "Group chat已Enable。话题历史Enabled by default，同OneWorkspace的FileShared，可能发生Concurrency修改。\n\n使用话题前，请应用ManageMember确认已开通E关Permissions：\n1. 打开[开放平台Background]({permissionsUrl})，选择CurrentBot应用。\n2. 在PermissionsManageMedium开通应用身份的MessagesReadPermissions，包括 `im:message.group_msg`（获取User群Messages）。接收OtherBot的 @ 还需 `im:message.group_at_msg.include_bot:readonly`；若需接收话题inner未 @ 的BotMessages，开通 `im:message.group_msg.include_bot:read`。\n3. Optional：开通 `im:chat.members:read`（View群Members），用于ShowSend者User名；Missing this permission does not affect task execution。\n4. Publish生效后，在话题inner @BotSubmit Requirement。\n\n群Enable不代表应用Permissions已开通；Missing话题历史ReadPermissions时不会execute话题Task。",
+    groupDisabled: "群聊已停用。已接收的任务保留在 Desktop。",
+    privateChatOnly: "Bots 暂不支持群聊，请在私聊中使用。",
+    bindPrivateOnly: "Bots 只允许在私聊中绑定。",
+    userNotBound: "当前 bot 未绑定。请先在 cf UI 生成绑定码，然后发送 **/bind <code>**。",
+    commandNotAllowed: "当前 bot 未启用这个命令。",
+    noWorkspaceAllowed: "没有可用 workspace，请先在 Bots 设置里允许 workspace。",
+    workspaceOutOfScope: "The workspace for the current chat context is no longer authorized. Please select **/Project** again.",
+    bindCodeInvalid: "绑定码无效或已过期，请在 cf UI 重新生成。",
+    bindBotMissing: "绑定失败：bot 不存在。",
+    bindSuccess: "Bound successfully. Send **/help** to view available commands.",
+    weixinActivatedWelcome: "WeChat Bot activated. Send **/help** to view commands, or directly describe what you want to do.",
+    helpTitle: "CodeFusion 机器人命令：",
+    helpHelp: "**/help** — View this help guide",
+    helpBind: "**/bind <code>** — 绑定当前聊天",
+    helpStatus: "**/status** — View workspace, model, and task status",
+    helpNew: "/new or /clear — Start a new task draft",
+    helpWorkspace: "**/Project** — Switch workspace",
+    helpModel: "**/Model** — Switch model",
+    helpMode: "**/Mode** — Switch run mode",
+    helpThoughtLevel: "**/Thinking** — Switch thinking level",
+    helpReply: "**/Reply** — Switch reply verbosity",
+    webhookSecretInvalid: "Webhook secret 校验失败。",
+    callbackFailed: "处理机器人回调失败：{message}",
+    sessionExpiredNewTaskHint:
+      "当前任务会话已失效，可能是任务已被清理或机器人消息已过期。请发送 **/new task** 创建新任务后再继续。",
+    deletedTaskReplaced:
+      "原任务已删除，已为你新建任务。本条消息将在新任务中处理，不会继承原任务的对话上下文。",
+    received: "已收到。",
+    attachmentOnlyPrompt: "请查看附件并根据内容协助我。",
+    attachmentRejected: "附件处理失败：{message}",
+    attachmentDownloadUnavailable:
+      "无法下载附件。文件可能已过期、已撤回，或机器人没有读取权限。请重新发送附件后再试。",
+    attachmentTooLarge: "附件超过 5MB，请压缩后重新发送。",
+    selectionCancelled: "已取消。",
+    selectionCancelOption: "取消",
+    selectionTextHint: "回复数字选择，0 取消。",
+    selectionTextHintNoCancel: "回复数字选择。",
+    newTaskDraft: "已进入 {workspacePath} 的新任务草稿。",
+    workspaceSelectTitle: "Current workspace {workspace}\nSelect workspace",
+    workspaceMissing: "未找到可用 workspace。",
+    modelSelectTitle: "选择 model",
+    modelProviderSelectTitle: "Current model: {model}\nSelect model供应商",
+    modelModelSelectTitle: "当前模型 {model}\n选择模型",
+    modelMissing: "未找到 model。",
+    sessionModelUnavailable: "当前会话的模型选择不可用，请使用 /model 重新选择。原选择已保留。",
+    modeSelectTitle: "当前模式 {mode}\n选择模式",
+    modeMissing: "未找到模式。",
+    modeChanged: "当前任务模式已切换为 {mode}。",
+    modeLocked: "机器人已锁定 **yolo** 运行模式，无法切换。",
+    thoughtLevelSelectTitle: "当前思考级别 {level}\n选择思考级别",
+    thoughtLevelMissing: "当前模型不支持思考级别。",
+    thoughtLevelChanged: "当前任务思考级别已切换为 {level}。",
+    modelProviderMissing: "未找到模型供应商。",
+    modelChanged: "当前任务 model 已切换为 {model}。",
+    taskMissing: "未找到任务。",
+    taskChanged: "已切换到任务：{title}",
+    noActiveTask: "当前没有 active task。",
+    permissionExpired: "权限请求已过期，请在 cf UI 中处理。",
+    permissionHandled: "权限请求已处理。",
+    permissionDenied: "Rejected权限请求。",
+    permissionSubmitted: "Submitted权限响应。",
+    elicitationExpired: "问答请求已过期，请在 cf UI 中处理。",
+    elicitationHandled: "问答请求已处理。",
+    elicitationSubmitted: "Submitted问答响应。",
+    elicitationCancelled: "已取消问答请求。",
+    elicitationCustomOption: "自定义回答",
+    elicitationCustomPlaceholder: "请输入自定义回答",
+    elicitationQuestionTitle: "提问",
+    planApprovalTitle: "请审阅此实施计划。",
+    planApprovalHeader: "Implementation Plan",
+    planApprovalApprove: "批准",
+    planApprovalApproveDescription: "退出计划模式并开始实施。",
+    elicitationCancelledCard: "✅ 问答已取消",
+    elicitationSubmitOption: "完成",
+    elicitationSkipOption: "跳过",
+    elicitationMultiSelectHint: "Multi-select supported; select again to cancel, choose \"Done\" to submit.",
+    elicitationTextHint: "也可以直接回复文本作为自定义答案。",
+    statusWorkspace: "工作区",
+    statusModel: "模型",
+    statusTask: "任务",
+    statusState: "状态",
+    statusWorked: "已工作",
+    statusProgress: "进展",
+    statusDraft: "草稿",
+    statusRemoteDisconnected: "远端未连接",
+    statusCancelled: "已取消",
+    statusStopped: "已停止",
+    streamingStatusRunning: "⏳ 运行中",
+    streamingStatusCompleted: "✅ 已完成",
+    streamingStatusFailed: "失败",
+    streamingWorking: "正在处理...",
+    streamingToolSummaries: "工具摘要",
+    stopSubmitted: "已停止当前任务生成。",
+    unknownCommand: "未知命令：**/{command}**",
+    taskFailed: "任务失败：{message}",
+    groupTaskQueued:
+      "Current task has queued input (may be paused). Please handle or clear the queue in Desktop before switching tasks; /stop will not clear the queue.",
+    groupTaskInteraction: "Current task is waiting for an answer or approval. Please handle this interaction first, or use /stop to end the current task.",
+    groupTaskDisconnected: "远程工作区已断开，无法确认当前任务状态。请先使用 /reconnect 重连。",
+    taskRunning: "Current task is running. Please try again later, or use **/stop** to stop it.",
+    taskSelectTitle: "当前任务 {task}\n选择任务",
+    noHistoryTasks: "当前 workspace 没有历史任务。",
+    remoteDisconnected:
+      "Current remote project {workspacePath} is not connected. Please send **/reconnect** and retry after reconnecting. The previous request was not executed.",
+    remoteDisconnectedStatus: "Current remote project {workspacePath} is not connected. Please send **/reconnect** to reconnect.",
+    remoteWorkspaceSelectedDisconnected:
+      "Switched to remote project {workspacePath}, but it is currently not connected. Please send **/reconnect** before running tasks.",
+    remoteReconnectStarting: "当前远端项目 {workspacePath} 未连接，正在为你重连...",
+    remoteReconnectFailed: "当前远端项目 {workspacePath} 重连失败：{message}\n上一条请求没有执行。",
+    remoteReconnectUnavailable:
+      "当前远端项目 {workspacePath} 未连接，但机器人无法访问远端重连服务。请先在 CodeFusion 打开该远端项目后重试。",
+    remoteReconnectLocal: "Current workspace is a local project and does not require reconnection. Send **/Project** to switch remote projects.",
+    remoteReconnectAlreadyConnected: "当前远端项目 {workspacePath} 已连接。",
+    replySelectTitle: "当前第三方回复颗粒度 {mode}\n选择第三方回复颗粒度",
+    replyMissing: "未找到回复颗粒度。",
+    replyChanged: "第三方回复颗粒度已切换为 {mode}。",
+  },
+  "en-US": {
+    botDisabled: "This bot is not enabled.",
+    groupOwnerOnly: "Only the bound bot owner can perform this action.",
+    groupNotEnabled:
+      "This group is not enabled. Ask the bound owner to mention the bot with /enable.",
+    groupEnabled:
+      "Group enabled. Topic history defaults on. Workspace files are shared and may be edited concurrently.\n\nBefore using topics, ask the app administrator to confirm the required permissions:\n1. Open the [developer console]({permissionsUrl}) and select this bot app.\n2. In permission management, enable application-identity message read permissions, including `im:message.group_msg` (read user group messages). To receive mentions from other bots, also enable `im:message.group_at_msg.include_bot:readonly`; for bot messages without mentions in topics, enable `im:message.group_msg.include_bot:read`.\n3. Optional: enable `im:chat.members:read` (view group members) to display sender names. Missing this permission does not block task execution.\n4. Publish the changes, then mention the bot in a topic.\n\nEnabling the group does not grant app permissions; topic tasks will not execute without topic history read permissions.",
+    groupDisabled: "Group disabled. Accepted work remains in Desktop.",
+    privateChatOnly: "Bots do not support group chats yet. Please use a private chat.",
+    bindPrivateOnly: "Bots can only bind in a private chat.",
+    userNotBound:
+      "This bot is not bound. Generate a bind code in the cf UI, then send **/bind <code>**.",
+    commandNotAllowed: "This command is disabled for the current bot.",
+    noWorkspaceAllowed: "No workspace is available. Allow a workspace in Bots settings first.",
+    workspaceOutOfScope:
+      "The workspace in this chat is no longer authorized. Please select **/workspace** again.",
+    bindCodeInvalid: "The bind code is invalid or expired. Generate a new one in the cf UI.",
+    bindBotMissing: "Bind failed: bot does not exist.",
+    bindSuccess: "Bound successfully. Send **/help** to see available commands.",
+    weixinActivatedWelcome:
+      "Weixin bot is active. Send **/help** to see commands, or describe what you want to do.",
+    helpTitle: "CodeFusion bot commands:",
+    helpHelp: "**/help** — Show this guide",
+    helpBind: "**/bind <code>** — Bind this chat",
+    helpStatus: "**/status** — Show workspace, model, and task status",
+    helpNew: "/new or /clear — Start a new task draft",
+    helpWorkspace: "**/project** — Switch workspace",
+    helpModel: "**/model** — Switch model",
+    helpMode: "**/mode** — Switch run mode",
+    helpThoughtLevel: "**/think** — Switch thought level",
+    helpReply: "**/reply** — Switch reply detail",
+    webhookSecretInvalid: "Webhook secret verification failed.",
+    callbackFailed: "Failed to process bot callback: {message}",
+    sessionExpiredNewTaskHint:
+      "The current task session has expired. It may have been cleaned up, or this bot message is stale. Send **/new task** to create a new task and continue.",
+    deletedTaskReplaced:
+      "The previous task was deleted, so I created a new task for you. This message will be processed in the new task without the previous conversation history.",
+    received: "Received.",
+    attachmentOnlyPrompt: "Please review the attachment and help based on its content.",
+    attachmentRejected: "Failed to process attachment: {message}",
+    attachmentDownloadUnavailable:
+      "Could not download the attachment. The file may have expired, been removed, or the bot may not have permission to read it. Please send the attachment again and try once more.",
+    attachmentTooLarge: "The attachment exceeds 5MB. Compress it and send it again.",
+    selectionCancelled: "Cancelled.",
+    selectionCancelOption: "Cancel",
+    selectionTextHint: "Reply with a number to choose, or 0 to cancel.",
+    selectionTextHintNoCancel: "Reply with a number to choose.",
+    newTaskDraft: "Entered a new task draft in {workspacePath}.",
+    workspaceSelectTitle: "Current workspace {workspace}\nSelect workspace",
+    workspaceMissing: "No available workspace found.",
+    modelSelectTitle: "Select model",
+    modelProviderSelectTitle: "Current model {model}\nSelect model provider",
+    modelModelSelectTitle: "Current model {model}\nSelect model",
+    modelMissing: "Model not found.",
+    sessionModelUnavailable:
+      "The session's model selection is unavailable. Use /model to choose again. Your saved selection has been preserved.",
+    modeSelectTitle: "Current mode {mode}\nSelect mode",
+    modeMissing: "Mode option not found.",
+    modeChanged: "Current task mode changed to {mode}.",
+    modeLocked: "This bot is locked to **yolo** run mode and cannot be switched.",
+    thoughtLevelSelectTitle: "Current thought level {level}\nSelect thought level",
+    thoughtLevelMissing: "The current model does not support thought level.",
+    thoughtLevelChanged: "Current task thought level changed to {level}.",
+    modelProviderMissing: "Model provider not found.",
+    modelChanged: "Current task model changed to {model}.",
+    taskMissing: "Task not found.",
+    taskChanged: "Switched to task: {title}",
+    noActiveTask: "There is no active task.",
+    permissionExpired: "This permission request has expired. Please handle it in the cf UI.",
+    permissionHandled: "Permission request has already been handled.",
+    permissionDenied: "Permission request denied.",
+    permissionSubmitted: "Permission response submitted.",
+    elicitationExpired: "This question request has expired. Please handle it in the cf UI.",
+    elicitationHandled: "Question request has already been handled.",
+    elicitationSubmitted: "Question response submitted.",
+    elicitationCancelled: "Question request cancelled.",
+    elicitationCustomOption: "Custom answer",
+    elicitationCustomPlaceholder: "Enter a custom answer",
+    elicitationQuestionTitle: "Question",
+    planApprovalTitle: "Review this implementation plan.",
+    planApprovalHeader: "Implementation plan",
+    planApprovalApprove: "Approve",
+    planApprovalApproveDescription: "Exit plan mode and start implementation.",
+    elicitationCancelledCard: "✅ Questions cancelled",
+    elicitationSubmitOption: "Done",
+    elicitationSkipOption: "Skip",
+    elicitationMultiSelectHint:
+      "You can select multiple options; select again to remove, then choose Done.",
+    elicitationTextHint: "You can also reply with text as a custom answer.",
+    statusWorkspace: "Workspace",
+    statusModel: "Model",
+    statusTask: "Task",
+    statusState: "State",
+    statusWorked: "Worked",
+    statusProgress: "Progress",
+    statusDraft: "draft",
+    statusRemoteDisconnected: "remote disconnected",
+    statusCancelled: "cancelled",
+    statusStopped: "stopped",
+    streamingStatusRunning: "Running",
+    streamingStatusCompleted: "Completed",
+    streamingStatusFailed: "Failed",
+    streamingWorking: "Working...",
+    streamingToolSummaries: "Tool summaries",
+    stopSubmitted: "Current task generation stopped.",
+    unknownCommand: "Unknown command: **/{command}**",
+    taskFailed: "Task failed: {message}",
+    groupTaskQueued:
+      "The current task still has queued inputs, possibly paused. Process or remove them in Desktop before switching tasks; /stop does not clear the queue.",
+    groupTaskInteraction:
+      "The current task is waiting for an answer or approval. Resolve it first, or use /stop to stop the task.",
+    groupTaskDisconnected:
+      "The remote workspace is disconnected. Use /reconnect before checking the current task state.",
+    taskRunning:
+      "The current task is still running. Try again later, or use **/stop** to stop the current task.",
+    taskSelectTitle: "Current task {task}\nSelect task",
+    noHistoryTasks: "There are no history tasks in the current workspace.",
+    remoteDisconnected:
+      "The remote workspace {workspacePath} is not connected. Send **/reconnect** first, then try again. The previous request was not executed.",
+    remoteDisconnectedStatus:
+      "The remote workspace {workspacePath} is not connected. Send **/reconnect** to restore the connection.",
+    remoteWorkspaceSelectedDisconnected:
+      "Switched to {workspacePath}, but the remote workspace is not connected. Send **/reconnect** before running tasks.",
+    remoteReconnectStarting:
+      "The remote workspace {workspacePath} is not connected. Reconnecting now...",
+    remoteReconnectFailed:
+      "Remote workspace {workspacePath} reconnect failed: {message}\nThe previous request was not executed.",
+    remoteReconnectUnavailable:
+      "The remote workspace {workspacePath} is not connected, but the bot cannot access the remote reconnect service. Open this remote project in CodeFusion and try again.",
+    remoteReconnectLocal:
+      "The current workspace is local and does not need reconnecting. Send **/workspace** to switch to a remote project.",
+    remoteReconnectAlreadyConnected: "The remote workspace {workspacePath} is connected.",
+    replySelectTitle: "Current third-party reply detail {mode}\nSelect third-party reply detail",
+    replyMissing: "Reply detail option not found.",
+    replyChanged: "Third-party reply detail changed to {mode}.",
+  },
+} as const;
+
+export type BotMessageId = keyof (typeof messages)[BotMessageLocale];
+
+export function normalizeBotMessageLocale(locale: Locale | undefined): BotMessageLocale {
+  return locale === "en-US" ? "en-US" : DEFAULT_BOT_MESSAGE_LOCALE;
+}
+
+export function formatBotMessage(
+  locale: Locale | undefined,
+  id: BotMessageId,
+  values: MessageValues = {},
+): string {
+  let message: string = messages[normalizeBotMessageLocale(locale)][id];
+  for (const [key, value] of Object.entries(values)) {
+    message = message.replaceAll(`{${key}}`, String(value ?? ""));
+  }
+  return message;
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "access-token-401-auto-logout",
+  "spec": "./test/e2e/manual-review/pending/access-token-401-auto-logout.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/credentials.json",
+      "purpose": "Isolated BigModel/ZAI profiles, distinct business tokens/JWTs, and independent Bot credentials; local HTTP fixture controls explicit invalidation routing to login, or bare token verification while retaining login when a valid ZAI identity encounters business empty 200/403."
+    }
+  ],
+  "requests": []
+}

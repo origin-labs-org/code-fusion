@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-new-project-sidebar",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-new-project-sidebar.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-new-project-sidebar.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-new-project-title",
+      "description": "Initial title auxiliary request.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles do not participate in state semantics; they only fix new task names."
+    },
+    {
+      "id": "ssh-new-project-write",
+      "description": "Send an actual Write tool request on the initial turn to trigger permission approval.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the initial tool request to verify actual remote approval and sidebar subscriptions, without faking runtime state."
+    },
+    {
+      "id": "ssh-new-project-complete",
+      "description": "Feed back the actual tool after approval, releasing completion only after switching to a draft.",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Enforce switching away before background completion, asserting that completion events automatically create unreads without depending on model latency."
+    },
+    {
+      "id": "ssh-new-project-foreground",
+      "description": "Complete the follow-up turn in the foreground for the same remote task, then switch to a new draft to keep it read.",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Enforce foreground completion before user switch-away, preserving actual SSH and persistent unread chains; Host in-flight read races are controlled by integration unit tests."
+    },
+    {
+      "id": "ssh-new-project-sibling-title",
+      "description": "Initial title auxiliary request.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles do not participate in state semantics; they only fix new task names."
+    },
+    {
+      "id": "ssh-new-project-sibling",
+      "description": "Create T2 in the same workspace as the cross-workspace click target.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix T2 content as navigation visibility assertions, uninvolved in background completion timing."
+    },
+    {
+      "id": "ssh-new-project-navigation",
+      "description": "Hold unread commands when T1 completes in the background, releasing them after cross-workspace selection of B/T2.",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Enforce background completion before cross-workspace task clicks; only control the provider terminal state and unread command send order, using real SSH, Host, and SQLite."
+    }
+  ]
+}

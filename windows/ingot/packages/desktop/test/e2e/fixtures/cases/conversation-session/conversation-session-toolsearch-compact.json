@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-toolsearch-compact",
+  "spec": "./test/e2e/conversation-session/conversation-session-toolsearch-compact.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-toolsearch-compact.json"
+  ],
+  "fileFixtures": [],
+  "providerHarness": "./test/e2e/helpers/toolsearch-cli-process.ts",
+  "requests": [
+    {
+      "id": "conversation-session-toolsearch-compact-auxiliary",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-search",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-todo",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-partial-auto",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-partial-reactive",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-compact-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-context-error",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-summary-error",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    },
+    {
+      "id": "conversation-session-toolsearch-compact-summary-partial",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    }
+  ],
+  "notes": "Case-local responses are consumed by the controlled HTTP harness. Stage selection and cancellation remain in the spec; tools, persistence and provider projection use production paths. Not admitted to Docker."
+}

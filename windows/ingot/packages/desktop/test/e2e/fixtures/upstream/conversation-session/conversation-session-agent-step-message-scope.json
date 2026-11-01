@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-agent-step-message-scope",
+  "spec": "./test/e2e/conversation-session/conversation-session-agent-step-message-scope.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-agent-step-message-scope-first",
+      "description": "First-round plain text response for agent step message scope; each round strictly produces only one generation step.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fixed as a single plain text content block to accurately reconcile generation step counts per round end-to-end, independent of actual model reasoning or tool selection."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_AGENT_STEP_MESSAGE_SCOPE_FIRST_"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-agent-step-message-scope-first",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "agent-step-scope-first-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-agent-step-message-scope-second",
+      "description": "Second-round plain text response for agent step message scope, verifying completion does not accumulate first-round steps.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fixed as a single plain text content block to deterministically reconcile second-round completion with the unique generation step of the same messageId."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_AGENT_STEP_MESSAGE_SCOPE_SECOND_"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-agent-step-message-scope-second",
+          "inputTokens": 112,
+          "outputTokens": 8,
+          "text": "agent-step-scope-second-ok"
+        }
+      }
+    }
+  ]
+}

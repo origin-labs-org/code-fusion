@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-interrupted",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-interrupted.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-compact-interrupted.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "Read-only tool input file written by prepareConversationE2E to construct completed assistant + tool_result history."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-compact-interrupted-prep-one-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The first turn only needs to form completed history; real copy does not affect compact semantics."
+    },
+    {
+      "id": "upstream-compact-interrupted-readonly-tool-call",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Read-only Read tool_use covers projections containing tool history before interrupted compact."
+    },
+    {
+      "id": "upstream-compact-interrupted-readonly-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The second turn only needs to form completed tool history; real copy does not affect compact semantics."
+    },
+    {
+      "id": "upstream-compact-interrupted-running-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Need to stop the current running turn to obtain interrupted state; real models may complete too quickly."
+    },
+    {
+      "id": "upstream-compact-interrupted-manual-compact-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion of manual compact is allowing execution and completing marker when interrupted and queue=0."
+    },
+    {
+      "id": "upstream-compact-interrupted-slow-marker-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Used to make fixture check explicitly cover the generic E2E_SLOW_STREAM marker in spec."
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-bash-command-prefix-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-bash-command-prefix-permission.test.ts",
+  "fixtures": [
+    {
+      "id": "bpr-prefix-title",
+      "description": "BPR initial send title response.",
+      "metadata": {
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Isolate title requests using initial marker."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_BPR_PREFIX_FIRST"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "bpr-prefix-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Bash Prefix Permission"}"
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-first-call",
+      "description": "首次 lint script。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fix Bash command to verify prefix suggestion."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_BPR_PREFIX_FIRST"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_BPR_PREFIX_SAME",
+          "E2E_BPR_PREFIX_SIBLING"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_bpr_prefix_first",
+          "name": "Bash",
+          "input": {
+            "command": "pnpm --dir .cf-e2e/conversation-session-v4-bash-command-prefix-permission run lint -- --first"
+          }
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-first-final",
+      "description": "首次 lint 收口。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Prove that the first tool execution wraps up."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BPR_PREFIX_FIRST", "toolu_bpr_prefix_first"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_BPR_PREFIX_SAME",
+          "E2E_BPR_PREFIX_SIBLING"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "bpr-prefix-first-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_BPR_PREFIX_FIRST_DONE"
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-same-call",
+      "description": "同 lint script 不同参数。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Verify that persisted prefix is automatically allowed."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_BPR_PREFIX_SAME"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_bpr_prefix_same",
+          "name": "Bash",
+          "input": {
+            "command": "pnpm --dir .cf-e2e/conversation-session-v4-bash-command-prefix-permission run lint -- --second"
+          }
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-same-final",
+      "description": "同 script 自动允许后收口。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "The turn must still complete reliably when there is no permission prompt."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BPR_PREFIX_SAME", "toolu_bpr_prefix_same"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_BPR_PREFIX_SIBLING"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "bpr-prefix-same-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_BPR_PREFIX_SAME_DONE"
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-sibling-call",
+      "description": "sibling test script。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Verify that lint prefix does not escalate permissions to sibling scripts."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_BPR_PREFIX_SIBLING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_bpr_prefix_sibling",
+          "name": "Bash",
+          "input": {
+            "command": "pnpm --dir .cf-e2e/conversation-session-v4-bash-command-prefix-permission run test -- --sibling"
+          }
+        }
+      }
+    },
+    {
+      "id": "bpr-prefix-sibling-final",
+      "description": "sibling 批准一次后收口。",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Clean up pending broker and wrap up reliably."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BPR_PREFIX_SIBLING", "toolu_bpr_prefix_sibling"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "bpr-prefix-sibling-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_BPR_PREFIX_SIBLING_DONE"
+        }
+      }
+    }
+  ]
+}

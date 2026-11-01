@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-remote-presentation-states",
+  "spec": "./test/e2e/conversation-session/conversation-session-remote-presentation-states.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-remote-presentation-states.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX-STATE verifies settings card and sidebar display after active disconnect of real SSH, without sending model requests.",
+  "requests": []
+}

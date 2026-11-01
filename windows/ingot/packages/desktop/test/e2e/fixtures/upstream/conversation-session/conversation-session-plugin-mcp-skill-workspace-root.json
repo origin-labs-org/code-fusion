@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-mcp-skill-workspace-root",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-mcp-skill-workspace-root.test.ts",
+  "fixtures": [
+    {
+      "id": "workspace-root-tool-call",
+      "description": "Project Plugin root is read by runtime discovery and calls namespaced MCP tool.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Fixed tool_use to prove project root activation without relying on User installed records."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_PLUGIN_MCP_PING_WORKSPACE_ROOT"],
+        "bodyIncludes": ["E2E_PLUGIN_MCP_PING_WORKSPACE_ROOT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "replay": { "consumeOnce": true },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plugin_mcp_ping_workspace_root",
+          "name": "mcp__plugin_e2e-plugin-mcp-ping_ping__ping",
+          "input": { "message": "ping-workspace-root" }
+        }
+      }
+    },
+    {
+      "id": "workspace-root-final",
+      "description": "Final MCP response for project Plugin root.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定最终文本，闭合 project root runtime。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_PLUGIN_MCP_PING_WORKSPACE_ROOT", "toolu_e2e_plugin_mcp_ping_workspace_root"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": { "statusCode": 200, "text": "upstream-e2e-ok" }
+    }
+  ]
+}

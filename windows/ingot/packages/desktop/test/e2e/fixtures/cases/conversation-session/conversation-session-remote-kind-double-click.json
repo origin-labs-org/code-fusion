@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-remote-kind-double-click",
+  "spec": "./test/e2e/conversation-session/conversation-session-remote-kind-double-click.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-remote-kind-double-click.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "CWP20 only verifies single click, double click, selected state, and matching fields of chat entry category form, as well as reopening after cancel back to chat; asserts zero form submissions, does not connect remote or send model requests.",
+  "requests": []
+}

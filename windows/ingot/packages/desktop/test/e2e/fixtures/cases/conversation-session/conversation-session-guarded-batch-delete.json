@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-guarded-batch-delete",
+  "spec": "./test/e2e/conversation-session/conversation-session-guarded-batch-delete.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-guarded-batch-delete.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-guarded-batch-delete",
+      "source": "created-by-spec",
+      "description": "Isolated Git repository and protected files; cleaned up in after."
+    }
+  ],
+  "requests": [
+    {
+      "id": "batch-delete-title",
+      "description": "Case-local title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Isolate the title sidecar without relying on the real model."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_RECURSIVE-call",
+      "description": "Batch deletion tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_RECURSIVE-final",
+      "description": "Batch deletion provider continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_BATCH-call",
+      "description": "Batch deletion tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_BATCH-final",
+      "description": "Batch deletion provider continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_GLOB-call",
+      "description": "Batch deletion tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_GLOB-final",
+      "description": "Batch deletion provider continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_FIND-call",
+      "description": "Batch deletion tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_FIND-final",
+      "description": "Batch deletion provider continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_CLEAN-call",
+      "description": "Batch deletion tool call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    },
+    {
+      "id": "E2E_GUARDED_DELETE_CLEAN-final",
+      "description": "Batch deletion provider continuation",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix the deletion command within the case's own directory; the real broker rejects it and returns the result to the provider, independent of model randomness."
+    }
+  ]
+}

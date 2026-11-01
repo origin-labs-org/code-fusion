@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-stop-held-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-stop-held-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-stop-held-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-stop-held-queue-first-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of a held queue is to retain the queue without auto-consuming; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-stop-held-running-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "A held queue requires the current turn to remain running; real providers finishing too quickly will turn subsequent input into a regular new turn."
+    },
+    {
+      "id": "upstream-stop-held-queue-second-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of a held queue is to retain the queue without auto-consuming; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-stop-held-queue-third-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of a held queue is to retain the queue without auto-consuming; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-stop-held-queue-append-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Appending plain text under an already held queue should still enter the queue; the fixture only covers the marker contract."
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-approval-primary-submit",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-approval-primary-submit.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-plan-approval-primary-submit-enter-plan-call",
+      "description": "First-round request reliably returns EnterPlanMode tool call, creating plan approval prerequisite state.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_PLAN_APPROVAL_PRIMARY_SUBMIT"],
+        "bodyIncludes": [
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT",
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_ENTER_PLAN",
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_EXIT_PLAN"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_approval_primary_submit_enter",
+          "name": "EnterPlanMode",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-exit-plan-call",
+      "description": "Returns ExitPlanMode tool call after entering plan mode, triggering approval dialog with approval-only option.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to stably trigger the ExitPlanMode approval dialog to ensure E2E only verifies the primary footer submission path."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_EXIT_PLAN",
+          "toolu_e2e_plan_approval_primary_submit_enter"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_approval_primary_submit_exit",
+          "name": "ExitPlanMode",
+          "input": {
+            "plan": "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_PLAN_BODY: verify footer submit approves an unchanged plan."
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-auto-compact",
+      "description": "Mid-turn auto compact after approval returns stable summary, allowing main turn to continue.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The E2E model uses an extremely small context window, stably triggering mid-turn auto compact after ExitPlanMode is approved; this response is only used to allow the primary approval path to continue."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_ENTER_PLAN",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-plan-approval-primary-submit-auto-compact",
+          "inputTokens": 192,
+          "outputTokens": 48,
+          "text": "<analysis>Summarized the approved plan transition.</analysis>\n\n<summary>User has approved your plan. E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_PLAN_BODY: verify footer submit approves an unchanged plan.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-final",
+      "description": "Footer main submit returns fixed text after approving plan, allowing approval round to complete reliably.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core contract is that the primary submission produces an approved tool result; the final reply only needs to stably conclude the current turn."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "toolu_e2e_plan_approval_primary_submit_exit",
+          "E2E_PLAN_APPROVAL_PRIMARY_SUBMIT_PLAN_BODY",
+          "User has approved your plan"
+        ],
+        "bodyExcludes": [
+          "The plan was not approved by the user.",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

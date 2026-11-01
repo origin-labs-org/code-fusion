@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-gpt-openai-compatible-reasoning-effort",
+  "spec": "./test/e2e/conversation-session/conversation-session-gpt-openai-compatible-reasoning-effort.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-gpt-openai-compatible-reasoning-effort.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "gpt-openai-compatible-reasoning-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching low/xhigh business fixtures."
+    },
+    {
+      "id": "gpt-openai-compatible-reasoning-low-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertions focus on provider/model identity, OpenAI-compatible transport, and the GPT OpenAI-compatible low request body; the response only needs to complete reliably with the expected text."
+    },
+    {
+      "id": "gpt-openai-compatible-reasoning-xhigh-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertions focus on the GPT OpenAI-compatible request body after subsequent requests switch to xhigh under the same provider/model; the response only needs to complete reliably with the expected text."
+    }
+  ]
+}

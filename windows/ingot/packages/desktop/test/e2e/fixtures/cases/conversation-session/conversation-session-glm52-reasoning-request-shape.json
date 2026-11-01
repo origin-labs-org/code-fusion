@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-glm52-reasoning-request-shape",
+  "spec": "./test/e2e/conversation-session/conversation-session-glm52-reasoning-request-shape.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-glm52-reasoning-request-shape.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "glm52-reasoning-request-shape-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the response while ensuring the title sidecar's GLM-5.2 thinking-disabled request fields to prevent re-inheriting max."
+    },
+    {
+      "id": "glm52-reasoning-max-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertions focus on provider/model identity, OpenAI-compatible transport, and the GLM-5.2 max request body; the response only needs to complete reliably with the expected text."
+    },
+    {
+      "id": "glm52-reasoning-nothink-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertions focus on the GLM-5.2-specific request body after subsequent requests switch to nothink under the same provider/model; the response only needs to complete reliably with the expected text."
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-telemetry-parity-core",
+  "spec": "./test/e2e/conversation-session/conversation-session-telemetry-parity-core.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-telemetry-parity-core.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "prepareConversationE2E 创建的只读工具输入，两个版本执行完全相同的 Read。"
+    }
+  ],
+  "requests": [
+    {
+      "id": "telemetry-parity-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin title sidecar to avoid background retries contaminating differential timing."
+    },
+    {
+      "id": "telemetry-parity-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin Read tool calls to reliably cover tool steps and perf details."
+    },
+    {
+      "id": "telemetry-parity-tool-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin the terminal generation state of tool turns."
+    },
+    {
+      "id": "telemetry-parity-compact-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Establish stable history for compact."
+    },
+    {
+      "id": "telemetry-parity-compact-success-legacy",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Equivalent response for legacy non-streaming compact."
+    },
+    {
+      "id": "telemetry-parity-compact-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably produce compaction success terminal."
+    },
+    {
+      "id": "telemetry-parity-reasoning",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Pin thought -> text order."
+    },
+    {
+      "id": "telemetry-parity-stall",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "recorded-stream",
+      "syntheticReason": "Pin 4001ms chunk gap; exact 3000/3001ms boundaries are covered by fake clock test cases."
+    },
+    {
+      "id": "telemetry-parity-interrupted",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Keep running until UI stop to reliably produce interrupted."
+    }
+  ]
+}

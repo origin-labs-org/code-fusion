@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-queued-command-restart",
+  "spec": "./test/e2e/conversation-session/conversation-session-queued-command-restart.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-queued-command-restart.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "queued-command-restart-title",
+      "description": "Case-local title response for PV4-25Q running session.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably create task list row for explicitly restoring the original session after a full process restart."
+    },
+    {
+      "id": "queued-command-restart-running-turn",
+      "description": "PV4-25Q controlled stream: keep initial round running so that second input genuinely enters the CLI queue.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Only running window can form durable session_input with delivery=queue; subsequently converted to discarded via full process restart."
+    }
+  ]
+}

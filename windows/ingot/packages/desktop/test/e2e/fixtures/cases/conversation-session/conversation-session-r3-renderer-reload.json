@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-renderer-reload",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-renderer-reload.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-renderer-reload.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-reload-reconnect-title",
+      "description": "Auxiliary title response for SSH cold reconnect task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-reload-reconnect-main",
+      "description": "General response for SSH cold reconnect initial launch and continuation.",
+      "kind": "main",
+      "timingPolicy": "slow-stream",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+    }
+  ]
+}

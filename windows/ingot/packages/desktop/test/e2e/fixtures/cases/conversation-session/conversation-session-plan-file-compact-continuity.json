@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-file-compact-continuity",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-file-compact-continuity.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-file-compact-continuity.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-plan-file-compact-enter-plan-call",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-plan-file-compact-exit-plan-call",
+      "description": "Return ExitPlanMode within plan mode, triggering the approval dialog carrying a unique plan marker.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably trigger the ExitPlanMode approval dialog and ensure approved plan content is traceable in files and post-compact requests."
+    },
+    {
+      "id": "upstream-plan-file-compact-approval-final",
+      "description": "Return pinned text after approval, allowing the current turn to complete.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The reply content after approval is not central to this case; it only needs to stably conclude the current turn."
+    },
+    {
+      "id": "upstream-plan-file-compact-checkpoint-final",
+      "description": "Append a regular message turn after approval so manual compact has at least two turns of compressible history.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The current compact policy skips history that is too short; the checkpoint is only used to stably satisfy the compact entry conditions."
+    },
+    {
+      "id": "upstream-plan-file-compact-summary-success",
+      "description": "手动 /compact 的 streaming summary 请求成功。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case focuses on reinjecting plan_file_reference after compact; the summary text only needs to stably complete the compact."
+    },
+    {
+      "id": "upstream-plan-file-compact-post-compact-final",
+      "description": "Regular post-compact request reinjects plan_file_reference and the full plan marker.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core contract is provider-visible request content; the reply text only needs to stably conclude subsequent turns."
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-status-panel-inline-layout",
+  "spec": "./test/e2e/conversation-session/conversation-session-status-panel-inline-layout.test.ts",
+  "fixtures": [
+    {
+      "id": "status-panel-inline-layout-empty-task-response",
+      "description": "SP02: Normal completed task without goal/todo/running content should not mount status panel or reserve inline offset.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This case verifies the renderer layout contract; the main reply only needs to complete stably and avoid introducing goal/todo/running content."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_STATUS_PANEL_EMPTY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_STATUS_PANEL_EMPTY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-status-panel-empty-task",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "status-panel-inline-layout-goal-response",
+      "description": "SP03-SP07: goal target provides content for status panel to verify inline offset, width convergence, manual collapse/expand, and resize switching.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This case only needs to reliably produce a task with target; the model body content is not part of the assertions."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_STATUS_PANEL_GOAL"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_STATUS_PANEL_GOAL"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-status-panel-goal-task",
+          "inputTokens": 128,
+          "outputTokens": 8,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

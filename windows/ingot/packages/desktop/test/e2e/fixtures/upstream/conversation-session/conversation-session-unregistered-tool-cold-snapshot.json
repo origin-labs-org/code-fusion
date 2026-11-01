@@ -1,0 +1,649 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-unregistered-tool-cold-snapshot",
+  "spec": "./test/e2e/conversation-session/conversation-session-unregistered-tool-cold-snapshot.test.ts",
+  "fixtures": [
+    {
+      "id": "unregistered-tool-cold-snapshot-title",
+      "description": "Case-local title response for UTL initial send.",
+      "metadata": {
+        "id": "unregistered-tool-cold-snapshot-title",
+        "description": "Case-local title response for UTL initial send.",
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Title generation is outside O17/CHL09 semantics; fixed responses prevent accidental matching with the main request."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_UNREGISTERED_TOOL_COLD_SNAPSHOT"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "unregistered-tool-cold-snapshot-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Unregistered Tool Cold Snapshot"}"
+        }
+      }
+    },
+    {
+      "id": "unregistered-tool-cold-snapshot-grep-batch",
+      "description": "A single model step returns 60 embedded-search Grep calls and 1 definitely unregistered Grep sentinel.",
+      "metadata": {
+        "id": "unregistered-tool-cold-snapshot-grep-batch",
+        "description": "A single model step returns 60 embedded-search Grep calls and 1 definitely unregistered Grep sentinel.",
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Reliably reproduce production registry misses and push the same turn past the 60-line snapshot trailing window."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_UNREGISTERED_TOOL_COLD_SNAPSHOT"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "Tool not found: Grep"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_e2e_unregistered_grep_01",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_01",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_02",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_02",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_03",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_03",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_04",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_04",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_05",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_05",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_06",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_06",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_07",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_07",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_08",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_08",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_09",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_09",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_10",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_10",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_11",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_11",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_12",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_12",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_13",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_13",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_14",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_14",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_15",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_15",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_16",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_16",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_17",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_17",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_18",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_18",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_19",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_19",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_20",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_20",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_21",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_21",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_22",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_22",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_23",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_23",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_24",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_24",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_25",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_25",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_26",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_26",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_27",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_27",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_28",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_28",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_29",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_29",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_30",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_30",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_31",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_31",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_32",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_32",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_33",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_33",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_34",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_34",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_35",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_35",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_36",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_36",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_37",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_37",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_38",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_38",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_39",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_39",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_40",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_40",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_41",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_41",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_42",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_42",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_43",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_43",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_44",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_44",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_45",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_45",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_46",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_46",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_47",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_47",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_48",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_48",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_49",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_49",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_50",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_50",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_51",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_51",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_52",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_52",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_53",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_53",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_54",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_54",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_55",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_55",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_56",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_56",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_57",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_57",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_58",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_58",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_59",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_59",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_60",
+            "name": "Grep",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_60",
+              "output_mode": "content"
+            }
+          },
+          {
+            "id": "toolu_e2e_unregistered_grep_61",
+            "name": "GrepMissingFromRegistry",
+            "input": {
+              "path": "{{e2eRuntimeRoot}}/conversation-session-unregistered-tool-cold-snapshot",
+              "pattern": "E2E_UNREGISTERED_TOOL_61",
+              "output_mode": "content"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "unregistered-tool-cold-snapshot-final",
+      "description": "Final reply of the same-turn continuation after fast-failing all search tools.",
+      "metadata": {
+        "id": "unregistered-tool-cold-snapshot-final",
+        "description": "Final reply of the same-turn continuation after fast-failing all search tools.",
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Prove that the turn completed normally after the provider received failed tool results, isolating terminal UI semantics."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_UNREGISTERED_TOOL_COLD_SNAPSHOT",
+          "toolu_e2e_unregistered_grep_01",
+          "toolu_e2e_unregistered_grep_61",
+          "Tool not found: Grep"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "unregistered-tool-cold-snapshot-final",
+          "inputTokens": 1024,
+          "outputTokens": 16,
+          "text": "E2E_UNREGISTERED_TOOL_COLD_SNAPSHOT_DONE"
+        }
+      }
+    }
+  ]
+}

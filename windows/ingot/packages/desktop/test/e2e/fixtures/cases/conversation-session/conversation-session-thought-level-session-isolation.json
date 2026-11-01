@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-thought-level-session-isolation",
+  "spec": "./test/e2e/conversation-session/conversation-session-thought-level-session-isolation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-thought-level-session-isolation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "thought-level-session-isolation-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is outside thought session isolation semantics and only needs to return reliably, avoiding title requests mistakenly hitting main flow fixtures."
+    },
+    {
+      "id": "thought-level-session-isolation-a-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion requires first establishing a completed Session A with the same model and high thinking depth; the response only needs to complete reliably."
+    },
+    {
+      "id": "thought-level-session-isolation-b-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion requires first establishing a completed Session B with the same model and high thinking depth; the response only needs to complete reliably."
+    },
+    {
+      "id": "thought-level-session-isolation-b-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that after Session A switches to max, Session B's real subsequent request still uses high; the response only needs to complete reliably."
+    },
+    {
+      "id": "thought-level-session-isolation-a-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is that after A/B switching, Session A's real subsequent request still uses max; the response only needs to complete reliably."
+    }
+  ]
+}

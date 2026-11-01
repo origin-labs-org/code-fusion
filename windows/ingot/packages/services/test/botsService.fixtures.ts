@@ -1,0 +1,538 @@
+
+import { afterEach, vi } from "vitest";
+import type {
+  CfConfigOption,
+  BotsConfigFile,
+  BotsStateFile,
+  Locale,
+  ModelSelection,
+  CfTaskMode,
+  CfSessionSettingsState,
+} from "@origin-ai/cf-shared";
+import {
+  CF_MODEL_REASONING_SEPARATOR,
+  CF_PROTOCOL_NAME,
+  CF_PROTOCOL_VERSION,
+  botsConfigFileSchema,
+} from "@origin-ai/cf-shared";
+export { botsConfigFileSchema };
+import type { ICfSessionService } from "../src/cf-session/cfSession.js";
+import type { ICfTaskService } from "../src/session/cfTaskService.js";
+import type { IBroadcastService } from "../src/broadcast/broadcast.js";
+import type { ICredentialService } from "../src/credential/credential.js";
+import type { ISettingService } from "../src/setting/setting.js";
+import type { VirtualProject } from "../src/project/contract.js";
+import { remoteHostIdFromWorkspaceIdentity } from "@origin-ai/cf-shared";
+import { createBotsService as createBotsServiceImpl } from "../src/bots/botsService.js";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+export const defaultUserCommands = {
+  status: true,
+  new: true,
+  workspace: true,
+  model: true,
+  thoughtLevel: true,
+  sandboxMode: true,
+  approvalPolicy: true,
+  reply: true,
+};
+
+export function createMemoryRepo(config: BotsConfigFile, state?: BotsStateFile) {
+  let currentConfig = config;
+  let currentState = state ?? { version: 3 as const, bots: {} };
+  return {
+    async readConfig() {
+      return currentConfig;
+    },
+    async writeConfig(nextConfig: BotsConfigFile) {
+      currentConfig = nextConfig;
+      return currentConfig;
+    },
+    async readState() {
+      return currentState;
+    },
+    async writeState(nextState: BotsStateFile) {
+      currentState = nextState;
+      return currentState;
+    },
+    async updateContext(
+      botId: string,
+      update: (
+        current: BotsStateFile["bots"][string] | undefined,
+      ) => BotsStateFile["bots"][string] | undefined,
+    ) {
+      const next = update(currentState.bots[botId]);
+      if (next) currentState.bots[botId] = next;
+      else delete currentState.bots[botId];
+      return next;
+    },
+  };
+}
+
+export function createLegacyTaskService(): ICfTaskService {
+  return {
+    listTasks: vi.fn(async () => []),
+    listDeletedTaskIds: vi.fn(async () => []),
+    createTask: vi.fn(async () => ({
+      taskId: "task-1",
+      title: "Task 1",
+      workspacePath: "/tmp/workspace",
+      workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+      provider: "glm",
+    })),
+    sendPrompt: vi.fn(async () => undefined),
+    setMode: vi.fn(async () => undefined),
+    setConfigOption: vi.fn(async () => []),
+    setModel: vi.fn(async () => []),
+    getTaskConfigOptions: vi.fn(async () => []),
+    getTaskModelSelection: vi.fn(async () => ({
+      providerId: "glm",
+      modelId: "glm-4.6",
+      options: { reasoningLevel: "high" },
+    })),
+    getTaskSnapshot: vi.fn(async () => null),
+    getTaskTokenUsage: vi.fn(async (params: { taskId: string }) => ({
+      sessionId: params.taskId,
+      totalTokens: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      reasoningTokens: 0,
+      cacheCreationTokens: 0,
+      cacheReadTokens: 0,
+      modelRequestCount: 0,
+      modelErrorCount: 0,
+      inputBaselineBySource: {},
+    })),
+    resumeTask: vi.fn(async () => ({
+      taskId: "task-1",
+      title: "Task 1",
+      workspacePath: "/tmp/workspace",
+      workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+      provider: "glm",
+    })),
+    switchAgent: vi.fn(async () => ({
+      meta: {
+        taskId: "task-1",
+        title: "Task 1",
+        workspacePath: "/tmp/workspace",
+        workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+        provider: "glm",
+      },
+      provider: "glm",
+      sessionId: "session-1",
+      reusedBinding: false,
+    })),
+    respondPermission: vi.fn(async () => true),
+    respondElicitation: vi.fn(async () => true),
+    stopGeneration: vi.fn(async () => undefined),
+    onDynamicStreamEvent: vi.fn(() => () => ({ dispose() {} })),
+  } as unknown as ICfTaskService;
+}
+
+export function createCredentialService(values: Record<string, string> = {}): ICredentialService {
+  return {
+    load: vi.fn(async (key: string) => values[key] ?? null),
+    save: vi.fn(async (key: string, value: string) => {
+      values[key] = value;
+    }),
+    delete: vi.fn(async (key: string) => {
+      delete values[key];
+    }),
+  };
+}
+
+export function createBroadcastService(): IBroadcastService {
+  return {
+    send: vi.fn(async () => undefined),
+    onMessage: vi.fn(),
+  } as unknown as IBroadcastService;
+}
+
+export function createSettingService(settings: {
+  recentProjects?: string[];
+  lastWorkspaceSession?: Array<
+    | { kind: "local"; workspacePath: string }
+    | (Record<string, unknown> & {
+        kind: "remote";
+        workspacePath: string;
+        workspaceIdentity?: string;
+      })
+  >;
+  locale?: Locale;
+  enabledBuiltinAgentCliProviders?: Array<"claude" | "opencode" | "gemini" | "codex" | "glm">;
+}): ISettingService {
+  return {
+    get: vi.fn(async () => ({
+      recentProjects: settings.recentProjects ?? [],
+      lastWorkspaceSession: settings.lastWorkspaceSession ?? [],
+      locale: settings.locale ?? "en-US",
+      enabledBuiltinAgentCliProviders: settings.enabledBuiltinAgentCliProviders ?? ["glm"],
+    })),
+    update: vi.fn(async () => undefined),
+    updateDataBaseDir: vi.fn(async () => undefined),
+  } as unknown as ISettingService;
+}
+
+export function createModelSelectionService(providers: readonly TestModelSelectionProvider[] = []) {
+  return {
+    getView: vi.fn(async (input?: { selection: ModelSelection | null }) => ({
+      revision: 1,
+      ...(input ? { effectiveSelection: input.selection } : {}),
+      providers: providers.map((provider) => ({
+        providerId: provider.id,
+        providerName: provider.name,
+        config: {},
+        models: provider.models.map((model) => ({
+          modelId: typeof model === "string" ? model : model.id,
+          config: typeof model === "string" ? {} : (model.config ?? {}),
+        })),
+      })),
+      preferredSelection: providers[0]?.models[0]
+        ? {
+            providerId: providers[0].id,
+            modelId:
+              typeof providers[0].models[0] === "string"
+                ? providers[0].models[0]
+                : providers[0].models[0].id,
+          }
+        : undefined,
+    })),
+  };
+}
+
+export interface TestModelSelectionProvider {
+  id: string;
+  models: readonly (string | { id: string; config?: Record<string, unknown> })[];
+  name: string;
+}
+
+function parseModelSelectionForTest(value: string): ModelSelection {
+  const separatorIndex = value.indexOf("/");
+  if (separatorIndex <= 0) {
+    return { providerId: "glm", modelId: value || "default" };
+  }
+  const providerId = value.slice(0, separatorIndex);
+  const rawModelId = value.slice(separatorIndex + 1);
+  const reasoningSeparatorIndex = rawModelId.indexOf(CF_MODEL_REASONING_SEPARATOR);
+  if (reasoningSeparatorIndex <= 0 || reasoningSeparatorIndex >= rawModelId.length - 1) {
+    return { providerId, modelId: rawModelId };
+  }
+  return {
+    providerId,
+    modelId: rawModelId.slice(0, reasoningSeparatorIndex),
+    variant: rawModelId.slice(reasoningSeparatorIndex + 1),
+  };
+}
+
+function normalizeCfModeForTest(value: unknown): CfTaskMode {
+  switch (value) {
+    case "plan":
+    case "build":
+    case "yolo":
+    case "auto":
+      return value;
+    case "read-only":
+      return "plan";
+    case "full-access":
+    case "agent-full-access":
+      return "yolo";
+    default:
+      return "build";
+  }
+}
+
+function readSelectOption(
+  configOptions: readonly CfConfigOption[],
+  category: string,
+): (CfConfigOption & { type: "select" }) | undefined {
+  return configOptions.find(
+    (option): option is CfConfigOption & { type: "select" } =>
+      option.type === "select" && (option.category === category || option.id === category),
+  );
+}
+
+export function createCfSessionSettingsFromConfigOptions(
+  configOptions: readonly CfConfigOption[] = [],
+): CfSessionSettingsState {
+  const modelOption = readSelectOption(configOptions, "model");
+  const currentModelValue =
+    typeof modelOption?.currentValue === "string"
+      ? modelOption.currentValue
+      : (modelOption?.options?.[0]?.value ?? "glm/default");
+  const currentModel = parseModelSelectionForTest(currentModelValue);
+  const modelOptions = modelOption?.options?.length
+    ? modelOption.options
+    : [{ value: currentModelValue, name: currentModel.modelId }];
+  const thoughtOption = readSelectOption(configOptions, "thought_level");
+  const modeOption = readSelectOption(configOptions, "mode");
+
+  return {
+    model: {
+      current: currentModel,
+      available: modelOptions.map((option) => ({
+        ref: parseModelSelectionForTest(option.value),
+        label: option.name ?? option.value,
+        description: option.description,
+      })),
+      lastUsed: currentModel,
+    },
+    thoughtLevel: {
+      enabled: Boolean(thoughtOption),
+      current:
+        typeof thoughtOption?.currentValue === "string"
+          ? thoughtOption.currentValue
+          : thoughtOption?.options?.[0]?.value,
+      available:
+        thoughtOption?.options?.map((option) => ({
+          value: option.value,
+          label: option.name ?? option.value,
+          description: option.description,
+        })) ?? [],
+    },
+    mode: {
+      current: normalizeCfModeForTest(modeOption?.currentValue),
+    },
+    permission: {
+      mode: normalizeCfModeForTest(modeOption?.currentValue),
+    },
+  };
+}
+
+function createCfWorkspaceState(
+  settings: CfSessionSettingsState = createCfSessionSettingsFromConfigOptions(),
+): CfWorkspaceStateSnapshot {
+  return {
+    workspace: {
+      workspacePath: "/tmp/workspace",
+      workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+      workspaceKey: "remote:server:test-owner:/tmp/workspace",
+    },
+    settings,
+  };
+}
+
+export function createCfSessionService(
+  settings: CfSessionSettingsState = createCfSessionSettingsFromConfigOptions(),
+): ICfSessionService {
+  const workspaceState = createCfWorkspaceState(settings);
+  return {
+    initializeWorkspace: vi.fn(async () => ({
+      available: true,
+      workspaceKey: workspaceState.workspace.workspaceKey,
+      protocolName: CF_PROTOCOL_NAME,
+      protocolVersion: CF_PROTOCOL_VERSION,
+      transportKind: "stdio",
+    })),
+    readWorkspacePresentation: vi.fn(async () => ({
+      workspace: workspaceState.workspace,
+      mode: workspaceState.settings.mode.current,
+      slashCommands: [],
+    })),
+    updateProviderRegistry: vi.fn(async () => ({
+      applied: true,
+      revision: "test-provider-registry",
+    })),
+  } as unknown as ICfSessionService;
+}
+
+export function createBotsService(
+  deps: Omit<
+    Parameters<typeof createBotsServiceImpl>[0],
+    "cfSessionService" | "cfTaskService" | "projectService"
+  > & {
+    cfTaskService?: ICfTaskService;
+    
+    legacyTaskService?: ICfTaskService;
+    cfSessionService?: ICfSessionService;
+    projectService?: Parameters<typeof createBotsServiceImpl>[0]["projectService"];
+  },
+): ReturnType<typeof createBotsServiceImpl> {
+  const {
+    legacyTaskService,
+    cfTaskService: providedCfTaskService,
+    cfSessionService: _providedCfSessionService,
+    ...rest
+  } = deps;
+  const cfTaskService =
+    providedCfTaskService ?? legacyTaskService ?? createLegacyTaskService();
+  const modelSelectionService =
+    deps.modelSelectionService ??
+    createModelSelectionService([{ id: "glm", name: "GLM", models: ["default"] }]);
+  return createBotsServiceImpl({
+    ...createBotProjectServices(undefined, (target) => cfTaskService.listTasks(target)),
+    settingService: createSettingService({
+      locale: "zh-CN",
+      lastWorkspaceSession: [
+        {
+          kind: "remote",
+          workspacePath: "/tmp/workspace",
+          workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+        },
+      ],
+    }),
+    remoteWorkspaceService: {
+      isConnected: vi.fn(async () => true),
+      ensureConnected: vi.fn(async () => ({ ok: true })),
+      getCfTaskService: vi.fn(async () => cfTaskService),
+      getModelSelectionService: vi.fn(async () => modelSelectionService),
+    },
+    modelSelectionService,
+    ...rest,
+    cfTaskService,
+  });
+}
+
+export function createBotProjectServices(
+  workspaces = [
+    {
+      workspacePath: "/tmp/workspace",
+      workspaceIdentity: "remote:server:test-owner:/tmp/workspace",
+    } as { workspacePath: string; workspaceIdentity?: string },
+  ],
+  readTasks?: (target: {
+    workspacePath: string;
+    workspaceIdentity?: string;
+  }) => ReturnType<ICfTaskService["listTasks"]>,
+) {
+  const projects: VirtualProject[] = workspaces.map((workspace, index) => ({
+    id: `project-${index}`,
+    hostId: workspace.workspaceIdentity
+      ? remoteHostIdFromWorkspaceIdentity(workspace.workspaceIdentity)!
+      : "local",
+    name: workspace.workspacePath.split("/").at(-1)!,
+    roots: [{ rootPath: workspace.workspacePath, position: 0, isPrimary: true }],
+    nameOverridden: false,
+    position: index,
+    pinned: false,
+    deleted: false,
+    createdAt: 1,
+    updatedAt: 1,
+  }));
+  const hosts = [
+    ...new Set(projects.map((project) => project.hostId).filter((id) => id !== "local")),
+  ];
+  return {
+    projectService: {
+      readTree: vi.fn(async (input?: { hostId?: string }) => ({
+        projects: projects.filter((project) => project.hostId === (input?.hostId ?? "local")),
+        tasks: (
+          await Promise.all(
+            projects.map(async (project, index) =>
+              project.hostId !== (input?.hostId ?? "local")
+                ? []
+                : ((await readTasks?.(workspaces[index]!)) ?? []).map((task) => ({
+                    ...task,
+                    projectId: project.id,
+                    hostId: project.hostId,
+                    pinned: false,
+                    archived: false,
+                  })),
+            ),
+          )
+        ).flat(),
+      })),
+      readProjects: vi.fn(async (input?: { hostId?: string }) =>
+        projects.filter((project) => project.hostId === (input?.hostId ?? "local")),
+      ),
+      prepareSession: vi.fn(async (input?: { projectId?: string; hostId?: string }) => {
+        const index = projects.findIndex(
+          (project) =>
+            project.id === input?.projectId && project.hostId === (input?.hostId ?? "local"),
+        );
+        if (index < 0) throw new Error("project missing");
+        return { ...workspaces[index]!, projectId: projects[index]!.id, additionalDirectories: [] };
+      }),
+    },
+    remoteProjectService: {
+      readDirectory: vi.fn(async () => ({
+        hosts: hosts.map((id) => ({
+          id,
+          membershipId: id,
+          kind: "server" as const,
+          target: null,
+          position: 0,
+          connectionStatus: "online" as const,
+        })),
+        entries: projects
+          .filter((project) => project.hostId !== "local")
+          .map((project) => ({
+            id: project.id,
+            projectId: project.id,
+            hostId: project.hostId,
+            name: project.name,
+            roots: project.roots,
+            legacyWorkspace: null,
+            lastSyncedAt: 1,
+          })),
+      })),
+    },
+  };
+}
+
+export const baseConfig: BotsConfigFile = {
+  version: 3,
+  bots: [
+    {
+      id: "webhook-1",
+      name: "Webhook",
+      provider: "webhook",
+      enabled: true,
+      webhookSecretRef: "secret-1",
+      allowedWorkspaces: ["*"],
+      allowedCommands: defaultUserCommands,
+      currentOptions: {},
+      replyMode: "assistant_changes",
+    },
+  ],
+};
+
+export const telegramConfig: BotsConfigFile = {
+  ...baseConfig,
+  bots: [
+    {
+      ...baseConfig.bots[0]!,
+      id: "telegram-1",
+      name: "Telegram",
+      provider: "telegram",
+      credentialRef: "telegram-token",
+      webhookSecretRef: undefined,
+      providerUserId: "user-1",
+      allowedWorkspaces: ["*"],
+    },
+  ],
+};
+
+export const feishuConfig: BotsConfigFile = {
+  ...baseConfig,
+  bots: [
+    {
+      ...baseConfig.bots[0]!,
+      id: "feishu-1",
+      name: "Feishu",
+      provider: "feishu",
+      credentialRef: "feishu-secret",
+      webhookSecretRef: undefined,
+      feishuAppId: "cli_xxx",
+      providerUserId: "ou_user",
+      allowedWorkspaces: ["*"],
+    },
+  ],
+};
+
+export const weixinConfig: BotsConfigFile = {
+  ...baseConfig,
+  bots: [
+    {
+      ...baseConfig.bots[0]!,
+      id: "weixin-1",
+      name: "Weixin",
+      provider: "weixin",
+      credentialRef: "weixin-token",
+      webhookSecretRef: undefined,
+      allowedWorkspaces: ["*"],
+    },
+  ],
+};

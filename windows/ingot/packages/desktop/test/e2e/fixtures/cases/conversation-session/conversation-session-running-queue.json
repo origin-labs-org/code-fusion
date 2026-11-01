@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-running-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-running-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-running-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-running-queue-first-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "The running queue requires the active turn to keep streaming; a real model may finish too quickly."
+    },
+    {
+      "id": "upstream-running-queue-second-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of this queued text is not interrupting the current turn and not sending yet; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-running-queue-third-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of this queued text is not interrupting the current turn and not sending yet; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-running-queue-fourth-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of this queued text is not interrupting the current turn and not sending yet; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-running-queue-fifth-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of this queued text is not interrupting the current turn and not sending yet; the fixture only covers the marker contract."
+    },
+    {
+      "id": "upstream-running-queue-goal-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "During running, /goal only enters the local queue and must not immediately trigger a provider request."
+    }
+  ]
+}

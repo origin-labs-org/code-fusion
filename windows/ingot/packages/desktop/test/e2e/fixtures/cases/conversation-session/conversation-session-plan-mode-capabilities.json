@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-mode-capabilities",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-mode-capabilities.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-mode-capabilities.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-plan-mode-deny-enter-plan-call",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-plan-mode-deny-exit-plan-call",
+      "description": "Return ExitPlanMode within plan mode, triggering the approval dialog.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably trigger the ExitPlanMode approval dialog to prevent the model from outputting text and bypassing the tool."
+    },
+    {
+      "id": "upstream-plan-mode-deny-follow-up-final",
+      "description": "After rejection without feedback, the next regular user input remains in plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core contract is that the provider does not continue the current turn after rejection, but subsequent real user input still carries the plan mode reminder."
+    },
+    {
+      "id": "upstream-plan-mode-boundary-enter-plan-call",
+      "description": "First-round request for tool boundary case enters plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-plan-mode-boundary-mixed-tools-call",
+      "description": "The same assistant message returns two tool_use calls: Write and Read.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that rejecting write tools in plan mode does not block the execution of subsequent read-only tools in the same reply."
+    },
+    {
+      "id": "upstream-plan-mode-boundary-final",
+      "description": "Return pinned text after tool results are fed back into provider-visible requests.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core contract is that the provider request contains both write rejection and actual read-only tool results; the reply text only needs to stably wrap up."
+    }
+  ]
+}

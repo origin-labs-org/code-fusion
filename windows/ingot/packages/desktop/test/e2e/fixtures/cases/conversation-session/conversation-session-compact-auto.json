@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-compact-auto",
+  "spec": "./test/e2e/conversation-session/conversation-session-compact-auto.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-compact-auto.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-adjacent-autocompact-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-adjacent-autocompact-mid-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-adjacent-autocompact-mid-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-adjacent-autocompact-pre-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-adjacent-autocompact-pre-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-auto-compact-drain-running",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-auto-compact-context-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-auto-compact-summary-success",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-auto-compact-pending-text",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably construct usage, timing, or tool boundaries for auto-compression to prevent real provider fluctuations from altering the case state window."
+    },
+    {
+      "id": "upstream-provider-basic",
+      "kind": "main",
+      "source": "capture",
+      "timingPolicy": "recorded-stream"
+    }
+  ]
+}

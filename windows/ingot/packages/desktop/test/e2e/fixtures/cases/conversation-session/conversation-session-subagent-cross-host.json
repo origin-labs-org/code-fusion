@@ -1,0 +1,936 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-subagent-cross-host",
+  "spec": "./test/e2e/conversation-session/conversation-session-subagent-cross-host.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-subagent-cross-host.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "shi-a-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-a-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-seed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-seed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-seed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-hold-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-hold-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-hold-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-resume-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-resume-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-resume-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-spawn-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-spawn-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-spawn-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-hold-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-b-resume-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-a-next-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-a-next-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shi-a-next-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shb-reverse-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-reverse-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-reverse-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-add-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-add-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-add-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-update-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-update-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-update-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-disabled-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-disabled-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_disabled-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_disabled-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-reenabled-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-reenabled-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-reenabled-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_old-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_old-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_new-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_new-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-renamed_new-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-deleted-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-deleted-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_explore-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_explore-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_explore-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_explore-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_explore-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_explore-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_plugin-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_plugin-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-override_plugin-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_plugin-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_plugin-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-clear_plugin-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-save_failed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-save_failed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-save_failed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-duplicated-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-duplicated-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-duplicated-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_ok_a-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_ok_a-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_ok_a-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_retried_b-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_retried_b-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-read_retried_b-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_resolve-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_resolve-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_resolve-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_ok_a-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_ok_a-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_ok_a-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_retried_b-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_retried_b-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-directory_retried_b-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_ok_a-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_ok_a-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_ok_a-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_retried_b-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_retried_b-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-state_retried_b-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cache_hit-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cache_hit-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cache_hit-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-unrelated_b-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-unrelated_b-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-unrelated_b-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cold_start-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cold_start-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cold_start-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real dual-Host config persistence, native file watching, and in-memory snapshots; same fixture for A/B execution, with file failures injected solely on the test side."
+    },
+    {
+      "id": "shb-cold-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only test side triggers existing second-window creation paths; real Host file watching, Settings persistence, and CLI spawn/resume, with fixed provider responses to verify cross-Host snapshots and history."
+    },
+    {
+      "id": "shb-stale_resolve_published-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-stale_resolve_published-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-stale_resolve_published-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject_published-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject_published-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-stale_reject_published-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Completes old-snapshot parent-child calls during background loading; publishes new snapshot later, late old reads must not overwrite; file boundaries controlled solely on the test side."
+    },
+    {
+      "id": "shb-read_failed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-read_failed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-read_failed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-directory_failed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-directory_failed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-directory_failed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-state_failed-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-state_failed-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shb-state_failed-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only built-in Agents are available after file read failures; custom spawn/resume explicitly fails, reloading after file events recover. Failure injection is solely on the test side."
+    },
+    {
+      "id": "shp-a-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-a-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-a-next-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-a-next-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-a-next-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-b-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-b-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-b-next-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-b-next-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-b-next-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Real case-insensitive directory, two independent Hosts, Settings persistence, and next-turn spawn; fixed model responses only dispatch tools without replacing config reads, validating the new profile in actual requests."
+    },
+    {
+      "id": "shp-a-created-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-a-created-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-a-created-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-created-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-created-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-created-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-a-rebuilt-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-a-rebuilt-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-a-rebuilt-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-rebuilt-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-rebuilt-child",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    },
+    {
+      "id": "shp-b-rebuilt-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "SHR22: Reuses existing sessions across two real Hosts, initial Settings creation and reconstruction of project agents directory, fixing tool dispatch and verifying actual provider config and continuous history."
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-custom-enter-single-question",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-custom-enter-single-question.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-single-question-call",
+      "description": "AskUserQuestion custom Enter single-question probe: First round returns a single Q&A tool call.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion single-question waiting state to contrast whether custom input Enter submits directly in single-question scenarios."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASK_USER_QUESTION_CUSTOM_ENTER_SINGLE"],
+        "bodyIncludes": [
+          "E2E_ASK_USER_QUESTION_CUSTOM_ENTER_SINGLE",
+          "E2E_ASK_USER_QUESTION_ENTER_SINGLE_QUESTION",
+          "E2E_ASK_USER_QUESTION_ENTER_SINGLE_TOOL"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_ask_user_question_custom_enter_single",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_ASK_USER_QUESTION_ENTER_SINGLE_QUESTION: choose the single answer?",
+                "header": "E2E",
+                "options": [
+                  {
+                    "label": "Use single default",
+                    "description": "Continue the e2e run with the single default answer."
+                  },
+                  {
+                    "label": "Use single fallback",
+                    "description": "Continue the e2e run with the single fallback answer."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-custom-enter-single-question-final",
+      "description": "AskUserQuestion custom Enter single-question probe: Final reply after the single-question answer enters the next model request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response proves single-question custom input Enter has been submitted to the agent, allowing UI assertions on answered records."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_ASK_USER_QUESTION_ENTER_SINGLE_ANSWER",
+          "E2E_ASK_USER_QUESTION_ENTER_SINGLE_TOOL",
+          "toolu_e2e_ask_user_question_custom_enter_single"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

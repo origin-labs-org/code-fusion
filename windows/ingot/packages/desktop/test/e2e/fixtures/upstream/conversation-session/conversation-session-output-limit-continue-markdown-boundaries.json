@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-markdown-boundaries",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-markdown-boundaries.test.ts",
+  "fixtures": [
+    {
+      "id": "output-limit-continue-markdown-title",
+      "description": "OTC09 标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles are not the product semantics for the Continue Markdown boundary probe; fixed response avoids interfering with the four main requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_BOUNDARIES"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "output-limit-continue-markdown-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Continue Markdown Probe"}"
+        }
+      }
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p1",
+      "description": "The first main request is truncated by max_tokens in the middle of the task bullet's strong external link label.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically make the task bullet, strong, and external link tokens span the first Continue seam simultaneously."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_BOUNDARIES"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-markdown-partial-p1","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":12,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"## Continue Markdown full boundary\\n\\n首段包含 **Bold boundary**、*Italic boundary*、~~Strikethrough boundary~~ 与 `inline-boundary`。\\n\\n- [x] Completed task\\n- [ ] **带跨缝[链接\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":12,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p2",
+      "description": "The second main request closes the strong external link, contains multiple newlines, and truncates again in the middle of the ordered item's emphasis/strikethrough image alt.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically cover multiple newlines within the Continue partial, and make ordered item, emphasis, strikethrough, and local image tokens span the second seam simultaneously."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_BOUNDARIES"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-markdown-partial-p2","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":20,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"](https://example.com/continue-edge)** 保持Complete\\n- Normal bullet preserved across Continue\\n\\n1. *~~Image in ordered item ![Cross-seam image\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":20,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "output-limit-continue-markdown-partial-p3",
+      "description": "The third main request closes the local image, writes a table and horizontal rule, and truncates a third time after the newline at the end of the fenced code line.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically place the third seam precisely on the unclosed TypeScript fenced code end-of-line newline."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_BOUNDARIES"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-markdown-partial-p3","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":28,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"](.cf-e2e/continue-markdown/cross-seam.svg)~~* 保持Complete\\n2. Second ordered item\\n\\n| Source | Result |\\n| --- | --- |\\n| p3 | p4 |\\n\\n---\\n\\n```ts\\nconst beforeBoundary = \\\"P3\\\";\\n\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"max_tokens","stop_sequence":null},"usage":{\"input_tokens\":28,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "output-limit-continue-markdown-final-p4",
+      "description": "The fourth main request continues and closes fenced code, appending blockquotes, hard breaks, math formulas, Mermaid, and autolinks before ending normally.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Normally end the cumulative Markdown of up to three Continues and provide final DOM evidence for remaining supported structures."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_OUTPUT_LIMIT_CONTINUE_MARKDOWN_BOUNDARIES"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"output-limit-continue-markdown-final-p4","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":36,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":\"const afterBoundary = \\\"P4\\\";\\nconsole.log(beforeBoundary + afterBoundary);\\n```\\n\\n> Blockquote remains normal after fence closure.\\n\\nHard break line 1  \\n硬换行第Two行。\\n\\nInline formula $E = mc^2$。\\n\\n$$\\na^2 + b^2 = c^2\\n$$\\n\\n```mermaid\\ngraph TD\\n  A[Continue] --> B[One assistant]\\n```\\n\\nAutolink <https://example.com/autolink>\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":36,"output_tokens":12}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    }
+  ]
+}

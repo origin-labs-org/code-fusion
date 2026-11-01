@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-approval-primary-submit",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-approval-primary-submit.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-approval-primary-submit.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-plan-approval-primary-submit-enter-plan-call",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Need to stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-exit-plan-call",
+      "description": "Return ExitPlanMode within plan mode, triggering the plan approval dialog.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Need to stably trigger the ExitPlanMode approval dialog to ensure E2E only verifies the primary footer submission path."
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-auto-compact",
+      "description": "Mid-turn auto compact after approval returns a stable summary, allowing the main turn to continue.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The E2E model uses an extremely small context window, stably triggering mid-turn auto compact after ExitPlanMode is approved; this response is only used to allow the primary approval path to continue."
+    },
+    {
+      "id": "upstream-plan-approval-primary-submit-final",
+      "description": "Return pinned text after primary footer submission approves the plan, allowing the current turn to complete.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core contract is that the primary submission produces an approved tool result; the final reply only needs to stably conclude the current turn."
+    }
+  ]
+}

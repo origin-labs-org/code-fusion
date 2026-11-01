@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-subagent-rate-limit",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-subagent-rate-limit.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background-subagent-rate-limit.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "background-subagent-rate-limit-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation does not belong to this case; simply return stably to avoid mismatched business fixtures."
+    },
+    {
+      "id": "background-subagent-rate-limit-parent-launch",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Stably create a real Agent(run_in_background=true) to cover terminal notification projection."
+    },
+    {
+      "id": "background-subagent-rate-limit-parent-launch-ack",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "让父会话先回 idle，随后由 failed task notification 唤醒。"
+    },
+    {
+      "id": "background-subagent-rate-limit-child-initial-429",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "The first 429 is delayed until the parent turn consumes the launch ACK; BG26 worker disables model retry and only verifies raw error projection in terminal/UI/snapshot."
+    },
+    {
+      "id": "background-subagent-rate-limit-parent-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Demonstrate that failed notification returns to parent model via runtime command queue and wraps up properly."
+    }
+  ]
+}

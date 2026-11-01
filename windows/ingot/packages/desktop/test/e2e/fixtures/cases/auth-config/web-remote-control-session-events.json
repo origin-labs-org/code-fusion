@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "web-remote-control-session-events",
+  "spec": "./test/e2e/web-remote-control-session-events.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-config-seed",
+      "path": "~/.cf/v2/credentials.json",
+      "purpose": "Isolate HOME synthetic OAuth login and pair with loopback V2; simulate setting.json write failures before saving new devices and logging out to verify registration compensation final state, manual recovery, and credential events closing old connections."
+    }
+  ],
+  "requests": []
+}

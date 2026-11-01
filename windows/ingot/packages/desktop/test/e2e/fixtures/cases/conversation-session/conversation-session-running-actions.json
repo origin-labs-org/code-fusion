@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-running-actions",
+  "spec": "./test/e2e/conversation-session/conversation-session-running-actions.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-running-actions.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/shared/readonly-tool.txt",
+      "source": "created-by-helper",
+      "description": "Read-only tool input file written by prepareConversationE2E to construct completed assistant + tool_result history."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-readonly-tool-call",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "通用只读 Read tool_use 让高/中优先级 conversation case 覆盖真实 tool_result 历史。"
+    },
+    {
+      "id": "upstream-conversation-readonly-running-actions-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This response only needs to stably yield completed assistant history for running guard assertion to locate historical assistant message."
+    },
+    {
+      "id": "upstream-conversation-running-actions-active-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "running guard must check fork/edit entries while assistant is streaming response; real provider might complete too quickly."
+    }
+  ]
+}

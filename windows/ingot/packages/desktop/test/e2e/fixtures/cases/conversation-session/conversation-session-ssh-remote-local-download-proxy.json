@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-local-download-proxy",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-local-download-proxy.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-local-download-proxy.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "SSH-P0-CONN-04 only verifies Host proxying, remote deployment, and workspace opening in local download mode, without initiating model requests.",
+  "requests": []
+}

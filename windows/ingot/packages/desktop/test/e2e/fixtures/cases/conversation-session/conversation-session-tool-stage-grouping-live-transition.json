@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-stage-grouping-live-transition",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-stage-grouping-live-transition.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-stage-grouping-live-transition.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-tool-stage-grouping-live-transition",
+      "source": "created-by-spec",
+      "description": "TGE01 Read/Write/Edit 使用的 case-owned workspace fixture。"
+    }
+  ],
+  "requests": [
+    { "id": "tge01-read", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix tool order to stably verify stage boundaries for Explore, Terminal, and Changes." },
+    { "id": "tge01-readonly-shell", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix read-only command to prove it only enters Explore after Shell classification." },
+    { "id": "tge01-execute-a", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "本地慢命令提供稳定 running window，用于断言 Terminal summary。" },
+    { "id": "tge01-execute-b", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Second command stably verifies parent identity and rolling summary." },
+    { "id": "tge01-write", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix Write as the visible stage boundary after Terminal." },
+    { "id": "tge01-edit", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix Edit to verify Changes identity and the latest file summary." },
+    { "id": "tge01-final", "kind": "main", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Fix terminal text to stably end the Changes stage." }
+  ]
+}

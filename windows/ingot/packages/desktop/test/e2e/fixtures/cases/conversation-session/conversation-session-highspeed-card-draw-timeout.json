@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-highspeed-card-draw-timeout",
+  "spec": "./test/e2e/conversation-session/conversation-session-highspeed-card-draw-timeout.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-card-draw-timeout.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "highspeed-draw-timeout-turn-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only need a fixed response to wrap up E2E; core assertions focus on the draw result's effect on the input box and Highspeed indicator; replayed via Coding Plan data plane proxy without calling real plans."
+    },
+    {
+      "id": "highspeed-draw-timeout-turn-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Only need a fixed response to wrap up E2E; core assertions focus on the draw result's effect on the input box and Highspeed indicator; replayed via Coding Plan data plane proxy without calling real plans."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-tool-detail-toggle-stability",
+  "spec": "./test/e2e/conversation-session/conversation-session-tool-detail-toggle-stability.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-tool-detail-toggle-stability.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-tool-detail-toggle-stability",
+      "source": "created-by-spec",
+      "description": "P08 spec creates isolated sandbox files for two consecutive Reads and deletes them upon completion."
+    }
+  ],
+  "requests": [
+    {
+      "id": "upstream-tool-detail-toggle-read-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger two consecutive Reads to satisfy the product contract of creating an Explore parent group only with at least two tools of the same kind."
+    },
+    {
+      "id": "upstream-tool-detail-toggle-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably conclude the current turn after backfilling tool results so the test only observes the expand and collapse geometry of completed details."
+    }
+  ]
+}

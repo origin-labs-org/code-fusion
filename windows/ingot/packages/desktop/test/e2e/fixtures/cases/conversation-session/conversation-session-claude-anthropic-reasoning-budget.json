@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-claude-anthropic-reasoning-budget",
+  "spec": "./test/e2e/conversation-session/conversation-session-claude-anthropic-reasoning-budget.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-claude-anthropic-reasoning-budget.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "claude-anthropic-reasoning-budget-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching low/xhigh business fixtures."
+    },
+    {
+      "id": "claude-anthropic-reasoning-low-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions are on provider/model identity, Anthropic transport, and low fixed budget request body; the response only needs to complete stably and include the agreed text."
+    },
+    {
+      "id": "claude-anthropic-reasoning-xhigh-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions are on Anthropic thinking budget after switching subsequent requests under the same provider/model to xhigh; the response only needs to complete stably and include the agreed text."
+    }
+  ]
+}

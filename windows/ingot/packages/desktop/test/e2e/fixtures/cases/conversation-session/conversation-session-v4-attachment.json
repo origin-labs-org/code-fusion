@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-attachment",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-attachment.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-attachment.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-attachment-only-send",
+      "description": "T06：空正文、两个附件的首发请求。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Both filename placeholders appear simultaneously, proving attachment-only initial sends are not blocked by empty body validation."
+    },
+    {
+      "id": "v4-attachment-edit-one",
+      "description": "D12: Branch-cut request with only the second attachment remaining after deleting the first.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "bodyIncludes the kept placeholder and bodyExcludes the removed placeholder, directly constraining provider-visible attachments after branch-cut."
+    }
+  ]
+}

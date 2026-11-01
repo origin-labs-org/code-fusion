@@ -1,0 +1,405 @@
+import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
+import {
+  testId,
+  TID_AUTOMATION_CARD,
+  TID_AUTOMATION_CUSTOM_CONFIRM,
+  TID_AUTOMATION_CUSTOM_INTERVAL_SELECT,
+  TID_AUTOMATION_CUSTOM_REPEAT_EDIT,
+  TID_AUTOMATION_FORM_SUBMIT,
+  TID_AUTOMATION_FORM_TITLE,
+  TID_AUTOMATION_FREQUENCY_OPTION,
+  TID_AUTOMATION_FREQUENCY_SELECT,
+  TID_AUTOMATION_SCHEDULE_ADD,
+  TID_AUTOMATION_SCHEDULE_DELETE,
+  TID_AUTOMATION_SCHEDULE_PREVIEW,
+  TID_AUTOMATIONS_LIST,
+  TID_CHAT_MODE_SELECT_TRIGGER,
+  TID_CONFIRM_DIALOG_CONFIRM,
+  TID_CRON_CREATE_CARD,
+  TID_CRON_CREATE_OPEN,
+  TID_V4_FEEDBACK_DISLIKE,
+  TID_V4_FORK,
+} from "@origin-ai/cf-shared/test-ids";
+import {
+  clearAppData,
+  clickTestIdByDom,
+  getE2EAppDataPaths,
+  clickTestIdByWebDriver,
+  waitForTestIdByDom,
+} from "../helpers/desktop-app.js";
+import {
+  expandAssistantHistoriesWithContent,
+  getToolCallDiagnostics,
+} from "../helpers/conversation-session-tool-diagnostics.js";
+import {
+  getUpstreamRequestToolContract,
+  waitForUpstreamRequest,
+} from "../helpers/conversation-session-network.js";
+import {
+  approveV4Permission,
+  clickFirstV4Fork,
+  prepareV4ConversationE2E,
+  sendV4Prompt,
+  waitForV4Fork,
+  waitForV4Pane,
+  waitForV4TimelineContaining,
+} from "../helpers/v4-conversation.js";
+
+const MARKER = "E2E_AUTOMATION_CRON_CREATE";
+const AUTOMATION_TITLE = "E2E_CRON_STANDUP";
+const INTERVAL = 31;
+const INTERVAL_MINUTE = 49;
+const COMPATIBLE_CRON = "49 * * * *";
+
+describe("会话内 CronCreate 定时任务卡片与派生轮尾 E2E", () => {
+  after(async () => {
+    await browser.electron.restoreAllMocks();
+    await clearAppData();
+  });
+
+  it("创建定时任务 → 派生后卡片与操作栏先于分割线 → 直达任务详情", async function () {
+    this.timeout(150000);
+
+    await prepareV4ConversationE2E({ resetDraftBeforeProvider: true });
+
+    await sendV4Prompt(`${MARKER} remind me every 31 hours at minute 49`);
+    await waitForV4TimelineContaining(MARKER);
+    const cronCreateRequest = {
+      lastUserMessageIncludes: [MARKER],
+    };
+    await waitForUpstreamRequest(
+      cronCreateRequest,
+      "没有捕获到会话内 CronCreate 的 provider 请求",
+    );
+    const cronCreateContract = await getUpstreamRequestToolContract(
+      cronCreateRequest,
+      "CronCreate",
+    );
+    expect(cronCreateContract).not.toBeNull();
+    const serializedCronCreateContract = JSON.stringify(cronCreateContract);
+    expect(serializedCronCreateContract).toContain(
+      "must never ask the run to create",
+    );
+    expect(serializedCronCreateContract).toContain(
+      "do not ask it to create or schedule another automation",
+    );
+    await approveV4Permission();
+    const parent = await waitForV4Pane(
+      (snapshot) =>
+        snapshot.sessionId !== null &&
+        snapshot.sessionId !== "draft" &&
+        !snapshot.canStop,
+      "会话内 CronCreate 没有完成",
+      90000,
+    );
+    const parentSessionId = parent.sessionId;
+
+    await expandAssistantHistoriesWithContent();
+    try {
+      await waitForTestIdByDom(TID_CRON_CREATE_CARD, {
+        timeout: 15000,
+        timeoutMsg: "会话内没有渲染 CronCreate 定时任务卡片",
+      });
+    } catch (error) {
+      const diagnostics = await getToolCallDiagnostics({
+        type: "toolName",
+        value: "CronCreate",
+      });
+      throw new Error(
+        `Sessioninner没有渲染 CronCreate Scheduled Tasks卡片；diagnostics=${JSON.stringify(diagnostics)}`,
+        { cause: error },
+      );
+    }
+    await browser.waitUntil(
+      async () => {
+        const cardText = await readTestIdText(TID_CRON_CREATE_CARD);
+        return (
+          cardText.includes(AUTOMATION_TITLE) &&
+          cardText.includes(String(INTERVAL)) &&
+          cardText.includes(String(INTERVAL_MINUTE))
+        );
+      },
+      {
+        timeout: 10000,
+        timeoutMsg: "CronCreate 卡片没有展示真实的每 31 小时第 49 分频率",
+      },
+    );
+    const createdAutomation =
+      await waitForAutomationRecordByTitle(AUTOMATION_TITLE);
+    expect(createdAutomation.cronExpr).toBe(COMPATIBLE_CRON);
+    expect(createdAutomation.scheduleRule).toMatchObject({
+      unit: "hourly",
+      interval: INTERVAL,
+      minute: INTERVAL_MINUTE,
+    });
+
+    await waitForV4Fork();
+    expect(await clickFirstV4Fork()).toBe(true);
+    await waitForV4Pane(
+      (snapshot) =>
+        snapshot.sessionId !== null &&
+        snapshot.sessionId !== "draft" &&
+        snapshot.sessionId !== parentSessionId,
+      "CronCreate 会话派生后没有切到 child session",
+      60000,
+    );
+    await waitForV4TimelineContaining(MARKER, 30000);
+    await expandAssistantHistoriesWithContent();
+    await waitForTestIdByDom(TID_CRON_CREATE_CARD, {
+      timeout: 15000,
+      timeoutMsg: "派生会话没有恢复 CronCreate 定时任务卡片",
+    });
+
+    await waitForForkTailOrder();
+
+    await clickTestIdByDom(TID_CRON_CREATE_OPEN, {
+      timeoutMsg: "CronCreate 卡片没有可点击的「去到定时任务」按钮",
+    });
+
+    await waitForTestIdByDom(TID_AUTOMATION_FORM_TITLE, {
+      timeout: 15000,
+      timeoutMsg: "没有跳转到会话创建的定时任务详情",
+    });
+    await browser.waitUntil(
+      async () =>
+        (await readTestIdValue(TID_AUTOMATION_FORM_TITLE)) === AUTOMATION_TITLE,
+      {
+        timeout: 15000,
+        timeoutMsg: `TaskDetails没有回显Session创建的Title：${AUTOMATION_TITLE}`,
+      },
+    );
+
+    await waitForTestIdByDom(TID_CHAT_MODE_SELECT_TRIGGER, {
+      timeout: 10000,
+      timeoutMsg: "任务详情没有渲染权限模式选择器",
+    });
+    await clickAutomationsBreadcrumbBack();
+    expect(await hasVisibleTestId(TID_CONFIRM_DIALOG_CONFIRM)).toBe(false);
+    await waitForTestIdByDom(TID_AUTOMATIONS_LIST, {
+      timeout: 15000,
+      timeoutMsg: "无修改返回没有直接回到任务列表（疑似误弹未保存确认框）",
+    });
+
+    await clickTestIdByDom(TID_AUTOMATION_CARD, {
+      timeoutMsg: "返回列表后无法重新进入任务详情",
+    });
+    await browser.waitUntil(
+      async () =>
+        (await readTestIdValue(TID_AUTOMATION_FORM_TITLE)) === AUTOMATION_TITLE,
+      {
+        timeout: 15000,
+        timeoutMsg: `重New进入Details没有回显Title：${AUTOMATION_TITLE}`,
+      },
+    );
+
+    await waitForTestIdByDom(TID_AUTOMATION_SCHEDULE_PREVIEW, {
+      timeout: 10000,
+      timeoutMsg: "会话创建任务没有显示调度摘要",
+    });
+    const initialSchedule = await readTestIdText(
+      TID_AUTOMATION_SCHEDULE_PREVIEW,
+    );
+    expect(initialSchedule).toContain(String(INTERVAL));
+    expect(initialSchedule).toContain(String(INTERVAL_MINUTE));
+    expect(initialSchedule).not.toContain("下次运行");
+    await clickTestIdByDom(TID_AUTOMATION_CUSTOM_REPEAT_EDIT, {
+      timeoutMsg: "会话创建的 interval 调度没有自定义重复编辑入口",
+    });
+    await waitForTestIdByDom(TID_AUTOMATION_CUSTOM_INTERVAL_SELECT, {
+      timeout: 10000,
+      timeoutMsg: "会话创建的 interval 调度没有复原自定义重复间隔",
+    });
+    expect(await readTestIdValue(TID_AUTOMATION_CUSTOM_INTERVAL_SELECT)).toBe(
+      String(INTERVAL),
+    );
+    await clickTestIdByDom(TID_AUTOMATION_CUSTOM_CONFIRM, {
+      timeoutMsg: "会话创建的 interval 调度无法关闭自定义重复编辑",
+    });
+
+    await clickTestIdByDom(TID_AUTOMATION_SCHEDULE_DELETE, {
+      timeoutMsg: "会话创建任务的自定义调度没有删除按钮",
+    });
+    await clickTestIdByWebDriver(TID_AUTOMATION_SCHEDULE_ADD, {
+      timeoutMsg: "删除会话调度后没有进入添加调度流程",
+    });
+    await clickTestIdByDom(testId(TID_AUTOMATION_FREQUENCY_OPTION, "daily"), {
+      timeoutMsg: "添加调度菜单没有每天选项",
+    });
+    await clickTestIdByDom(TID_AUTOMATION_FORM_SUBMIT, {
+      timeoutMsg: "重新设置 UI 调度后无法保存",
+    });
+
+    await waitForTestIdByDom(TID_AUTOMATIONS_LIST, {
+      timeout: 15000,
+      timeoutMsg: "保存 UI 调度后没有回到任务列表",
+    });
+    await clickTestIdByDom(TID_AUTOMATION_CARD, {
+      timeoutMsg: "无法再次进入会话创建任务详情",
+    });
+    await waitForTestIdByDom(TID_AUTOMATION_FREQUENCY_SELECT, {
+      timeout: 15000,
+      timeoutMsg: "重设后没有恢复标准 UI 调度控件",
+    });
+    const updatedSchedule = await readTestIdText(
+      TID_AUTOMATION_SCHEDULE_PREVIEW,
+    );
+    expect(updatedSchedule).not.toBe("自定义");
+  });
+});
+
+async function clickAutomationsBreadcrumbBack(): Promise<void> {
+  const buttons = await browser.$$('nav[aria-label] button');
+  for (const button of buttons) {
+    if (/Automations|Automation/u.test(await button.getText())) {
+      await button.click();
+      return;
+    }
+  }
+  throw new Error("任务详情没有返回 Automations 列表的 breadcrumb 入口");
+}
+
+interface AutomationRecord {
+  cronExpr: string;
+  scheduleRule: Record<string, unknown>;
+}
+
+async function waitForAutomationRecordByTitle(
+  title: string,
+): Promise<AutomationRecord> {
+  let record: AutomationRecord | null = null;
+  await browser.waitUntil(
+    async () => {
+      record = readAutomationRecordByTitle(title);
+      return record !== null;
+    },
+    {
+      timeout: 10000,
+      timeoutMsg: `没有在 automation Data库Medium找到 ${title}`,
+    },
+  );
+  if (!record) throw new Error(`automation Data库记录为空：${title}`);
+  return record;
+}
+
+function readAutomationRecordByTitle(title: string): AutomationRecord | null {
+  const database = new DatabaseSync(
+    join(getE2EAppDataPaths().storageRoot, "v2", "tasks-index.sqlite"),
+    { readOnly: true },
+  );
+  try {
+    const row = database
+      .prepare(
+        `SELECT cron_expr, schedule_rule
+         FROM automations
+         WHERE title = ?`,
+      )
+      .get(title) as
+      | { cron_expr: string; schedule_rule: string | null }
+      | undefined;
+    if (!row?.schedule_rule) return null;
+    return {
+      cronExpr: row.cron_expr,
+      scheduleRule: JSON.parse(row.schedule_rule) as Record<string, unknown>,
+    };
+  } finally {
+    database.close();
+  }
+}
+
+async function readTestIdText(currentTestId: string): Promise<string> {
+  return browser.execute((tid) => {
+    const el = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-testid]"),
+    ).find((item) => item.dataset.testid === tid);
+    return el?.textContent?.trim() ?? "";
+  }, currentTestId);
+}
+
+async function hasVisibleTestId(currentTestId: string): Promise<boolean> {
+  return browser.execute(
+    (tid) => Boolean(document.querySelector(`[data-testid="${tid}"]`)),
+    currentTestId,
+  );
+}
+
+interface ForkTailOrderSnapshot {
+  cardTestId: string | null;
+  dislikeTestId: string | null;
+  forkActionTestId: string | null;
+  boundaryRowId: string | null;
+  ordered: boolean;
+}
+
+async function waitForForkTailOrder(): Promise<void> {
+  let latest: ForkTailOrderSnapshot | null = null;
+  try {
+    await browser.waitUntil(
+      async () => {
+        latest = await readForkTailOrder();
+        return latest.ordered;
+      },
+      {
+        timeout: 15000,
+        timeoutMsg: "派生分割线没有落在 CronCreate 卡片和 assistant 操作栏之后",
+      },
+    );
+  } catch (error) {
+    latest = await readForkTailOrder();
+    throw new Error(`派生轮尾 DOM 顺序Error；latest=${JSON.stringify(latest)}`, {
+      cause: error,
+    });
+  }
+}
+
+async function readForkTailOrder(): Promise<ForkTailOrderSnapshot> {
+  return browser.execute(
+    (cardTid, dislikePrefix, forkPrefix) => {
+      const card = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-testid]"),
+      ).find((item) => item.dataset.testid === cardTid);
+      const turn = card?.closest<HTMLElement>("[data-turn-id]");
+      const dislike = turn?.querySelector<HTMLElement>(
+        `[data-testid^="${dislikePrefix}-"]`,
+      );
+      const forkAction = turn?.querySelector<HTMLElement>(
+        `[data-testid^="${forkPrefix}-"]`,
+      );
+      const boundary = turn?.querySelector<HTMLElement>(
+        '[data-row-kind="timelineMarker"][data-marker-type="forkNotice"]',
+      );
+      const isBefore = (
+        first?: HTMLElement | null,
+        second?: HTMLElement | null,
+      ) =>
+        Boolean(
+          first &&
+          second &&
+          first.compareDocumentPosition(second) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        );
+      return {
+        cardTestId: card?.dataset.testid ?? null,
+        dislikeTestId: dislike?.dataset.testid ?? null,
+        forkActionTestId: forkAction?.dataset.testid ?? null,
+        boundaryRowId: boundary?.dataset.rowId ?? null,
+        ordered:
+          isBefore(card, dislike) &&
+          isBefore(dislike, forkAction) &&
+          isBefore(forkAction, boundary),
+      };
+    },
+    TID_CRON_CREATE_CARD,
+    TID_V4_FEEDBACK_DISLIKE,
+    TID_V4_FORK,
+  );
+}
+
+async function readTestIdValue(currentTestId: string): Promise<string> {
+  return browser.execute((tid) => {
+    const element = document.querySelector<
+      HTMLInputElement | HTMLTextAreaElement
+    >(`[data-testid="${tid}"]`);
+    return element?.value ?? "";
+  }, currentTestId);
+}

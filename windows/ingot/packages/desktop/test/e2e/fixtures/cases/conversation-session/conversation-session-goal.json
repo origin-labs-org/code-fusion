@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-goal",
+  "spec": "./test/e2e/conversation-session/conversation-session-goal.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-goal.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-goal-set-continuation-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "After setting the goal, a brief streaming window is needed to verify the active target without a validating lock, before naturally entering the completed state to cover H02."
+    },
+    {
+      "id": "upstream-goal-set-verifier-passed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "GL/H02 needs to update the goal under a genuine completed target state, avoiding reliance on runtime teardown timing after stop."
+    },
+    {
+      "id": "upstream-goal-update-continuation-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "After updating the goal, a brief streaming window is needed to verify the new target takes effect without a validating lock, before naturally entering the completed state to wrap up the case."
+    },
+    {
+      "id": "upstream-goal-update-verifier-passed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "After updating the goal, let the case naturally enter the completed state before switching to subsequent running/held queue branches."
+    },
+    {
+      "id": "upstream-goal-running-slow-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Asserting running /goal queue requires regular messages to stay streaming; the real model might complete too quickly."
+    },
+    {
+      "id": "upstream-goal-running-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantics of /goal while running is entering the queue, without immediately triggering a provider request."
+    },
+    {
+      "id": "upstream-goal-held-queued-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Under held queue, new /goal is only appended to the end of the queue without triggering a provider request."
+    },
+    {
+      "id": "upstream-goal-slow-stream-marker-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Used to make fixture check explicitly cover the generic E2E_SLOW_STREAM marker in spec."
+    }
+  ]
+}

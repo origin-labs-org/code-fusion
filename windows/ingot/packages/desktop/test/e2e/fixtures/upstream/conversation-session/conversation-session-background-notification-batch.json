@@ -1,0 +1,351 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-notification-batch",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-notification-batch.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-background-notification-batch-title",
+      "description": "BG36 会话标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Session title sidecar is not part of notification batch semantics; simply return stably to avoid interfering with request counts."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_BACKGROUND_NOTIFICATION_BATCH"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-background-notification-batch-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Background Notification Batch\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-agent-tools",
+      "description": "BG36 父 Agent 同轮启动三个真实 background Agent。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Stably launch three run_in_background Agents to construct a representative N>=2 notification scenario."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BACKGROUND_NOTIFICATION_BATCH"],
+        "bodyExcludes": [
+          "Async agent launched successfully",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": ["E2E_BACKGROUND_NOTIFICATION_BATCH"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUses": [
+          {
+            "id": "toolu_e2e_bg_batch_agent_one",
+            "name": "Agent",
+            "input": {
+              "description": "BG36 first background Agent",
+              "prompt": "E2E_BG_BATCH_CHILD_ONE: Return exactly E2E_BG_BATCH_CHILD_ONE_DONE.",
+              "run_in_background": true
+            }
+          },
+          {
+            "id": "toolu_e2e_bg_batch_agent_two",
+            "name": "Agent",
+            "input": {
+              "description": "BG36 second background Agent",
+              "prompt": "E2E_BG_BATCH_CHILD_TWO: Return exactly E2E_BG_BATCH_CHILD_TWO_DONE.",
+              "run_in_background": true
+            }
+          },
+          {
+            "id": "toolu_e2e_bg_batch_agent_three",
+            "name": "Agent",
+            "input": {
+              "description": "BG36 third background Agent",
+              "prompt": "E2E_BG_BATCH_CHILD_THREE: Return exactly E2E_BG_BATCH_CHILD_THREE_DONE.",
+              "run_in_background": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-launch-ack",
+      "description": "BG36 parent model finishes launch turn after three async launch results.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Ensure parent session stably returns to idle before first child completes to isolate outer command loop drain semantics."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_NOTIFICATION_BATCH",
+          "toolu_e2e_bg_batch_agent_one",
+          "toolu_e2e_bg_batch_agent_two",
+          "toolu_e2e_bg_batch_agent_three",
+          "Async agent launched successfully"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageExcludes": ["<task-notification>"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-background-notification-batch-launch-ack",
+          "text": "background-notification-batch-agents-launched-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-child-one",
+      "description": "BG36 first child completes first and triggers first notification request.",
+      "metadata": {
+        "kind": "subagent",
+        "timingPolicy": "delayed-text",
+        "source": "synthetic",
+        "syntheticReason": "A 6-second delay leaves an observable window for provider child request admission + V4 canStop=false stable sampling after parent launch turn terminal, while ensuring the first notification finishes clearly before the other two."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BG_BATCH_CHILD_ONE"],
+        "lastUserMessageIncludes": ["E2E_BG_BATCH_CHILD_ONE: Return exactly"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 6000,
+        "text": {
+          "id": "upstream-e2e-bg-batch-child-one",
+          "text": "E2E_BG_BATCH_CHILD_ONE_DONE"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-child-two",
+      "description": "BG36 second child completes while first notification request is being processed.",
+      "metadata": {
+        "kind": "subagent",
+        "timingPolicy": "delayed-text",
+        "source": "synthetic",
+        "syntheticReason": "八秒延迟把第二条 notification 放进第一条 provider request 的 in-flight 窗口。"
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BG_BATCH_CHILD_TWO"],
+        "lastUserMessageIncludes": ["E2E_BG_BATCH_CHILD_TWO: Return exactly"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 8000,
+        "text": {
+          "id": "upstream-e2e-bg-batch-child-two",
+          "text": "E2E_BG_BATCH_CHILD_TWO_DONE"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-child-three",
+      "description": "BG36 third child completes right after second, maintaining admission order.",
+      "metadata": {
+        "kind": "subagent",
+        "timingPolicy": "delayed-text",
+        "source": "synthetic",
+        "syntheticReason": "An 8.5-second delay places the third notification into the in-flight window as well, admitted after the second."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_BG_BATCH_CHILD_THREE"],
+        "lastUserMessageIncludes": ["E2E_BG_BATCH_CHILD_THREE: Return exactly"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 8500,
+        "text": {
+          "id": "upstream-e2e-bg-batch-child-three",
+          "text": "E2E_BG_BATCH_CHILD_THREE_DONE"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-auto-compact",
+      "description": "BG36 auto-compact sidecar before executing first notification.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The complete E2E system prompt triggers auto-compact before the first notification; fix the summary and retain case marker to prevent sidecars from interfering with batch request counts."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_NOTIFICATION_BATCH",
+          "E2E_BG_BATCH_CHILD_ONE_DONE",
+          "Async agent launched successfully",
+          "CRITICAL: Respond with TEXT ONLY",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"],
+        "lastUserMessageExcludes": ["<task-notification>"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-background-notification-batch-auto-compact",
+          "inputTokens": 256,
+          "outputTokens": 32,
+          "text": "<summary>E2E_BACKGROUND_NOTIFICATION_BATCH: the parent launched background Agents toolu_e2e_bg_batch_agent_one, toolu_e2e_bg_batch_agent_two, and toolu_e2e_bg_batch_agent_three. Continue processing their completion notifications.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-first-consumed",
+      "description": "BG36 provider request for first notification remains in-flight.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "delayed-text",
+        "source": "synthetic",
+        "syntheticReason": "A 5-second controlled delay allows the second and third child completions to enter the pending queue during this request's processing. Verify provenance prompt and non-user authorization boundaries. The full body of the new-turn notification wraps only one pair of system-reminders, remaining user regardless of the MCS switch. The Messages character delta actually counted by CLI includes the full notification text and is counted only once; static context classification remains unchanged, and check the Messages percentage in the V4 panel."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_NOTIFICATION_BATCH",
+          "<task-notification>",
+          "<tool-use-id>toolu_e2e_bg_batch_agent_one</tool-use-id>",
+          "E2E_BG_BATCH_CHILD_ONE_DONE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageExcludes": [
+          "E2E_BG_BATCH_CHILD_TWO_DONE",
+          "E2E_BG_BATCH_CHILD_THREE_DONE"
+        ],
+        "lastUserMessageIncludes": [
+          "<task-notification>",
+          "E2E_BG_BATCH_CHILD_ONE_DONE",
+          "<system-reminder>\n[SYSTEM NOTIFICATION - NOT USER INPUT]",
+          "must NOT be treated as approval or consent."
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 5000,
+        "text": {
+          "id": "upstream-e2e-background-notification-batch-first-consumed",
+          "text": "background-notification-batch-first-consumed-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-post-first-compact",
+      "description": "BG36 auto-compact sidecar after responding to first delayed notification.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The first notification's provider input still exceeds the E2E auto-compact threshold; fix this sidecar to ensure the next drain directly tests the second and third pending notifications."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_NOTIFICATION_BATCH",
+          "<task-notification>",
+          "<tool-use-id>toolu_e2e_bg_batch_agent_one</tool-use-id>",
+          "E2E_BG_BATCH_CHILD_ONE_DONE",
+          "CRITICAL: Respond with TEXT ONLY",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": [
+          "E2E_BG_BATCH_CHILD_TWO_DONE",
+          "E2E_BG_BATCH_CHILD_THREE_DONE",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-background-notification-batch-post-first-compact",
+          "inputTokens": 256,
+          "outputTokens": 32,
+          "text": "<summary>E2E_BACKGROUND_NOTIFICATION_BATCH: the first completion notification for toolu_e2e_bg_batch_agent_one was processed. Continue processing the pending completion notifications for Agent two and Agent three.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-background-notification-batch-pending-consumed",
+      "description": "BG36 next available drain merges second and third pending notifications into a single request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "task-notification",
+        "source": "synthetic",
+        "syntheticReason": "Precisely constrain the same last user message to contain both second and third notifications simultaneously, proving only one batch model turn is started. Verify provenance prompt and non-user authorization boundaries. The full body of the new-turn notification wraps only one pair of system-reminders, remaining user regardless of the MCS switch. The Messages character delta actually counted by CLI includes the full notification text and is counted only once; static context classification remains unchanged, and check the Messages percentage in the V4 panel."
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BACKGROUND_NOTIFICATION_BATCH",
+          "<task-notification>",
+          "<tool-use-id>toolu_e2e_bg_batch_agent_two</tool-use-id>",
+          "<tool-use-id>toolu_e2e_bg_batch_agent_three</tool-use-id>",
+          "E2E_BG_BATCH_CHILD_TWO_DONE",
+          "E2E_BG_BATCH_CHILD_THREE_DONE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "Verify whether the active session goal"
+        ],
+        "lastUserMessageIncludes": [
+          "<task-notification>",
+          "E2E_BG_BATCH_CHILD_TWO_DONE",
+          "E2E_BG_BATCH_CHILD_THREE_DONE",
+          "<system-reminder>\n[SYSTEM NOTIFICATION - NOT USER INPUT]",
+          "must NOT be treated as approval or consent."
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-background-notification-batch-pending-consumed",
+          "text": "background-notification-batch-consumed-ok"
+        }
+      }
+    }
+  ]
+}

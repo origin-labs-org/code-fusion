@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-goal-interruptions",
+  "spec": "./test/e2e/conversation-session/conversation-session-goal-interruptions.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-goal-interruptions.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-goal-verifier-stop-continuation",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably transition /goal into the verifier window, preventing real model output from failing verifier preconditions."
+    },
+    {
+      "id": "upstream-goal-verifier-stop-delayed",
+      "kind": "goal-verifier",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "goal verifier stop requires a stable running window; the real verifier might complete too quickly."
+    },
+    {
+      "id": "upstream-goal-verifier-stop-next",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "验证 stopped verifier 不阻塞下一条普通用户消息。"
+    },
+    {
+      "id": "upstream-goal-verifier-stop-next-verifier-passed",
+      "kind": "goal-verifier",
+      "source": "synthetic",
+      "timingPolicy": "fast-json",
+      "syntheticReason": "After a regular next turn completes, the active goal may run verifier again; provide a passing response to naturally conclude the case."
+    },
+    {
+      "id": "upstream-goal-verifier-compact-continuation",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably transition the compact branch into the verifier stop window."
+    },
+    {
+      "id": "upstream-goal-verifier-compact-delayed",
+      "kind": "goal-verifier",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "goal verifier compact requires a stable running window; the real verifier might complete too quickly."
+    },
+    {
+      "id": "upstream-goal-verifier-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-json",
+      "syntheticReason": "Verify that manual compact is allowed after stopping the verifier, providing an assertable compact summary marker for subsequent requests."
+    },
+    {
+      "id": "upstream-goal-verifier-compact-next",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that regular user messages can continue based on the compacted summary after stopping the verifier compact."
+    },
+    {
+      "id": "upstream-goal-verifier-compact-next-verifier-passed",
+      "kind": "goal-verifier",
+      "source": "synthetic",
+      "timingPolicy": "fast-json",
+      "syntheticReason": "After the next turn following compaction completes, the active goal may run verifier again; provide a passing response to naturally conclude the case."
+    }
+  ]
+}

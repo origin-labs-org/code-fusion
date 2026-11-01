@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-same-model-draft-provider-identity",
+  "spec": "./test/e2e/conversation-session/conversation-session-same-model-draft-provider-identity.test.ts",
+  "fixtures": [
+    {
+      "id": "same-model-provider-identity-title",
+      "description": "Fixed title generation response for cross-provider same-name model identity cases, avoiding strict case-local replay dependency on other cases.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-same-model-provider-title","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-provider-title","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"Provider Identity\\\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-provider-title","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":64,"completion_tokens":8,"total_tokens":72}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "same-model-provider-identity-glm52-primary-main",
+      "description": "I22 first creates an active session using glm-5.2 under primary provider to set up preconditions for race conditions when an empty draft switches workspace default to alternate provider.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertion is that once a GLM-5.2 primary active session exists, workspace default responses and subsequent requests cannot pull the same-named model back to the old provider; the seed response only needs to complete reliably."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GLM52_PROVIDER_IDENTITY_PRIMARY"],
+        "bodyIncludes": [
+          "E2E_GLM52_PROVIDER_IDENTITY_PRIMARY",
+          "upstream-e2e-ok",
+          "glm-5.2"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-same-model-glm52-primary","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-glm52-primary","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-glm52-primary","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "same-model-provider-identity-glm52-alternate-main",
+      "description": "I22 sends after switching to the same-name glm-5.2 under alternate provider, verifying the real request URL hits alternate provider Base URL.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "GLM-5.2 alternate sending is used to verify that the real request URL hits the alternate provider Base URL; the response only needs to complete reliably."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_GLM52_PROVIDER_IDENTITY_ALTERNATE"],
+        "bodyIncludes": [
+          "E2E_GLM52_PROVIDER_IDENTITY_ALTERNATE",
+          "upstream-e2e-ok",
+          "glm-5.2"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-same-model-glm52-alternate","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-glm52-alternate","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-glm52-alternate","object":"chat.completion.chunk","created":0,"model":"glm-5.2","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "same-model-provider-identity-upstream-flash-primary-main",
+      "description": "I22 first creates an active session using deepseek-v4-flash under primary provider to set up non-GLM preconditions for race conditions when an empty draft switches workspace default to alternate provider.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core assertion is that once a deepseek-v4-flash primary active session exists, workspace default responses and subsequent requests cannot pull the same-named model back to the old provider; the seed response only needs to complete reliably."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_UPSTREAM_FLASH_PROVIDER_IDENTITY_PRIMARY"],
+        "bodyIncludes": [
+          "E2E_UPSTREAM_FLASH_PROVIDER_IDENTITY_PRIMARY",
+          "upstream-e2e-ok",
+          "deepseek-v4-flash"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-same-model-upstream-primary","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-upstream-primary","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-upstream-primary","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140}}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "same-model-provider-identity-upstream-flash-alternate-main",
+      "description": "I22 sends after switching to the same-name deepseek-v4-flash under alternate provider, verifying the real request URL hits alternate provider Base URL.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "deepseek-v4-flash alternate sending is used to verify that the real request URL hits the alternate provider Base URL; the response only needs to complete reliably."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_UPSTREAM_FLASH_PROVIDER_IDENTITY_ALTERNATE"],
+        "bodyIncludes": [
+          "E2E_UPSTREAM_FLASH_PROVIDER_IDENTITY_ALTERNATE",
+          "upstream-e2e-ok",
+          "deepseek-v4-flash"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"chatcmpl-same-model-upstream-alternate","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"role\":"assistant"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-upstream-alternate","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{\"content\":"upstream-e2e-ok"},"finish_reason":null}]}\n\ndata: {\"id\":"chatcmpl-same-model-upstream-alternate","object":"chat.completion.chunk","created":0,"model":"deepseek-v4-flash","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}],"usage":{\"prompt_tokens\":128,"completion_tokens":12,"total_tokens":140}}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

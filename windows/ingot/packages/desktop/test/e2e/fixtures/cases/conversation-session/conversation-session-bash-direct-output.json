@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-bash-direct-output",
+  "spec": "./test/e2e/conversation-session/conversation-session-bash-direct-output.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-bash-direct-output.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/bash-direct-output/中文 空格/writer.cjs",
+      "source": "created-by-spec",
+      "description": "Copy the real Node producer from the case-local fs fixture and control output using a file barrier."
+    }
+  ],
+  "requests": [
+    {
+      "id": "bdo-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_small-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_small-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_large-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_large-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_progress-a-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_progress-b-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_progress-a-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_progress-b-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "bdo-query-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_first-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_first-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_second-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_second-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_final-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_query_final-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_limit_foreground-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_limit_foreground-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "bdo-limit-background-notification",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_limit_background-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_limit_background-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_read_failure-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_read_failure-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_open_failure-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_open_failure-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_recovery-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_recovery-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix tool parameters and continuation; actual Bash, files, progress, and stops go through the complete Desktop to CLI pipeline."
+    },
+    {
+      "id": "e2e_bdo_realtime-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix a single foreground Bash; the real producer writes stdout/stderr in five segments via a file barrier, verifying flush before exit, up to five lines with short-output adaptation, default stick-to-bottom, scroll-up pause and scroll-to-bottom resume, and the final reading position."
+    },
+    {
+      "id": "e2e_bdo_realtime-done",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix a single foreground Bash; the real producer writes stdout/stderr in five segments via a file barrier, verifying flush before exit, up to five lines with short-output adaptation, default stick-to-bottom, scroll-up pause and scroll-to-bottom resume, and the final reading position."
+    }
+  ]
+}

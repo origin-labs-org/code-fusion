@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-file-compact-continuity",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-file-compact-continuity.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-plan-file-compact-enter-plan-call",
+      "description": "First-round request reliably returns EnterPlanMode tool call, creating plan mode approval prerequisite state.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_FILE_COMPACT_CONTINUITY"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_FILE_COMPACT_CONTINUITY",
+          "E2E_PLAN_FILE_COMPACT_ENTER_PLAN",
+          "E2E_PLAN_FILE_COMPACT_EXIT_PLAN"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_file_compact_enter_plan_mode",
+          "name": "EnterPlanMode",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-file-compact-exit-plan-call",
+      "description": "Returns ExitPlanMode tool call after entering plan mode, triggering approval dialog with unique plan marker.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "需要稳定触发 ExitPlanMode 审批弹窗，并让已批准 plan 内容可在文件和 compact 后请求中被追踪。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_FILE_COMPACT_EXIT_PLAN",
+          "toolu_e2e_plan_file_compact_enter_plan_mode"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_file_compact_exit_plan_mode",
+          "name": "ExitPlanMode",
+          "input": {
+            "plan": "E2E_PLAN_FILE_COMPACT_PLAN_BODY: 1. Persist the approved plan under .cf/plans. 2. Preserve the plan through manual compact via plan_file_reference."
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-file-compact-approval-final",
+      "description": "Returns fixed text after user approves plan, transitioning approval round to completed.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reply content after approval is not central to this case; it only needs to reliably end current turn and retain provider-visible approved plan."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "toolu_e2e_plan_file_compact_exit_plan_mode",
+          "User has approved your plan",
+          "E2E_PLAN_FILE_COMPACT_PLAN_BODY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-plan-file-compact-approval-final",
+          "inputTokens": 192,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-file-compact-checkpoint-final",
+      "description": "Append a regular message turn after approval so manual compact has at least two turns of compressible history.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The current compact policy skips history that is too short; the checkpoint is only used to stably satisfy the compact entry conditions."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_FILE_COMPACT_CHECKPOINT"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_FILE_COMPACT_CHECKPOINT",
+          "E2E_PLAN_FILE_COMPACT_PLAN_BODY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-plan-file-compact-checkpoint-final",
+          "inputTokens": 224,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-file-compact-summary-success",
+      "description": "手动 /compact 成功的 streaming Anthropic-compatible 响应。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This case focuses on reinjecting plan_file_reference after compact; the summary text only needs to stably complete the compact."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_PLAN_FILE_COMPACT_PLAN_BODY",
+          "E2E_PLAN_FILE_COMPACT_CHECKPOINT",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "delayMs": 200,
+        "text": {
+          "id": "upstream-e2e-plan-file-compact-summary-success",
+          "inputTokens": 256,
+          "outputTokens": 64,
+          "text": "<analysis>Manual compact summarized the approved plan and checkpoint turn.</analysis>\n\n<summary>The user approved E2E_PLAN_FILE_COMPACT_PLAN_BODY and then sent E2E_PLAN_FILE_COMPACT_CHECKPOINT before manual compact.</summary>"
+        }
+      }
+    },
+    {
+      "id": "upstream-plan-file-compact-post-compact-final",
+      "description": "Regular requests after compact completion must re-include plan_file_reference and full plan marker.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The core contract is provider-visible request content; the reply text only needs to stably conclude subsequent turns."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_FILE_COMPACT_AFTER"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_FILE_COMPACT_AFTER",
+          "A plan file exists from plan mode at:",
+          "Plan contents:",
+          ".cf/plans/plan-",
+          "E2E_PLAN_FILE_COMPACT_PLAN_BODY",
+          "If this plan is relevant to the current work and not already complete, continue working on it."
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "upstream-e2e-plan-file-compact-post-compact-final",
+          "inputTokens": 256,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

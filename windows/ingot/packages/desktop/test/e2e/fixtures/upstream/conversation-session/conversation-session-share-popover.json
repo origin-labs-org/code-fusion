@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-share-popover",
+  "spec": "./test/e2e/conversation-session/conversation-session-share-popover.test.ts",
+  "fixtures": [
+    {
+      "id": "share-popover-one",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Two completed turns with long text provide a real scroll distance for independent locate, selection rollback and select-all checks; no public link is published."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SHARE_POPOVER_one"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "share-popover-one",
+          "inputTokens": 64,
+          "outputTokens": 1200,
+          "text": "share-popover-one\n\n定位验证Section 0：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 1：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 2：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 3：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 4：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 5：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 6：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 7：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 8：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 9：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 10：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 11：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 12：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 13：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 14：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 15：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 16：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 17：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 18：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 19：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 20：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 21：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 22：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 23：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。"
+        }
+      }
+    },
+    {
+      "id": "share-popover-two",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Two completed turns with long text provide a real scroll distance for independent locate, selection rollback and select-all checks; no public link is published."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SHARE_POPOVER_two"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "share-popover-two",
+          "inputTokens": 64,
+          "outputTokens": 1200,
+          "text": "share-popover-two\n\n定位验证Section 0：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 1：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 2：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 3：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 4：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 5：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 6：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 7：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 8：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 9：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 10：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 11：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 12：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 13：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 14：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 15：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 16：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 17：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 18：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 19：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 20：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 21：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 22：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。\n\n定位验证Section 23：用于让两轮Chat产生真实滚动距离，验证独立定位按钮滚到User Message。"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-session-isolation",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-session-isolation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-session-isolation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-session-isolation-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+    },
+    {
+      "id": "model-provider-session-isolation-a",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover Session A primary request body/model/thought; response only needs to complete stably with the agreed text."
+    },
+    {
+      "id": "model-provider-session-isolation-b",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover Session B secondary request body/model/thought; response only needs to complete stably with the agreed text."
+    },
+    {
+      "id": "model-provider-session-isolation-a-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is that B's config does not pollute A's follow-up request; response only needs to complete stably with the agreed text."
+    },
+    {
+      "id": "model-provider-session-isolation-b-follow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is that A's recovery does not pollute B's follow-up request; response only needs to complete stably with the agreed text."
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-file-summary-cold-start",
+  "spec": "./test/e2e/conversation-session/conversation-session-file-summary-cold-start.test.ts",
+  "fixtures": [
+    {
+      "id": "file-summary-cold-start-title",
+      "description": "O16 cold-start file summary case-local title response.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not involved in cold materialization semantics; only use marker to isolate title requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_FILE_SUMMARY_COLD_START"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "file-summary-cold-start-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Cold File Summary E2E"}"
+        }
+      }
+    },
+    {
+      "id": "file-summary-cold-start-write",
+      "description": "O16 single Write creates a two-line file and generates a workspace checkpoint.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Real provider does not guarantee stably choosing a single Write; fix two-line content for precise +2/-0 assertions."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_FILE_SUMMARY_COLD_START"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "toolu_file_summary_cold_start_write"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_file_summary_cold_start_write",
+          "messageId": "msg_file_summary_cold_start_write",
+          "name": "Write",
+          "input": {
+            "file_path": "file-summary-cold-start-e2e/summary.txt",
+            "content": "cold-summary-line-1\ncold-summary-line-2\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "file-summary-cold-start-final",
+      "description": "O16 concludes turn after successful Write, allowing a full cold start to reopen the same session.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Fix final marker to prevent model text fluctuations from interfering with cold-start summary assertions."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_FILE_SUMMARY_COLD_START",
+          "toolu_file_summary_cold_start_write",
+          "File created successfully at: file-summary-cold-start-e2e/summary.txt"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "file-summary-cold-start-final",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "E2E_FILE_SUMMARY_COLD_START_OK"
+        }
+      }
+    }
+  ]
+}

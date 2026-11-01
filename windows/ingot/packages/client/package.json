@@ -1,0 +1,21 @@
+{
+  "name": "@origin-ai/cf-client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./globals": "./src/globals.d.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@origin-ai/cf-rpc": "workspace:*",
+    "@origin-ai/cf-services": "workspace:*",
+    "@origin-ai/cf-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}

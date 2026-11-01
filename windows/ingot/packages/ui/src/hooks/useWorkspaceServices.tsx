@@ -1,0 +1,219 @@
+import type { IServiceAccessor } from "@origin-ai/cf-services";
+import { Event, ProxyChannel, type IChannel } from "@origin-ai/cf-rpc";
+import { useMemo } from "react";
+import { useOptionalServices, useServices } from "@/hooks/useServices.js";
+import {
+  useRemoteWorkspaceSessionStore,
+  type RemoteWorkspaceSession,
+} from "@/store/remoteWorkspaceSessionStore.js";
+import { useResolvedRemoteWorkspaceSessionId } from "@/hooks/useResolvedRemoteWorkspaceSessionId.js";
+import { useTabStore } from "@/store/TabStoreProvider.js";
+import { isWorkspaceTab } from "@/store/tabStore.js";
+import { REMOTE_WORKSPACE_DISCONNECTED_ERROR_CODE } from "@/lib/remoteWorkspaceServiceError.js";
+
+let disconnectedRemoteServices: IServiceAccessor | null = null;
+
+interface WorkspaceServiceTargetTab {
+  workspacePath: string;
+  workspaceIdentity?: string | null;
+  remoteSessionId?: string | null;
+  remoteTarget?: unknown;
+}
+
+function createDisconnectedRemoteServices(): IServiceAccessor {
+  const createDisconnectedError = () => {
+    const error = new Error(REMOTE_WORKSPACE_DISCONNECTED_ERROR_CODE) as Error & {
+      code: string;
+    };
+    error.code = REMOTE_WORKSPACE_DISCONNECTED_ERROR_CODE;
+    return error;
+  };
+  const disconnectedChannel: IChannel = {
+    call: () => Promise.reject(createDisconnectedError()),
+    listen: () => Event.None,
+  };
+  const serviceProxy = ProxyChannel.toService<object>(disconnectedChannel);
+
+  return new Proxy(Object.create(null), {
+    get() {
+      return serviceProxy;
+    },
+  }) as IServiceAccessor;
+}
+
+export function getDisconnectedRemoteServices(): IServiceAccessor {
+  if (!disconnectedRemoteServices) {
+    disconnectedRemoteServices = createDisconnectedRemoteServices();
+  }
+  return disconnectedRemoteServices;
+}
+
+export function resolveWorkspaceServicesForTarget(params: {
+  currentContextServices: IServiceAccessor;
+  resolvedRemoteSessionId: string | null;
+  baseServices: IServiceAccessor | null;
+  sessionsById: Record<string, Pick<RemoteWorkspaceSession, "services">>;
+  isRemoteTarget: boolean;
+  
+  unscopedServices?: IServiceAccessor;
+}): IServiceAccessor {
+  const resolvedServices = params.resolvedRemoteSessionId
+    ? (params.sessionsById[params.resolvedRemoteSessionId]?.services ?? null)
+    : params.isRemoteTarget
+      ? getDisconnectedRemoteServices()
+      : (params.unscopedServices ?? params.baseServices);
+
+  if (params.isRemoteTarget && !resolvedServices) {
+    return getDisconnectedRemoteServices();
+  }
+
+  return resolvedServices ?? params.currentContextServices;
+}
+
+export function resolveBaseWorkspaceServices(
+  contextServices: IServiceAccessor,
+  registeredBaseServices: IServiceAccessor | null,
+): IServiceAccessor {
+  return registeredBaseServices ?? contextServices;
+}
+
+function hasRemoteWorkspaceMetadata(tab: WorkspaceServiceTargetTab | null | undefined): boolean {
+  return Boolean(
+    tab?.workspaceIdentity?.trim() || tab?.remoteSessionId?.trim() || tab?.remoteTarget,
+  );
+}
+
+export function resolveWorkspaceServiceIsRemoteTarget(params: {
+  workspacePath: string | null | undefined;
+  workspaceIdentity?: string | null;
+  preferredRemoteSessionId?: string | null;
+  activeWorkspacePath?: string | null;
+  activeWorkspaceIdentity?: string | null;
+  activeTab?: WorkspaceServiceTargetTab | null;
+  workspaceTabs?: readonly WorkspaceServiceTargetTab[];
+}): boolean {
+  if (params.workspaceIdentity?.trim() || params.preferredRemoteSessionId?.trim()) {
+    return true;
+  }
+
+  const workspacePath = params.workspacePath?.trim();
+  if (!workspacePath) {
+    return false;
+  }
+
+  if (params.activeWorkspacePath === params.workspacePath) {
+    if (params.activeWorkspaceIdentity?.trim()) {
+      return true;
+    }
+
+    if (
+      params.activeTab?.workspacePath === params.workspacePath &&
+      hasRemoteWorkspaceMetadata(params.activeTab)
+    ) {
+      return true;
+    }
+  }
+
+  const matchingTabs = (params.workspaceTabs ?? []).filter(
+    (tab) => tab.workspacePath === params.workspacePath,
+  );
+  return matchingTabs.length === 1 && hasRemoteWorkspaceMetadata(matchingTabs[0]);
+}
+
+export function useBaseWorkspaceServices(): IServiceAccessor {
+  const contextServices = useServices();
+  const registeredBaseServices = useRemoteWorkspaceSessionStore((state) => state.baseServices);
+
+  return resolveBaseWorkspaceServices(contextServices, registeredBaseServices);
+}
+
+export function useOptionalBaseWorkspaceServices(): IServiceAccessor | null {
+  const contextServices = useOptionalServices();
+  const registeredBaseServices = useRemoteWorkspaceSessionStore((state) => state.baseServices);
+
+  return registeredBaseServices ?? contextServices;
+}
+
+export interface WorkspaceServicesResolution {
+  services: IServiceAccessor;
+  remoteSessionId: string | null;
+  isRemoteTarget: boolean;
+  connectionKind: "local-ready" | "remote-waiting" | "remote-ready";
+  rpcReady: boolean;
+}
+
+export function useWorkspaceServicesResolution(
+  workspacePath: string | null | undefined,
+  preferredRemoteSessionId?: string | null,
+  workspaceIdentity?: string | null,
+  remoteTarget?: unknown,
+  options?: { unscopedServices?: IServiceAccessor; forceUnscoped?: boolean },
+): WorkspaceServicesResolution {
+  const currentContextServices = useServices();
+  const resolvedRemoteSessionId = useResolvedRemoteWorkspaceSessionId(
+    workspacePath,
+    preferredRemoteSessionId,
+    workspaceIdentity,
+    remoteTarget,
+  );
+  const inferredRemoteTarget = useTabStore((state) =>
+    resolveWorkspaceServiceIsRemoteTarget({
+      workspacePath,
+      workspaceIdentity,
+      preferredRemoteSessionId,
+      activeWorkspacePath: state.activeWorkspacePath,
+      activeWorkspaceIdentity: state.activeWorkspaceIdentity,
+      activeTab: (() => {
+        const activeTab = state.activeTabId
+          ? state.tabs.find((tab) => tab.id === state.activeTabId)
+          : null;
+        return activeTab && isWorkspaceTab(activeTab) ? activeTab : null;
+      })(),
+      workspaceTabs: state.tabs.filter(isWorkspaceTab),
+    }),
+  );
+  const isRemoteTarget = options?.forceUnscoped ? false : inferredRemoteTarget;
+  const effectiveRemoteSessionId = options?.forceUnscoped ? null : resolvedRemoteSessionId;
+  const resolvedServices = useRemoteWorkspaceSessionStore((state) =>
+    resolveWorkspaceServicesForTarget({
+      currentContextServices,
+      resolvedRemoteSessionId: effectiveRemoteSessionId,
+      baseServices: state.baseServices,
+      sessionsById: state.sessionsById,
+      isRemoteTarget,
+      unscopedServices: options?.unscopedServices,
+    }),
+  );
+  const connectionKind = isRemoteTarget
+    ? effectiveRemoteSessionId
+      ? "remote-ready"
+      : "remote-waiting"
+    : "local-ready";
+
+  return useMemo(
+    () => ({
+      services: resolvedServices,
+      remoteSessionId: effectiveRemoteSessionId,
+      isRemoteTarget,
+      connectionKind,
+      rpcReady: connectionKind !== "remote-waiting",
+    }),
+    [connectionKind, effectiveRemoteSessionId, isRemoteTarget, resolvedServices],
+  );
+}
+
+export function useWorkspaceServices(
+  workspacePath: string | null | undefined,
+  preferredRemoteSessionId?: string | null,
+  workspaceIdentity?: string | null,
+  remoteTarget?: unknown,
+  options?: { unscopedServices?: IServiceAccessor; forceUnscoped?: boolean },
+): IServiceAccessor {
+  return useWorkspaceServicesResolution(
+    workspacePath,
+    preferredRemoteSessionId,
+    workspaceIdentity,
+    remoteTarget,
+    options,
+  ).services;
+}

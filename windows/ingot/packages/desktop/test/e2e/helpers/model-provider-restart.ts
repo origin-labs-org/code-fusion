@@ -1,0 +1,389 @@
+import { DatabaseSync } from "node:sqlite";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import {
+  BUILTIN_MODEL_PROVIDER_IDS,
+  BUILTIN_PROVIDER_TEMPLATE_IDS,
+  CF_AGENT_PROVIDER,
+  encodeCustomModelValue,
+  type ProviderFamilyConnectionSelection,
+} from "@origin-ai/cf-shared";
+import { TID_CHAT_MODEL_SELECT_TRIGGER, TID_V4_MODEL_CONFIG } from "@origin-ai/cf-shared/test-ids";
+import { getE2EAppDataPaths } from "./desktop-app.js";
+import { getUpstreamApiKey } from "./upstream-provider.js";
+import { waitForSqliteTable } from "./e2e-sqlite-readiness.js";
+import { resolveSeededReplayBaseUrl } from "./custom-openai-provider-store.js";
+import {
+  restartIntoWorkspacePreservingProfile as restartIntoWorkspacePreservingProfileFixture,
+  restartIntoWorkspaceRestoringPreferences,
+  type ModelProviderRestartOptions,
+} from "./model-provider-restart-runtime.js";
+import {
+  seedPersonalProviderConfig,
+  type PersonalProviderConfigSeed,
+  type SeedReplayProviderModel,
+} from "./model-provider-restart-config.js";
+import { getV4DraftThoughtState } from "./v4-conversation.js";
+
+const paths = getE2EAppDataPaths();
+const SETTINGS_FILE = join(paths.appDataDir, "setting.json");
+const CREDENTIALS_FILE = paths.credentialsFile;
+const MODEL_SELECTION_RECENT_KEY_PREFIX = "cf-model-selection-recent-v1";
+
+export { seedTurboAgentStartupModel } from "./model-provider-restart-runtime.js";
+
+export const E2E_BIGMODEL_PLAN_PROVIDER_ID = BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan;
+export const E2E_BIGMODEL_START_PROVIDER_ID = BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan;
+export const E2E_BIGMODEL_API_PROVIDER_ID = BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel;
+export const E2E_PLAN_FIRST_MODEL = "GLM-5.3";
+export const E2E_PLAN_DEFAULT_MODEL = "GLM-5.2";
+export const E2E_PLAN_NON_DEFAULT_MODEL = "GLM-5.3-Flash";
+export const E2E_PLAN_TURBO_MODEL = "GLM-5-Turbo";
+
+export async function seedBigModelConnectionSelection(
+  selection: ProviderFamilyConnectionSelection,
+) {
+  await writeJsonPatch(SETTINGS_FILE, {
+    providerFamilyConnectionSelections: {
+      bigmodel: selection,
+    },
+    providerFamilyDomain: "bigmodel",
+    providerFamilyDomainMigrated: true,
+  });
+}
+
+export async function readBigModelConnectionSelection(): Promise<
+  ProviderFamilyConnectionSelection | undefined
+> {
+  const settings = await readJson(SETTINGS_FILE);
+  const selections = settings.providerFamilyConnectionSelections;
+  if (!selections || typeof selections !== "object" || Array.isArray(selections)) {
+    return undefined;
+  }
+  return (selections as { bigmodel?: ProviderFamilyConnectionSelection }).bigmodel;
+}
+
+export async function seedBigModelOAuthCredential() {
+  await writeJsonPatch(CREDENTIALS_FILE, {
+    "oauth:active_provider": "bigmodel",
+    "oauth:bigmodel:access_token": "e2e-bigmodel-oauth-token",
+    "oauth:bigmodel:user_info": JSON.stringify({
+      displayName: "BigModel E2E",
+      id: "bigmodel-e2e-user",
+      username: "bigmodel-e2e-user",
+    }),
+  });
+}
+
+export async function seedHighspeedLoginCredential() {
+  await writeJsonPatch(CREDENTIALS_FILE, {
+    cfjwttoken: "e2e-highspeed-cf-jwt",
+  });
+}
+
+export async function seedBigModelStartPlanCredential() {
+  await writeJsonPatch(CREDENTIALS_FILE, {
+    "oauth:active_provider": "bigmodel",
+    "oauth:bigmodel:access_token": "e2e-bigmodel-oauth-token",
+    "oauth:bigmodel:user_info": JSON.stringify({
+      displayName: "BigModel E2E",
+      id: "bigmodel-e2e-user",
+      username: "bigmodel-e2e-user",
+    }),
+    cfjwttoken: "e2e-bigmodel-start-plan-jwt",
+  });
+}
+
+export async function seedReplayProvider(params: {
+  apiKey?: string;
+  baseURL?: string;
+  enabled?: boolean;
+  id: string;
+  models: readonly SeedReplayProviderModel[];
+  name: string;
+}) {
+  const baseURL = params.baseURL ?? (await resolveSeededReplayBaseUrl());
+  if (!baseURL) {
+    throw new Error("没有可用 replay Base URL，无法 seed model provider restart case");
+  }
+  const provider: PersonalProviderConfigSeed = {
+    id: params.id,
+    label: params.name,
+    apiFormat: params.id.startsWith("account:") ? "anthropic-messages" : "openai-chat-completions",
+    apiKey: params.apiKey ?? getUpstreamApiKey(),
+    baseURL,
+    enabled: params.enabled ?? true,
+    models: params.models.map((input) =>
+      typeof input === "string"
+        ? { id: input }
+        : {
+            contextWindow: input.contextWindow,
+            id: input.id,
+            maxOutputTokens: input.maxOutputTokens ?? input.limit?.output,
+            reasoningLevel: input.reasoningLevel,
+          },
+    ),
+  };
+  await seedPersonalProviderConfig(paths.configFile, provider);
+}
+
+export async function seedPersistedModelSelection(params: {
+  modelId: string;
+  providerId: string;
+  reasoningLevel: string;
+}) {
+  await browser.execute(
+    (workspacePath, keyPrefix, selection, appProvider) => {
+      window.localStorage.setItem(
+        `${keyPrefix}:${workspacePath}`,
+        JSON.stringify({
+          providerId: selection.providerId,
+          modelId: selection.modelId,
+          options: { reasoningLevel: selection.reasoningLevel },
+        }),
+      );
+      window.localStorage.setItem("cf-last-agent-provider", appProvider);
+    },
+    paths.workspace,
+    MODEL_SELECTION_RECENT_KEY_PREFIX,
+    params,
+    CF_AGENT_PROVIDER,
+  );
+}
+
+export async function readLastSelectedAgentConfig() {
+  return await browser.execute(
+    (workspacePath, keyPrefix) => {
+      const raw = window.localStorage.getItem(`${keyPrefix}:${workspacePath}`);
+      if (!raw) return null;
+      const recent: unknown = JSON.parse(raw);
+      const record = recent && typeof recent === "object" && !Array.isArray(recent) ? recent : null;
+      const selection =
+        record && "modelSelection" in record ? record.modelSelection : (record ?? recent);
+      const candidate =
+        selection && typeof selection === "object" && !Array.isArray(selection)
+          ? (selection as {
+              providerId?: unknown;
+              modelId?: unknown;
+              options?: { reasoningLevel?: unknown };
+            })
+          : null;
+      if (
+        !candidate ||
+        typeof candidate.providerId !== "string" ||
+        typeof candidate.modelId !== "string" ||
+        candidate.providerId.length === 0 ||
+        candidate.modelId.length === 0
+      ) {
+        return null;
+      }
+      return {
+        schemaVersion: 1,
+        model: `${candidate.providerId}/${candidate.modelId}`,
+        thoughtLevel: candidate.options?.reasoningLevel ?? null,
+      };
+    },
+    paths.workspace,
+    MODEL_SELECTION_RECENT_KEY_PREFIX,
+  );
+}
+
+export async function waitForLastSelectedAgentConfig(params: {
+  model: string;
+  thoughtLevel: string;
+}) {
+  let latest: Awaited<ReturnType<typeof readLastSelectedAgentConfig>> = null;
+  try {
+    await browser.waitUntil(
+      async () => {
+        latest = await readLastSelectedAgentConfig();
+        return Boolean(
+          latest?.model.includes(params.model) && latest.thoughtLevel === params.thoughtLevel,
+        );
+      },
+      {
+        timeout: 30000,
+        timeoutMsg: `last-selected Configuration没有收敛到 ${params.model}/${params.thoughtLevel}`,
+      },
+    );
+  } catch {
+    const storedAgentPreferences = await browser.execute(() =>
+      Object.fromEntries(
+        Object.entries(window.localStorage).filter(([key]) => key.startsWith("cf-last-agent-")),
+      ),
+    );
+    throw new Error(
+      `last-selected Configuration没有收敛到 ${params.model}/${params.thoughtLevel}，实际Value：${JSON.stringify(latest)}，All偏OK：${JSON.stringify(storedAgentPreferences)}`,
+    );
+  }
+  return latest;
+}
+
+export async function seedGlobalAgentReasoningLevel(thoughtLevel: string) {
+  const databasePath = join(paths.storageRoot, "cli", "db", "db.sqlite");
+  await waitForSqliteTable(databasePath, "local_setting");
+  const db = new DatabaseSync(databasePath);
+  const now = Date.now();
+  try {
+    db.exec("pragma busy_timeout = 5000");
+    db.prepare(`
+      insert into local_setting (
+        scope, scope_id, namespace, key, value, schema_version, time_created, time_updated
+      ) values (?, ?, ?, ?, ?, ?, ?, ?)
+      on conflict(scope, scope_id, namespace, key) do update set
+        value = excluded.value,
+        schema_version = excluded.schema_version,
+        time_updated = excluded.time_updated
+    `).run(
+      "user",
+      "default",
+      "model",
+      "reasoningLevel",
+      JSON.stringify({ level: thoughtLevel }),
+      1,
+      now,
+      now,
+    );
+  } finally {
+    db.close();
+  }
+}
+
+export async function waitForDraftThoughtLevelState(params: {
+  current: string;
+  values: readonly string[];
+  timeoutMsg?: string;
+}) {
+  let latest: Awaited<ReturnType<typeof getV4DraftThoughtState>> | null = null;
+  await browser.waitUntil(
+    async () => {
+      latest = await getV4DraftThoughtState(paths.workspace);
+      const actualValues = [...latest.values].sort();
+      const expectedValues = [...params.values].sort();
+      return (
+        latest.current === params.current &&
+        JSON.stringify(actualValues) === JSON.stringify(expectedValues)
+      );
+    },
+    {
+      timeout: 30000,
+      timeoutMsg: params.timeoutMsg ?? `draft thought 没有收敛到 ${params.current}`,
+    },
+  );
+  return latest;
+}
+
+export async function waitForV4DraftModelConfig(params: { model: string; thought: string }) {
+  let latest: { model: string | null; thought: string | null } | null = null;
+  await browser.waitUntil(
+    async () => {
+      latest = await browser.execute((configTestId) => {
+        const config = document.querySelector<HTMLElement>(`[data-testid="${configTestId}"]`);
+        return {
+          model: config?.dataset.model?.trim() || null,
+          thought: config?.dataset.thought?.trim() || null,
+        };
+      }, TID_V4_MODEL_CONFIG);
+      const modelMatches =
+        latest.model === params.model || latest.model?.endsWith(`/${params.model}`) === true;
+      return modelMatches && latest.thought === params.thought;
+    },
+    {
+      timeout: 30000,
+      timeoutMsg: `V4 draft Configuration没有收敛到 ${params.model}/${params.thought}`,
+    },
+  );
+  return latest;
+}
+
+export async function waitForPlanModelIoRequest(expectedText: string) {
+  const debugDir = join(paths.homeDir, ".cf", "cli", "debug");
+  let matched: { model?: string; thinking?: { type?: string } } | null = null;
+  await browser.waitUntil(
+    async () => {
+      const files = await readdir(debugDir).catch(() => []);
+      for (const file of files.filter(
+        (item) => item.startsWith("model-io-") && item.endsWith(".jsonl"),
+      )) {
+        const content = await readFile(join(debugDir, file), "utf-8").catch(() => "");
+        for (const line of content.split("\n")) {
+          if (!line.includes(expectedText)) continue;
+          try {
+            const record = JSON.parse(line) as {
+              querySource?: string;
+              request?: { body?: { model?: string; thinking?: { type?: string } } };
+            };
+            if (record.querySource === "main_turn" && record.request?.body) {
+              matched = record.request.body;
+              return true;
+            }
+          } catch {
+          }
+        }
+      }
+      return false;
+    },
+    { timeout: 30000, timeoutMsg: `没有找到 Plan model IO Request: ${expectedText}` },
+  );
+  return matched as { model?: string; thinking?: { type?: string } } | null;
+}
+
+export async function restartIntoWorkspace(options: ModelProviderRestartOptions = {}) {
+  await restartIntoWorkspaceRestoringPreferences(paths.workspace, options);
+}
+
+export async function restartIntoWorkspacePreservingProfile() {
+  await restartIntoWorkspacePreservingProfileFixture(paths.workspace);
+}
+
+export async function waitForSelectedModel(providerId: string, modelId: string) {
+  const expected = encodeCustomModelValue(providerId, modelId);
+  let actual: string | null = null;
+  let storedConfig: string | null = null;
+  try {
+    await browser.waitUntil(
+      async () => {
+        const snapshot = await browser.execute(
+          (value, triggerTestId, workspacePath, keyPrefix) => {
+            const trigger = document.querySelector<HTMLElement>(`[data-testid="${triggerTestId}"]`);
+            return {
+              actual: trigger?.dataset.modelCurrentValue ?? null,
+              matched: trigger?.dataset.modelCurrentValue === value,
+              storedConfig: window.localStorage.getItem(`${keyPrefix}:${workspacePath}`),
+            };
+          },
+          expected,
+          TID_CHAT_MODEL_SELECT_TRIGGER,
+          paths.workspace,
+          MODEL_SELECTION_RECENT_KEY_PREFIX,
+        );
+        actual = snapshot.actual;
+        storedConfig = snapshot.storedConfig;
+        return snapshot.matched;
+      },
+      {
+        timeout: 30000,
+        timeoutMsg: `toolbar 没有选择 ${expected}`,
+      },
+    );
+  } catch (error) {
+    throw new Error(
+      `toolbar 没有选择 ${expected}，actual=${actual}，storedConfig=${storedConfig}`,
+      { cause: error },
+    );
+  }
+}
+
+async function writeJsonPatch(file: string, patch: Record<string, unknown>) {
+  const current = await readJson(file);
+  await mkdir(dirname(file), { recursive: true });
+  await writeFile(file, JSON.stringify({ ...current, ...patch }, null, 2), "utf-8");
+}
+
+async function readJson(file: string): Promise<Record<string, unknown>> {
+  try {
+    return JSON.parse(await readFile(file, "utf-8")) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}

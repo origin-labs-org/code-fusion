@@ -1,0 +1,4 @@
+{
+  "$comment": "Default personal marketplace ID (client featured recommendations section is deprecated, along with the pluginNames curated list).",
+  "marketplace": "claude-plugins-official"
+}

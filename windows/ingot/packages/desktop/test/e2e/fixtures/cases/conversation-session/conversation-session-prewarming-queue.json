@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-prewarming-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-prewarming-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-prewarming-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-prewarming-queue-first-delay",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Prewarming queue requires initial round requests to hold the submission/streaming window, which real models might complete too quickly."
+    },
+    {
+      "id": "upstream-prewarming-queue-queued-marker-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The product semantic of queued prompt is to not send to provider; fixture only covers the marker contract, and runtime hits actually indicate queue guard failure."
+    }
+  ]
+}

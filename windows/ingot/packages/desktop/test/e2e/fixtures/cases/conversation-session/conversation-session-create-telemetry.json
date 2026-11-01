@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-create-telemetry",
+  "spec": "./test/e2e/conversation-session/conversation-session-create-telemetry.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-create-telemetry.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "session-create-first",
+      "description": "Deterministic completion barrier for initial and subsequent session_create rounds.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify creation telemetry count and attribution; model replies are only used to complete real session rounds."
+    },
+    {
+      "id": "session-create-next",
+      "description": "Deterministic completion barrier for initial and subsequent session_create rounds.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify creation telemetry count and attribution; model replies are only used to complete real session rounds."
+    },
+    {
+      "id": "session-create-group",
+      "description": "Deterministic completion barrier for initial and subsequent session_create rounds.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify creation telemetry count and attribution; model replies are only used to complete real session rounds."
+    },
+    {
+      "id": "session-create-direct",
+      "description": "Deterministic completion barrier for initial and subsequent session_create rounds.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify creation telemetry count and attribution; model replies are only used to complete real session rounds."
+    }
+  ]
+}

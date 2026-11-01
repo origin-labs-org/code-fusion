@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-background-work",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-background-work.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-background-work.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-background-work-title",
+      "description": "Case-local title generation response for E2E_V4_BGWORK initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_BGWORK initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-bgwork-toolcall",
+      "description": "M4 cancelBackgroundWork gate: First round returns Bash tool_use with run_in_background (long sleep) to create cancellable background work.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Need to reliably produce a run_in_background bash task to assert the background work panel + cancellation."
+    },
+    {
+      "id": "v4-bgwork-final",
+      "description": "M4 follow-up reply for tool_result after background task is backgrounded (fixed text).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Background task is detached, so the main round only needs fixed wrap-up text; core assertions are on the background work panel + cancellation."
+    }
+  ]
+}

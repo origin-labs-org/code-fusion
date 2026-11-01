@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-markdown-table-layout",
+  "spec": "./test/e2e/conversation-session/conversation-session-markdown-table-layout.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-markdown-table-layout.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "markdown-table-layout-title",
+      "description": "Fix title generation response within the Markdown table layout case to prevent title requests from accidentally matching the table's main response.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return reliably to prevent title requests from blocking the main message stream."
+    },
+    {
+      "id": "markdown-table-layout-small",
+      "description": "MT/V01 小表格布局样本：固定返回未超过正文宽度的 Markdown 表格。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case verifies completed assistant markdown table layout; whether a real model strictly returns a table is outside the layout contract."
+    },
+    {
+      "id": "markdown-table-layout-large",
+      "description": "MT/V02 large table layout sample: reliably returns a 14-column, 100-row Markdown table, consistently triggering table viewport horizontal scrolling.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "This case verifies large table overflow, 100-row content, and scrolling viewport DOM contracts, requiring a reliably constructed assistant markdown table that is wide enough and contains many rows."
+    }
+  ]
+}

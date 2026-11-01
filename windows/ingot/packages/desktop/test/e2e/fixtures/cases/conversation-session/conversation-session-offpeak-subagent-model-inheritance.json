@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-offpeak-subagent-model-inheritance",
+  "spec": "./test/e2e/conversation-session/conversation-session-offpeak-subagent-model-inheritance.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-offpeak-subagent-model-inheritance.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "offpeak-subagents-ordinary-prompt",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The off-peak mock gateway independently hosts the execution-scoped Active Model; this response merely reliably proves that the next normal prompt has returned to the user provider."
+    }
+  ]
+}

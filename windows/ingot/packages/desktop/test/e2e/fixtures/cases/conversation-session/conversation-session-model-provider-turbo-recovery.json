@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-turbo-recovery",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-turbo-recovery.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-turbo-recovery.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-turbo-recovery-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of Turbo restart recovery semantics."
+    },
+    {
+      "id": "model-provider-turbo-recovery-t02",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertion is that initial request uses Turbo + enabled; fixed response is only used for stable closeout."
+    }
+  ]
+}

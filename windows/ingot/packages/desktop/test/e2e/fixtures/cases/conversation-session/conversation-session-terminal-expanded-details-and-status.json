@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-terminal-expanded-details-and-status",
+  "spec": "./test/e2e/conversation-session/conversation-session-terminal-expanded-details-and-status.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-terminal-expanded-details-and-status.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "tge02-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Provide auto-titles for the two new sessions in this case, isolating replay without relying on legacy shared title fixtures."
+    },
+    {
+      "id": "tge02-success-command",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin success child and stdout to reliably verify expanded details."
+    },
+    {
+      "id": "tge02-nonzero-command",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Pin non-zero exit code and stderr to verify that command business failure remains a completed Bash tool result."
+    },
+    {
+      "id": "tge02-command-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Pin ending the turn after non-zero command returns, bringing parent command count to a stable terminal state."
+    },
+    {
+      "id": "tge02-stopped-command",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Long local command reliably keeps a Stop window to test the stopped state of a single Bash card."
+    }
+  ]
+}

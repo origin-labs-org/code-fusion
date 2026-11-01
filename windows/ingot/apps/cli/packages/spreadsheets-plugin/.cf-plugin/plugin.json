@@ -1,0 +1,41 @@
+{
+  "name": "spreadsheets",
+  "version": "0.2.0",
+  "description": "XLSX spreadsheet production skills and an Excel viewer panel, published as an official CodeFusion plugin.",
+  "description_i18n": {
+    "en": "Spreadsheet skills for XLSX: create, edit, analyze, chart, and convert workbooks. View workbooks in a side panel: reference cells in chat, and the agent can read, search, point at and capture them.",
+    "zh-CN": "XLSX spreadsheet skill: creation, editing, analysis, charting, and format conversion. View workbooks in the sidebar and reference cells in chat, where the Agent can read, search, locate, highlight, and capture screenshots."
+  },
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "Apache-2.0",
+  "skills": "skills",
+  "agents": "agents",
+  "mcpServers": {
+    "spreadsheets": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CF_PLUGIN_ROOT}/dist/server.mjs"],
+      "cwd": "${CF_PROJECT_DIR}",
+      "env": {
+        "CF_WORKSPACE_ROOT": "${CF_PROJECT_DIR}"
+      }
+    }
+  },
+  "ui": {
+    "surfaces": [
+      {
+        "id": "spreadsheets",
+        "title": {
+          "zh-CN": "电子表格",
+          "en-US": "Spreadsheets"
+        },
+        "icon": "table",
+        "server": "spreadsheets",
+        "resourceUri": "ui://spreadsheets/panel.html",
+        "availability": "session"
+      }
+    ]
+  }
+}

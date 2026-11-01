@@ -1,0 +1,13 @@
+{
+  //
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../../../.oxlintrc.json"],
+  "ignorePatterns": [
+    "tests/workflows/**",
+    "tests/graphs/**",
+    "tests/holes/**",
+    "tests/schemas/**",
+    "tests/schema-errors/**"
+  ],
+  "overrides": []
+}

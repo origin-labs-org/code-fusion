@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-reference-subagent",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-reference-subagent.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-reference-subagent.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "isolated E2E profile/inline Plugin fixture",
+      "source": "created-by-spec",
+      "description": "Spec creates an inline Plugin containing Skill and agents/inline-reviewer.md via seedInlineLifecyclePlugin, and sends references after restarting Desktop/Host/CLI."
+    }
+  ],
+  "requests": [
+    {
+      "id": "plugin-reference-subagent-title",
+      "description": "Case-local title generation response for PLG16 initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch triggers the default title sidecar; pin title response to prevent title requests from hitting business fixtures."
+    },
+    {
+      "id": "plugin-reference-subagent-reminder",
+      "description": "PLG16 wire gate: provider request must include inline Plugin stable ID and canonical Subagent identifier.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically verify that provider receives the Subagent identifier in reminder, independent of whether the real model actively selects Agent."
+    }
+  ]
+}

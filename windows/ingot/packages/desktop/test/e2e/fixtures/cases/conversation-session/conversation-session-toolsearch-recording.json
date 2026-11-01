@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-toolsearch-recording",
+  "spec": "./test/e2e/conversation-session/conversation-session-toolsearch-recording.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-toolsearch-recording.json"
+  ],
+  "fileFixtures": [],
+  "providerHarness": "./test/e2e/helpers/toolsearch-cli-process.ts",
+  "requests": [
+    {
+      "id": "conversation-session-toolsearch-recording-done-json",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-done-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-search-json",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-search-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-partial-json",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-partial-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-pressure-json",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-pressure-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-summary-stream",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled model outputs stably trigger search, input validation, and continuation boundaries; real CLI/Runtime, HTTP adapter, MCP, and SQLite remain unmocked."
+    },
+    {
+      "id": "conversation-session-toolsearch-recording-context-error",
+      "kind": "synthetic",
+      "source": "synthetic",
+      "timingPolicy": "fault-stream",
+      "syntheticReason": "Fix model responses to verify ToolSearch requests, tool execution, and history boundaries; responses are actually provided by case-local fixtures, and phase selection is driven by the test harness."
+    }
+  ],
+  "notes": "Pending controlled-provider regression. Actual HTTP requests and request records are retained as evidence; no live model or external-product parity claim. Not admitted to Docker."
+}

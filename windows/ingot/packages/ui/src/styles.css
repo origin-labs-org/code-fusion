@@ -1,0 +1,2173 @@
+@import "tailwindcss" source(".");
+@import "tw-animate-css";
+@import "tailwind-scrollbar-hide/v4";
+@import "shadcn/tailwind.css";
+@import "@xterm/xterm/css/xterm.css";
+@import "katex/dist/katex.min.css";
+@import "./highspeed/highspeed-activation.css";
+@import "./highspeed/highspeed-share.css";
+@source "../../../node_modules/streamdown/dist
+
+@plugin "@tailwindcss/typography";
+@plugin "../lucide-colors.mjs";
+
+.cloud-content-dialog {
+  --media-close-surface: rgb(0 0 0 / 50%);
+  --media-close-surface-hover: rgb(0 0 0 / 65%);
+  --media-close-foreground: #fff;
+}
+.cloud-content-dialog [data-slot="dialog-close"] {
+  background-color: var(--media-close-surface);
+  color: var(--media-close-foreground);
+  border: 0;
+}
+.cloud-content-dialog [data-slot="dialog-close"]:hover {
+  background-color: var(--media-close-surface-hover);
+}
+
+@custom-variant platform-linux-desktop (&:where(.platform-linux-desktop, .platform-linux-desktop *));
+@custom-variant platform-linux-window-maximized (&:where(.platform-linux-desktop.window-maximized, .platform-linux-desktop.window-maximized *));
+
+@custom-variant platform-mac-desktop (&:where(.platform-mac-desktop, .platform-mac-desktop *));
+
+@custom-variant platform-windows-desktop (&:where(.platform-windows-desktop, .platform-windows-desktop *));
+
+@source "./**/*.{ts,tsx}";
+
+@source inline("text-center text-ui-base/relaxed text-foreground-subtle font-semibold font-normal text-foreground whitespace-nowrap underline decoration-foreground-subtle decoration-dashed underline-offset-4");
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: transparent !important;
+}
+
+:root {
+  --ui-font-size: 14px;
+  --color-remote-continuity-panel: #202124;
+  --color-remote-continuity-panel-surface: #2c2d30;
+  --color-remote-continuity-panel-foreground: #f8f8f8;
+  --color-remote-continuity-panel-subtle: #a7a7ad;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+html[data-document-hidden] *,
+html[data-document-hidden] *::before,
+html[data-document-hidden] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+.text-wrap-phrase {
+  overflow-wrap: break-word;
+  word-break: normal;
+  line-break: strict;
+  text-wrap: pretty;
+}
+
+@supports (word-break: auto-phrase) {
+  .text-wrap-phrase {
+    word-break: auto-phrase;
+  }
+}
+
+#root {
+  
+  height: 100dvh;
+  overflow: hidden;
+}
+
+*:focus,
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+
+@media (forced-colors: active) {
+  *:focus,
+  *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+@theme {
+  
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", monospace;
+  
+  --text-ui-settings-title: calc(var(--ui-font-size) + 10px);
+  --text-ui-settings-title--line-height: calc(4 / 3);
+  --text-ui-settings-title-lg: calc(var(--ui-font-size) + 16px);
+  --text-ui-settings-title-lg--line-height: 1.2;
+  --text-ui-xl: calc(var(--ui-font-size) + 4px);
+  --text-ui-lg: calc(var(--ui-font-size) + 2px);
+  --text-ui-base: var(--ui-font-size);
+  --text-ui-caption: calc(var(--ui-font-size) - 1px);
+  --text-ui-sm: calc(var(--ui-font-size) - 2px);
+  --text-ui-xs: calc(var(--ui-font-size) - 4px);
+  
+  --text-ui-2xs: calc(var(--ui-font-size) - 5px);
+  
+  --tracking-wf-label: 0.09em;
+  
+  --text-mobile-input-safe: 16px;
+  --animated-gradient-text-strong: rgba(10, 10, 10, 1);
+  --animated-gradient-text-soft: rgba(10, 10, 10, 0.22);
+  --color-background: #f5f5f7;
+  --color-background-alt: color-mix(in oklab, var(--color-neutral-100) 60%, transparent);
+  --color-background-win-alt: var(--color-neutral-200);
+  --color-brand: #0a84ff;
+  --color-resize-handle: var(--color-sky-500);
+  --color-icon-blue: var(--color-terminal-bright-blue);
+  --color-icon-purple: var(--color-terminal-bright-magenta);
+  --color-trajectory-user: #2563eb;
+  --color-trajectory-assistant: #0f766e;
+  --color-trajectory-reasoning: #7c3aed;
+  --color-trajectory-tool-call: #d97706;
+  --color-trajectory-tool-result: #0284c7;
+  
+  --color-workflow-rule: color-mix(in oklab, var(--color-neutral-950) 5.5%, transparent);
+  --color-workflow-trace: color-mix(in oklab, var(--color-neutral-950) 30%, transparent);
+  --color-workflow-trace-strong: color-mix(in oklab, var(--color-neutral-950) 55%, transparent);
+  --color-accent: #e8f1fd;
+  --color-find-highlight: #fde68a;
+  --color-find-highlight-active: #facc15;
+  --color-border: color-mix(in oklab, var(--color-neutral-950) 10%, transparent);
+  --color-border-hover: color-mix(in oklab, var(--color-neutral-950) 20%, transparent);
+  --color-hover: var(--color-neutral-200);
+  --color-selected: color-mix(in oklab, var(--color-neutral-950) 10%, transparent);
+  --color-header: var(--color-neutral-100);
+  --color-panel: var(--color-neutral-100);
+  --color-sidebar: var(--color-neutral-100);
+  --color-surface: color-mix(in oklab, var(--color-neutral-950) 3%, transparent);
+  --color-surface-hover: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
+  --color-markdown-inline-code: var(--color-tag);
+  --color-card: var(--color-white);
+  --color-card-selected: var(--color-neutral-200);
+  --color-card-border: var(--color-border);
+  --color-popover: var(--color-white);
+  
+  --color-popover-foreground: var(--color-foreground);
+  --color-popover-header: var(--color-neutral-100);
+  --color-popover-border: var(--color-border);
+  --color-input: var(--color-white);
+  --color-input-focused: var(--color-neutral-50);
+  --color-input-border: var(--color-border);
+  --color-input-border-hover: var(--color-border-hover);
+  --color-input-border-focused: var(--color-brand);
+  --color-terminal-bg: var(--color-neutral-50);
+  --color-terminal-fg: var(--color-neutral-950);
+  --color-terminal-cursor: var(--color-neutral-950);
+  --color-terminal-cursor-accent: var(--color-neutral-50);
+  --color-terminal-selection: color-mix(in oklab, var(--color-sky-500) 32%, transparent);
+  --color-terminal-selection-inactive: color-mix(in oklab, var(--color-sky-500) 22%, transparent);
+  --color-terminal-black: var(--color-neutral-700);
+  --color-terminal-red: var(--color-red-500);
+  --color-terminal-green: var(--color-green-500);
+  --color-terminal-yellow: var(--color-yellow-500);
+  --color-terminal-blue: var(--color-sky-500);
+  --color-terminal-magenta: var(--color-fuchsia-500);
+  --color-terminal-cyan: var(--color-cyan-500);
+  --color-terminal-white: var(--color-neutral-500);
+  --color-terminal-bright-black: var(--color-neutral-500);
+  --color-terminal-bright-red: var(--color-red-500);
+  --color-terminal-bright-green: var(--color-green-500);
+  --color-terminal-bright-yellow: var(--color-yellow-500);
+  --color-terminal-bright-blue: var(--color-sky-500);
+  --color-terminal-bright-magenta: var(--color-fuchsia-500);
+  --color-terminal-bright-cyan: var(--color-cyan-500);
+  --color-terminal-bright-white: var(--color-neutral-950);
+  
+  --color-usage-chart-1: var(--color-sky-600);
+  --color-usage-chart-2: var(--color-teal-600);
+  --color-usage-chart-3: var(--color-violet-600);
+  --color-usage-chart-4: var(--color-rose-500);
+  --color-usage-chart-5: var(--color-indigo-500);
+  --color-usage-chart-6: var(--color-cyan-600);
+  
+  --color-context-breakdown-1: var(--color-sky-600);
+  --color-context-breakdown-2: var(--color-sky-500);
+  --color-context-breakdown-3: var(--color-sky-400);
+  --color-context-breakdown-4: var(--color-sky-300);
+  --color-context-breakdown-5: var(--color-sky-200);
+  --color-context-breakdown-6: var(--color-sky-100);
+  --color-context-breakdown-7: color-mix(in oklab, var(--color-sky-100) 72%, var(--color-white));
+  
+  --color-usage-heatmap-0: color-mix(in oklab, var(--color-sky-500) 0%, var(--color-surface));
+  --color-usage-heatmap-1: color-mix(in oklab, var(--color-sky-500) 18%, var(--color-surface));
+  --color-usage-heatmap-2: color-mix(in oklab, var(--color-sky-500) 36%, var(--color-surface));
+  --color-usage-heatmap-3: color-mix(in oklab, var(--color-sky-600) 58%, var(--color-surface));
+  --color-usage-heatmap-4: color-mix(in oklab, var(--color-sky-700) 82%, var(--color-surface));
+  --color-tab: var(--color-neutral-100);
+  --color-tab-active: var(--color-white);
+  --color-tab-border: var(--color-border);
+  --color-menu: var(--color-white);
+  --color-menu-hover: var(--color-neutral-100);
+  --color-primary: var(--color-neutral-950);
+  --color-primary-foreground: var(--color-neutral-50);
+  --color-secondary: var(--color-neutral-300);
+  --color-interaction-ask-surface: var(--color-sky-50);
+  --color-interaction-ask-foreground: var(--color-sky-700);
+  --color-interaction-ask-fill: color-mix(in oklab, var(--color-green-500) 20%, transparent);
+  --color-interaction-confirmation-surface: var(--color-green-50);
+  --color-interaction-confirmation-foreground: var(--color-green-700);
+  --color-success-surface: var(--color-green-50);
+  --color-success-surface-foreground: var(--color-green-700);
+  --color-progress-surface: var(--color-blue-50);
+  --color-progress-surface-foreground: var(--color-blue-700);
+  --color-foreground: var(--color-neutral-700);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-700) 60%, transparent);
+  --color-remote-foreground-muted: #595959;
+  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-700) 40%, transparent);
+  --lucide-subtlest-opacity: 0.4;
+  --color-foreground-inverse: var(--color-white);
+  --color-success: var(--color-green-600);
+  --color-success-foreground: var(--color-foreground-inverse);
+  --color-idle-task: var(--color-violet-600);
+  --color-idle-task-surface: var(--color-violet-50);
+  --color-destructive: var(--color-red-600);
+  --color-destructive-foreground: var(--color-foreground-inverse);
+  --color-warning: var(--color-yellow-600);
+  --color-feedback-privacy-hint: var(--color-yellow-600);
+  --color-warning-foreground: var(--color-foreground-inverse);
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --color-warning-surface-foreground: var(--color-yellow-800);
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  --color-destructive-surface-foreground: var(--color-red-800);
+  --color-diff-added: var(--color-green-600);
+  --color-diff-added-foreground: var(--color-foreground-inverse);
+  --color-diff-removed: var(--color-red-600);
+  --color-diff-removed-foreground: var(--color-foreground-inverse);
+  --color-git-none: var(--color-foreground);
+  --color-git-modified: var(--color-amber-600);
+  --color-git-added: var(--color-teal-600);
+  --color-git-deleted: var(--color-red-600);
+  --color-git-renamed: var(--color-sky-600);
+  --color-git-untracked: var(--color-teal-600);
+  --color-git-ignored: var(--color-foreground-subtlest);
+  --color-git-descendant: var(--color-amber-600);
+  --color-toast: var(--color-white);
+  --color-tooltip: var(--color-neutral-100);
+  --color-tooltip-foreground: var(--color-neutral-950);
+  --color-tooltip-tag: var(--color-neutral-200);
+  --color-tooltip-tag-foreground: color-mix(in oklab, var(--color-neutral-950) 60%, transparent);
+  --color-tag: var(--color-neutral-200);
+  --color-remote-ssh-surface: var(--color-sky-50);
+  --color-remote-ssh-foreground: var(--color-sky-700);
+  --color-remote-ssh-border: var(--color-sky-200);
+  --color-remote-wsl-surface: var(--color-green-50);
+  --color-remote-wsl-foreground: var(--color-green-700);
+  --color-remote-wsl-border: var(--color-green-200);
+  --color-remote-docker-surface: var(--color-violet-50);
+  --color-remote-docker-foreground: var(--color-violet-700);
+  --color-remote-docker-border: var(--color-violet-200);
+  --color-file-node: color-mix(in oklab, var(--color-sky-600) 14%, transparent);
+  --color-file-node-hover: color-mix(in oklab, var(--color-sky-600) 20%, transparent);
+  --color-file-node-foreground: var(--color-sky-600);
+  --color-skill-node: color-mix(in oklab, var(--color-violet-600) 14%, transparent);
+  --color-skill-node-hover: color-mix(in oklab, var(--color-violet-600) 20%, transparent);
+  --color-skill-node-foreground: var(--color-violet-600);
+  --color-command-node: color-mix(in oklab, var(--color-slate-500) 14%, transparent);
+  --color-command-node-hover: color-mix(in oklab, var(--color-slate-500) 20%, transparent);
+  --color-command-node-foreground: var(--color-slate-600);
+  --color-subagent-node: color-mix(in oklab, #6f7a2f 14%, transparent);
+  --color-subagent-node-hover: color-mix(in oklab, #6f7a2f 20%, transparent);
+  --color-subagent-node-foreground: #6f7a2f;
+  --color-session-node: color-mix(in oklab, var(--color-teal-600) 14%, transparent);
+  --color-session-node-hover: color-mix(in oklab, var(--color-teal-600) 20%, transparent);
+  --color-session-node-foreground: var(--color-teal-600);
+  --color-plugin-node: color-mix(in oklab, var(--color-amber-600) 14%, transparent);
+  --color-plugin-node-hover: color-mix(in oklab, var(--color-amber-600) 20%, transparent);
+  --color-plugin-node-foreground: var(--color-amber-600);
+  --color-plugin-paid-plan-badge: #ffe3c8;
+  --color-plugin-paid-plan-badge-foreground: #4b280f;
+}
+
+.dark {
+  --animated-gradient-text-strong: rgba(255, 255, 255, 1);
+  --animated-gradient-text-soft: rgba(255, 255, 255, 0.2);
+  --color-background: var(--color-neutral-900);
+  --color-background-alt: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
+  --color-background-win-alt: var(--color-neutral-800);
+  --color-brand: var(--color-sky-500);
+  --color-resize-handle: var(--color-sky-400);
+  --color-trajectory-user: #60a5fa;
+  --color-trajectory-assistant: #2dd4bf;
+  --color-trajectory-reasoning: #a78bfa;
+  --color-trajectory-tool-call: #f59e0b;
+  --color-trajectory-tool-result: #38bdf8;
+  --color-workflow-rule: color-mix(in oklab, var(--color-white) 6.5%, transparent);
+  --color-workflow-trace: color-mix(in oklab, var(--color-white) 35%, transparent);
+  --color-workflow-trace-strong: color-mix(in oklab, var(--color-white) 60%, transparent);
+  --color-accent: color-mix(in oklab, var(--color-sky-950) 50%, transparent);
+  --color-find-highlight: #713f12;
+  --color-find-highlight-active: #a16207;
+  --color-border: color-mix(in oklab, var(--color-neutral-50) 10%, transparent);
+  --color-border-hover: color-mix(in oklab, var(--color-neutral-50) 30%, transparent);
+  --color-hover: var(--color-surface-hover);
+  --color-selected: color-mix(in oklab, var(--color-white) 10%, transparent);
+  --color-header: var(--color-neutral-900);
+  --color-panel: var(--color-neutral-900);
+  --color-sidebar: var(--color-neutral-950);
+  --color-surface: color-mix(in oklab, var(--color-white) 5%, transparent);
+  --color-surface-hover: color-mix(in oklab, var(--color-white) 10%, transparent);
+  --color-card: var(--color-neutral-800);
+  --color-card-selected: var(--color-neutral-700);
+  --color-card-border: var(--color-border);
+  --color-popover: var(--color-neutral-800);
+  --color-popover-foreground: var(--color-foreground);
+  --color-popover-header: var(--color-neutral-700);
+  --color-popover-border: var(--color-border);
+  --color-input: var(--color-neutral-800);
+  --color-input-focused: var(--color-neutral-950);
+  --color-input-border: var(--color-border);
+  --color-input-border-hover: var(--color-border-hover);
+  --color-input-border-focused: var(--color-brand);
+  --color-terminal-bg: var(--color-neutral-950);
+  --color-terminal-fg: var(--color-neutral-50);
+  --color-terminal-cursor: var(--color-neutral-50);
+  --color-terminal-cursor-accent: var(--color-neutral-950);
+  --color-terminal-selection: color-mix(in oklab, var(--color-sky-500) 26%, transparent);
+  --color-terminal-selection-inactive: color-mix(
+    in oklab,
+    var(--color-neutral-50) 16%,
+    transparent
+  );
+  --color-terminal-black: var(--color-neutral-800);
+  --color-terminal-red: var(--color-red-600);
+  --color-terminal-green: var(--color-green-600);
+  --color-terminal-yellow: var(--color-yellow-600);
+  --color-terminal-blue: var(--color-sky-600);
+  --color-terminal-magenta: var(--color-fuchsia-600);
+  --color-terminal-cyan: var(--color-cyan-600);
+  --color-terminal-white: var(--color-neutral-200);
+  --color-terminal-bright-black: var(--color-neutral-500);
+  --color-terminal-bright-red: var(--color-red-600);
+  --color-terminal-bright-green: var(--color-green-600);
+  --color-terminal-bright-yellow: var(--color-yellow-600);
+  --color-terminal-bright-blue: var(--color-sky-600);
+  --color-terminal-bright-magenta: var(--color-fuchsia-600);
+  --color-terminal-bright-cyan: var(--color-cyan-600);
+  --color-terminal-bright-white: var(--color-neutral-50);
+  --color-usage-chart-1: var(--color-sky-500);
+  --color-usage-chart-2: var(--color-teal-400);
+  --color-usage-chart-3: var(--color-violet-400);
+  --color-usage-chart-4: var(--color-rose-400);
+  --color-usage-chart-5: var(--color-indigo-400);
+  --color-usage-chart-6: var(--color-cyan-400);
+  --color-context-breakdown-1: var(--color-sky-400);
+  --color-context-breakdown-2: var(--color-sky-300);
+  --color-context-breakdown-3: var(--color-sky-200);
+  --color-context-breakdown-4: color-mix(in oklab, var(--color-sky-200) 84%, var(--color-white));
+  --color-context-breakdown-5: color-mix(in oklab, var(--color-sky-200) 72%, var(--color-white));
+  --color-context-breakdown-6: color-mix(in oklab, var(--color-sky-200) 60%, var(--color-white));
+  --color-context-breakdown-7: color-mix(in oklab, var(--color-sky-200) 48%, var(--color-white));
+  --color-usage-heatmap-0: color-mix(in oklab, var(--color-sky-400) 0%, var(--color-surface));
+  --color-usage-heatmap-1: color-mix(in oklab, var(--color-sky-400) 24%, var(--color-surface));
+  --color-usage-heatmap-2: color-mix(in oklab, var(--color-sky-400) 42%, var(--color-surface));
+  --color-usage-heatmap-3: color-mix(in oklab, var(--color-sky-400) 62%, var(--color-surface));
+  --color-usage-heatmap-4: color-mix(in oklab, var(--color-sky-300) 78%, var(--color-surface));
+  --color-tab: var(--color-neutral-800);
+  --color-tab-active: var(--color-neutral-950);
+  --color-tab-border: var(--color-border);
+  --color-menu: var(--color-neutral-950);
+  --color-menu-hover: var(--color-neutral-900);
+  --color-primary: var(--color-neutral-50);
+  --color-primary-foreground: var(--color-neutral-950);
+  --color-secondary: var(--color-neutral-700);
+  --color-interaction-ask-surface: color-mix(in oklab, var(--color-sky-950) 50%, transparent);
+  --color-interaction-ask-foreground: var(--color-sky-300);
+  --color-interaction-ask-fill: color-mix(in oklab, var(--color-green-400) 24%, transparent);
+  --color-interaction-confirmation-surface: color-mix(
+    in oklab,
+    var(--color-green-950) 45%,
+    transparent
+  );
+  --color-interaction-confirmation-foreground: var(--color-green-300);
+  --color-success-surface: color-mix(in oklab, var(--color-green-950) 45%, transparent);
+  --color-success-surface-foreground: var(--color-green-300);
+  --color-progress-surface: var(--color-blue-950);
+  --color-progress-surface-foreground: var(--color-blue-300);
+  --color-foreground: var(--color-neutral-200);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-200) 60%, transparent);
+  --color-remote-foreground-muted: #b3b3b3;
+  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-200) 30%, transparent);
+  --lucide-subtlest-opacity: 0.3;
+  --color-foreground-inverse: var(--color-white);
+  --color-success: var(--color-green-500);
+  --color-success-foreground: var(--color-foreground-inverse);
+  --color-idle-task: var(--color-violet-400);
+  --color-idle-task-surface: color-mix(in oklab, var(--color-violet-950) 50%, transparent);
+  --color-destructive: var(--color-red-500);
+  --color-destructive-foreground: var(--color-foreground-inverse);
+  --color-warning: var(--color-yellow-500);
+  --color-feedback-privacy-hint: var(--color-yellow-300);
+  --color-warning-foreground: var(--color-foreground-inverse);
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  --color-warning-surface-foreground: var(--color-yellow-400);
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 16%, transparent);
+  --color-destructive-surface-foreground: var(--color-red-300);
+  --color-diff-added: var(--color-green-500);
+  --color-diff-added-foreground: var(--color-foreground-inverse);
+  --color-diff-removed: var(--color-red-500);
+  --color-diff-removed-foreground: var(--color-foreground-inverse);
+  --color-git-none: var(--color-foreground);
+  --color-git-modified: var(--color-amber-400);
+  --color-git-added: var(--color-teal-400);
+  --color-git-deleted: var(--color-red-400);
+  --color-git-renamed: var(--color-sky-400);
+  --color-git-untracked: var(--color-teal-400);
+  --color-git-ignored: var(--color-foreground-subtlest);
+  --color-git-descendant: var(--color-amber-400);
+  --color-toast: var(--color-neutral-900);
+  --color-tooltip: var(--color-neutral-900);
+  --color-tooltip-foreground: var(--color-neutral-50);
+  --color-tooltip-tag: var(--color-neutral-800);
+  --color-tooltip-tag-foreground: color-mix(in oklab, var(--color-neutral-50) 60%, transparent);
+  --color-tag: var(--color-neutral-700);
+  --color-remote-ssh-surface: color-mix(in oklab, var(--color-sky-500) 18%, transparent);
+  --color-remote-ssh-foreground: var(--color-sky-300);
+  --color-remote-ssh-border: var(--color-sky-700);
+  --color-remote-wsl-surface: color-mix(in oklab, var(--color-green-500) 18%, transparent);
+  --color-remote-wsl-foreground: var(--color-green-300);
+  --color-remote-wsl-border: var(--color-green-700);
+  --color-remote-docker-surface: color-mix(in oklab, var(--color-violet-500) 18%, transparent);
+  --color-remote-docker-foreground: var(--color-violet-300);
+  --color-remote-docker-border: var(--color-violet-700);
+  --color-file-node: color-mix(in oklab, var(--color-sky-400) 18%, transparent);
+  --color-file-node-hover: color-mix(in oklab, var(--color-sky-400) 24%, transparent);
+  --color-file-node-foreground: var(--color-sky-300);
+  --color-skill-node: color-mix(in oklab, var(--color-violet-400) 18%, transparent);
+  --color-skill-node-hover: color-mix(in oklab, var(--color-violet-400) 24%, transparent);
+  --color-skill-node-foreground: var(--color-violet-300);
+  --color-command-node: color-mix(in oklab, var(--color-slate-300) 16%, transparent);
+  --color-command-node-hover: color-mix(in oklab, var(--color-slate-300) 22%, transparent);
+  --color-command-node-foreground: var(--color-slate-300);
+  --color-subagent-node: color-mix(in oklab, #b7bd75 18%, transparent);
+  --color-subagent-node-hover: color-mix(in oklab, #b7bd75 24%, transparent);
+  --color-subagent-node-foreground: #b7bd75;
+  --color-session-node: color-mix(in oklab, var(--color-teal-400) 18%, transparent);
+  --color-session-node-hover: color-mix(in oklab, var(--color-teal-400) 24%, transparent);
+  --color-session-node-foreground: var(--color-teal-300);
+  --color-plugin-node: color-mix(in oklab, var(--color-amber-400) 18%, transparent);
+  --color-plugin-node-hover: color-mix(in oklab, var(--color-amber-400) 24%, transparent);
+  --color-plugin-node-foreground: var(--color-amber-300);
+  --color-plugin-paid-plan-badge: #5a341b;
+  --color-plugin-paid-plan-badge-foreground: #ffd8b8;
+}
+
+.theme-cf-light {
+  --animated-gradient-text-strong: rgba(13, 13, 13, 1);
+  --animated-gradient-text-soft: rgba(13, 13, 13, 0.22);
+  --color-background: #f8f8f8;
+  --color-background-win-alt: #ececee;
+  --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
+  --color-brand: #000000;
+  --color-trajectory-user: #2563eb;
+  --color-trajectory-assistant: #0f766e;
+  --color-trajectory-reasoning: #7c3aed;
+  --color-trajectory-tool-call: #d97706;
+  --color-trajectory-tool-result: #0284c7;
+  --color-workflow-rule: rgba(13, 13, 13, 0.055);
+  --color-workflow-trace: rgba(13, 13, 13, 0.3);
+  --color-workflow-trace-strong: rgba(13, 13, 13, 0.55);
+  --color-accent: #ebf4ff;
+  --color-find-highlight: #fff4eb;
+  --color-find-highlight-active: #ffb26b;
+  --color-border: rgba(13, 13, 13, 0.1);
+  --color-border-hover: rgba(13, 13, 13, 0.15);
+  --color-hover: rgba(13, 13, 13, 0.05);
+  --color-selected: rgba(13, 13, 13, 0.05);
+  --color-header: #ffffff;
+  --color-panel: #ffffff;
+  --color-sidebar: #f0f0f0;
+  --color-surface: rgba(13, 13, 13, 0.03);
+  --color-surface-hover: rgba(13, 13, 13, 0.05);
+  --color-card: #ffffff;
+  --color-card-selected: var(--color-input);
+  --color-card-border: var(--color-border);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--color-foreground);
+  --color-popover-header: #f8f8f8;
+  --color-popover-border: var(--color-border);
+  --color-input: #ffffff;
+  --color-input-focused: var(--color-input);
+  --color-input-border: var(--color-border);
+  --color-input-border-hover: var(--color-border-hover);
+  --color-input-border-focused: var(--color-border-hover);
+  --color-terminal-bg: var(--color-background);
+  --color-terminal-fg: var(--color-foreground);
+  --color-terminal-cursor: #0d0d0d;
+  --color-terminal-cursor-accent: var(--color-background);
+  --color-terminal-selection: rgba(11, 127, 255, 0.22);
+  --color-terminal-selection-inactive: rgba(13, 13, 13, 0.1);
+  --color-terminal-black: #5c5c5c;
+  --color-terminal-red: #e03131;
+  --color-terminal-green: #1e8a3e;
+  --color-terminal-yellow: #e07b00;
+  --color-terminal-blue: #0b7fff;
+  --color-terminal-magenta: #9e77ed;
+  --color-terminal-cyan: #0aa7a7;
+  --color-terminal-white: #adadad;
+  --color-terminal-bright-black: #888888;
+  --color-terminal-bright-red: #e03131;
+  --color-terminal-bright-green: #1e8a3e;
+  --color-terminal-bright-yellow: #e07b00;
+  --color-terminal-bright-blue: #0066dd;
+  --color-terminal-bright-magenta: #9e77ed;
+  --color-terminal-bright-cyan: #0aa7a7;
+  --color-terminal-bright-white: #0d0d0d;
+  --color-usage-chart-1: #0b7fff;
+  --color-usage-chart-2: #1e8a3e;
+  --color-usage-chart-3: #9e77ed;
+  --color-usage-chart-4: #e03131;
+  --color-usage-chart-5: #e07b00;
+  --color-usage-chart-6: #0aa7a7;
+  --color-context-breakdown-1: #0b7fff;
+  --color-context-breakdown-2: #338fff;
+  --color-context-breakdown-3: #5ca7ff;
+  --color-context-breakdown-4: #85bbff;
+  --color-context-breakdown-5: #acd0ff;
+  --color-context-breakdown-6: #c8ddff;
+  --color-context-breakdown-7: #e0ecff;
+  --color-usage-heatmap-0: color-mix(in oklab, #0b7fff 0%, var(--color-surface));
+  --color-usage-heatmap-1: color-mix(in oklab, #0b7fff 18%, var(--color-surface));
+  --color-usage-heatmap-2: color-mix(in oklab, #0b7fff 36%, var(--color-surface));
+  --color-usage-heatmap-3: color-mix(in oklab, #0b7fff 58%, var(--color-surface));
+  --color-usage-heatmap-4: color-mix(in oklab, #0066dd 82%, var(--color-surface));
+  --color-tab: #f0f0f0;
+  --color-tab-active: #ffffff;
+  --color-tab-border: var(--color-border);
+  --color-menu: #ffffff;
+  --color-menu-hover: #f0f0f0;
+  --color-primary: #000000;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e6e6e6;
+  --color-interaction-ask-surface: #ebf4ff;
+  --color-interaction-ask-foreground: #0066dd;
+  --color-interaction-ask-fill: rgba(70, 191, 114, 0.2);
+  --color-interaction-confirmation-surface: #eaf7ee;
+  --color-interaction-confirmation-foreground: #166b32;
+  --color-success-surface: #eaf7ee;
+  --color-success-surface-foreground: #166b32;
+  --color-progress-surface: var(--color-blue-50);
+  --color-progress-surface-foreground: var(--color-blue-700);
+  --color-foreground: var(--color-neutral-800);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
+  --color-remote-foreground-muted: #595959;
+  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-800) 40%, transparent);
+  --lucide-subtlest-opacity: 0.4;
+  --color-foreground-inverse: #ffffff;
+  --color-success: #1e8a3e;
+  --color-success-foreground: #ffffff;
+  --color-idle-task: #9e77ed;
+  --color-idle-task-surface: #f5f3ff;
+  --color-destructive: #e03131;
+  --color-destructive-foreground: #ffffff;
+  --color-warning: #e07b00;
+  --color-feedback-privacy-hint: var(--color-yellow-600);
+  --color-warning-foreground: #ffffff;
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --color-warning-surface-foreground: #914e00;
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  --color-destructive-surface-foreground: #b42020;
+  --color-diff-added: #1e8a3e;
+  --color-diff-added-foreground: #ffffff;
+  --color-diff-removed: #e03131;
+  --color-diff-removed-foreground: #ffffff;
+  --color-git-none: var(--color-foreground);
+  --color-git-modified: #e07b00;
+  --color-git-added: #1e8a3e;
+  --color-git-deleted: #e03131;
+  --color-git-renamed: #0b7fff;
+  --color-git-untracked: #1e8a3e;
+  --color-git-ignored: var(--color-foreground-subtlest);
+  --color-git-descendant: #e07b00;
+  --color-toast: #ffffff;
+  --color-tooltip: #f0f0f0;
+  --color-tooltip-foreground: #0d0d0d;
+  --color-tooltip-tag: #e6e6e6;
+  --color-tooltip-tag-foreground: #5c5c5c;
+  --color-tag: #e6e6e6;
+  --color-remote-ssh-surface: #ebf4ff;
+  --color-remote-ssh-foreground: #0867ce;
+  --color-remote-ssh-border: #bad9ff;
+  --color-remote-wsl-surface: #eaf7ee;
+  --color-remote-wsl-foreground: #166b32;
+  --color-remote-wsl-border: #b7e0c2;
+  --color-remote-docker-surface: #f2efff;
+  --color-remote-docker-foreground: #6047b4;
+  --color-remote-docker-border: #d4caff;
+  --color-file-node: rgba(26, 112, 184, 0.1);
+  --color-file-node-hover: rgba(26, 112, 184, 0.16);
+  --color-file-node-foreground: #1a70b8;
+  --color-skill-node: rgba(116, 83, 176, 0.1);
+  --color-skill-node-hover: rgba(116, 83, 176, 0.16);
+  --color-skill-node-foreground: #7453b0;
+  --color-command-node: rgba(86, 98, 112, 0.1);
+  --color-command-node-hover: rgba(86, 98, 112, 0.16);
+  --color-command-node-foreground: #566270;
+  --color-subagent-node: rgba(111, 122, 47, 0.1);
+  --color-subagent-node-hover: rgba(111, 122, 47, 0.16);
+  --color-subagent-node-foreground: #6f7a2f;
+  --color-session-node: rgba(20, 128, 122, 0.1);
+  --color-session-node-hover: rgba(20, 128, 122, 0.16);
+  --color-session-node-foreground: #14807a;
+  --color-plugin-node: rgba(184, 122, 26, 0.1);
+  --color-plugin-node-hover: rgba(184, 122, 26, 0.16);
+  --color-plugin-node-foreground: #b87a1a;
+  --color-plugin-paid-plan-badge: #ffe3c8;
+  --color-plugin-paid-plan-badge-foreground: #4b280f;
+}
+
+.theme-cf-dark {
+  --animated-gradient-text-strong: rgba(255, 255, 255, 1);
+  --animated-gradient-text-soft: rgba(255, 255, 255, 0.22);
+  --color-background: #161616;
+  --color-background-win-alt: #2b2b2b;
+  --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 60%, transparent);
+  --color-brand: #ffffff;
+  --color-trajectory-user: #60a5fa;
+  --color-trajectory-assistant: #2dd4bf;
+  --color-trajectory-reasoning: #a78bfa;
+  --color-trajectory-tool-call: #f59e0b;
+  --color-trajectory-tool-result: #38bdf8;
+  --color-workflow-rule: rgba(255, 255, 255, 0.065);
+  --color-workflow-trace: rgba(255, 255, 255, 0.35);
+  --color-workflow-trace-strong: rgba(255, 255, 255, 0.6);
+  --color-accent: #001d3d;
+  --color-find-highlight: #542500;
+  --color-find-highlight-active: #ff8a30;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-hover: rgba(255, 255, 255, 0.05);
+  --color-selected: rgba(255, 255, 255, 0.1);
+  --color-header: #202020;
+  --color-panel: #202020;
+  --color-sidebar: #161616;
+  --color-surface: rgba(255, 255, 255, 0.05);
+  --color-surface-hover: rgba(255, 255, 255, 0.1);
+  --color-card: #2b2b2b;
+  --color-card-selected: var(--color-input);
+  --color-card-border: var(--color-border);
+  --color-popover: #2b2b2b;
+  --color-popover-foreground: var(--color-foreground);
+  --color-popover-header: #202020;
+  --color-popover-border: var(--color-border);
+  --color-input: #2b2b2b;
+  --color-input-focused: var(--color-input);
+  --color-input-border: var(--color-border);
+  --color-input-border-hover: var(--color-border-hover);
+  --color-input-border-focused: var(--color-border-hover);
+  --color-terminal-bg: var(--color-background);
+  --color-terminal-fg: var(--color-foreground);
+  --color-terminal-cursor: #f8f8f8;
+  --color-terminal-cursor-accent: #161616;
+  --color-terminal-selection: rgba(64, 153, 255, 0.28);
+  --color-terminal-selection-inactive: rgba(255, 255, 255, 0.1);
+  --color-terminal-black: #363636;
+  --color-terminal-red: #ff5c5c;
+  --color-terminal-green: #46bf72;
+  --color-terminal-yellow: #ff8a30;
+  --color-terminal-blue: #4099ff;
+  --color-terminal-magenta: #7b5ce5;
+  --color-terminal-cyan: #42c8c8;
+  --color-terminal-white: #adadad;
+  --color-terminal-bright-black: #747474;
+  --color-terminal-bright-red: #ff9999;
+  --color-terminal-bright-green: #87d9a4;
+  --color-terminal-bright-yellow: #ffb26b;
+  --color-terminal-bright-blue: #80beff;
+  --color-terminal-bright-magenta: #a888f2;
+  --color-terminal-bright-cyan: #8ee5e5;
+  --color-terminal-bright-white: #f8f8f8;
+  --color-usage-chart-1: #4099ff;
+  --color-usage-chart-2: #46bf72;
+  --color-usage-chart-3: #7b5ce5;
+  --color-usage-chart-4: #ff5c5c;
+  --color-usage-chart-5: #ff8a30;
+  --color-usage-chart-6: #42c8c8;
+  --color-context-breakdown-1: #4099ff;
+  --color-context-breakdown-2: #66adff;
+  --color-context-breakdown-3: #80beff;
+  --color-context-breakdown-4: #9dceff;
+  --color-context-breakdown-5: #b9ddff;
+  --color-context-breakdown-6: #d0e8ff;
+  --color-context-breakdown-7: #e4f1ff;
+  --color-usage-heatmap-0: color-mix(in oklab, #4099ff 0%, var(--color-surface));
+  --color-usage-heatmap-1: color-mix(in oklab, #4099ff 24%, var(--color-surface));
+  --color-usage-heatmap-2: color-mix(in oklab, #4099ff 42%, var(--color-surface));
+  --color-usage-heatmap-3: color-mix(in oklab, #4099ff 62%, var(--color-surface));
+  --color-usage-heatmap-4: color-mix(in oklab, #80beff 78%, var(--color-surface));
+  --color-tab: #202020;
+  --color-tab-active: #161616;
+  --color-tab-border: var(--color-border);
+  --color-menu: #2b2b2b;
+  --color-menu-hover: #363636;
+  --color-primary: #ffffff;
+  --color-primary-foreground: #000000;
+  --color-secondary: #363636;
+  --color-interaction-ask-surface: #001d3d;
+  --color-interaction-ask-foreground: #80beff;
+  --color-interaction-ask-fill: rgba(70, 191, 114, 0.24);
+  --color-interaction-confirmation-surface: rgba(70, 191, 114, 0.16);
+  --color-interaction-confirmation-foreground: #87d9a4;
+  --color-success-surface: rgba(70, 191, 114, 0.16);
+  --color-success-surface-foreground: #87d9a4;
+  --color-progress-surface: rgba(70, 130, 240, 0.16);
+  --color-progress-surface-foreground: var(--color-blue-300);
+  --color-foreground: var(--color-neutral-300);
+  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-300) 60%, transparent);
+  --color-remote-foreground-muted: #b3b3b3;
+  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-300) 30%, transparent);
+  --lucide-subtlest-opacity: 0.3;
+  --color-foreground-inverse: #000000;
+  --color-success: #46bf72;
+  --color-success-foreground: #000000;
+  --color-idle-task: #7b5ce5;
+  --color-idle-task-surface: #160d38;
+  --color-destructive: #ff5c5c;
+  
+  --color-destructive-foreground: #ffffff;
+  --color-warning: #ff8a30;
+  --color-feedback-privacy-hint: var(--color-yellow-300);
+  --color-warning-foreground: #000000;
+  --color-warning-surface: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  --color-warning-surface-foreground: #ffa159;
+  --color-destructive-surface: color-mix(in srgb, var(--color-destructive) 16%, transparent);
+  --color-destructive-surface-foreground: #ff8585;
+  --color-diff-added: #46bf72;
+  --color-diff-added-foreground: #000000;
+  --color-diff-removed: #ff5c5c;
+  --color-diff-removed-foreground: #000000;
+  --color-git-none: var(--color-foreground);
+  --color-git-modified: #ff8a30;
+  --color-git-added: #46bf72;
+  --color-git-deleted: #ff5c5c;
+  --color-git-renamed: #4099ff;
+  --color-git-untracked: #46bf72;
+  --color-git-ignored: var(--color-foreground-subtlest);
+  --color-git-descendant: #ff8a30;
+  --color-toast: #2b2b2b;
+  --color-tooltip: #2b2b2b;
+  --color-tooltip-foreground: #f8f8f8;
+  --color-tooltip-tag: #363636;
+  --color-tooltip-tag-foreground: #adadad;
+  --color-tag: #363636;
+  --color-remote-ssh-surface: rgba(64, 153, 255, 0.16);
+  --color-remote-ssh-foreground: #8fc0ff;
+  --color-remote-ssh-border: rgba(64, 153, 255, 0.42);
+  --color-remote-wsl-surface: rgba(70, 191, 114, 0.16);
+  --color-remote-wsl-foreground: #87d9a4;
+  --color-remote-wsl-border: rgba(70, 191, 114, 0.42);
+  --color-remote-docker-surface: rgba(159, 132, 255, 0.16);
+  --color-remote-docker-foreground: #bfaaff;
+  --color-remote-docker-border: rgba(159, 132, 255, 0.42);
+  --color-file-node: rgba(112, 174, 224, 0.16);
+  --color-file-node-hover: rgba(112, 174, 224, 0.22);
+  --color-file-node-foreground: #8fc5ef;
+  --color-skill-node: rgba(166, 137, 218, 0.16);
+  --color-skill-node-hover: rgba(166, 137, 218, 0.22);
+  --color-skill-node-foreground: #bda5e6;
+  --color-command-node: rgba(154, 166, 180, 0.14);
+  --color-command-node-hover: rgba(154, 166, 180, 0.2);
+  --color-command-node-foreground: #b5c0cc;
+  --color-subagent-node: rgba(183, 189, 117, 0.16);
+  --color-subagent-node-hover: rgba(183, 189, 117, 0.22);
+  --color-subagent-node-foreground: #c8cd90;
+  --color-session-node: rgba(104, 196, 188, 0.16);
+  --color-session-node-hover: rgba(104, 196, 188, 0.22);
+  --color-session-node-foreground: #93d8d2;
+  --color-plugin-node: rgba(224, 174, 112, 0.16);
+  --color-plugin-node-hover: rgba(224, 174, 112, 0.22);
+  --color-plugin-node-foreground: #efc58f;
+  --color-plugin-paid-plan-badge: #5a341b;
+  --color-plugin-paid-plan-badge-foreground: #ffd8b8;
+}
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 32px;
+  min-width: 32px;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background: var(--color-border);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.terminal-xterm-shell .xterm-viewport {
+  scrollbar-width: none;
+}
+
+.terminal-xterm-shell .xterm-viewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+[data-cf-pptx-render-surface] * {
+  scrollbar-width: none;
+}
+
+[data-cf-pptx-render-surface] *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@layer utilities {
+  .button-gradient {
+    background-image: linear-gradient(to bottom right, #191a1d, #747689);
+  }
+
+  .dark .button-gradient {
+    background-image: none;
+    background-color: #484a58;
+  }
+
+  .animated-gradient-text {
+    display: inline-block;
+    background: linear-gradient(
+      90deg,
+      var(--animated-gradient-text-strong) 0%,
+      var(--animated-gradient-text-strong) 34%,
+      var(--animated-gradient-text-soft) 50%,
+      var(--animated-gradient-text-strong) 66%,
+      var(--animated-gradient-text-strong) 100%
+    );
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-flow 4s linear infinite;
+    will-change: background-position;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .animated-gradient-text-subtle {
+    --animated-gradient-text-strong: var(--color-foreground-subtle);
+  }
+
+  .highspeed-animated-gradient-text .animated-gradient-text {
+    
+    --animated-gradient-text-strong: var(--color-icon-purple);
+    --animated-gradient-text-soft: color-mix(in srgb, var(--color-icon-purple) 22%, transparent);
+  }
+
+  .cua-group-gradient-text {
+    display: inline-block;
+    background: linear-gradient(
+      90deg,
+      var(--animated-gradient-text-strong) 0%,
+      var(--animated-gradient-text-soft) 40%,
+      var(--animated-gradient-text-soft) 60%,
+      var(--animated-gradient-text-strong) 100%
+    );
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: cua-group-gradient-flow 1s linear infinite;
+    animation-delay: 0.5s;
+    will-change: background-position;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  @keyframes cua-group-gradient-flow {
+    0% {
+      background-position: 100% 0;
+    }
+
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cua-group-gradient-text {
+      animation: none;
+    }
+  }
+
+  @keyframes gradient-flow {
+    0% {
+      background-position: 100% 0;
+    }
+
+    50% {
+      background-position: 0% 0;
+    }
+
+    100% {
+      background-position: 0% 0;
+    }
+  }
+}
+
+.tool-call-progress-indeterminate {
+  animation: tool-call-progress-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes tool-call-progress-indeterminate {
+  0% {
+    left: -33%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-call-progress-indeterminate {
+    animation: none;
+    left: 0;
+    width: 100%;
+  }
+}
+
+@keyframes cf-stream-text-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes cf-draft-prompt-waterfall {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+.cf-draft-prompt-waterfall {
+  animation: cf-draft-prompt-waterfall 260ms cubic-bezier(0.22, 1, 0.36, 1)
+    var(--cf-draft-prompt-waterfall-delay, 0ms) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-draft-prompt-waterfall {
+    animation: none;
+  }
+}
+
+@keyframes markdown-image-loading-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.markdown-image-loading-shimmer {
+  background-color: var(--color-card);
+  background-image: linear-gradient(
+    135deg,
+    var(--color-card) 0%,
+    var(--color-background) 50%,
+    var(--color-card) 100%
+  );
+  background-size: 240% 100%;
+  animation: markdown-image-loading-shimmer 1.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-image-loading-shimmer {
+    animation: none;
+  }
+}
+
+@keyframes cf-stream-marker-in {
+  0% {
+    color: transparent;
+  }
+
+  100% {
+    color: var(--color-foreground-subtlest);
+  }
+}
+
+[data-cf-stream-animate="true"] {
+  animation: cf-stream-text-in 900ms cubic-bezier(0.16, 1, 0.3, 1)
+    var(--cf-stream-animation-delay, 0ms) both;
+  will-change: opacity;
+}
+
+[data-cf-stream-marker-animate="true"]::marker {
+  animation: cf-stream-marker-in 900ms cubic-bezier(0.16, 1, 0.3, 1)
+    var(--cf-stream-animation-delay, 0ms) both;
+}
+
+[data-cf-tool-stream-animate="true"],
+[data-cf-chat-loading-animate="true"] {
+  animation: cf-stream-text-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity;
+}
+
+[data-cf-collapsible-animate-close="true"][data-state="closed"] {
+  animation: cf-collapsible-up 300ms ease-in-out forwards !important;
+}
+
+[data-cf-collapsible-animate-close="true"][data-state="closed"] > * {
+  animation: cf-collapsible-fade-out 300ms ease-in-out forwards !important;
+}
+
+@keyframes cf-collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+
+  to {
+    height: 0;
+  }
+}
+
+@keyframes cf-collapsible-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-cf-stream-animate="true"],
+  [data-cf-stream-marker-animate="true"]::marker,
+  [data-cf-tool-stream-animate="true"],
+  [data-cf-chat-loading-animate="true"],
+  [data-cf-collapsible-animate-close="true"][data-state="closed"],
+  [data-cf-collapsible-animate-close="true"][data-state="closed"] > * {
+    animation: none;
+  }
+}
+
+.cf-reaction-burst {
+  position: relative;
+  display: inline-flex;
+}
+
+.cf-reaction-burst > svg {
+  animation: cf-reaction-pop 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cf-reaction-burst::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  animation: cf-reaction-particles 560ms cubic-bezier(0.16, 1, 0.3, 1) 60ms forwards;
+}
+
+.animate-cf-alarm-ring {
+  animation: cf-alarm-ring 600ms ease-in-out infinite;
+}
+
+@keyframes cf-alarm-ring {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes cf-reaction-pop {
+  0% {
+    transform: scale(0);
+  }
+
+  45% {
+    transform: scale(1.3);
+  }
+
+  70% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cf-reaction-particles {
+  0% {
+    opacity: 0;
+    box-shadow:
+      7.7px 2.1px 0 0,
+      2.1px 7.7px 0 0,
+      -5.7px 5.7px 0 0,
+      -7.7px -2.1px 0 0,
+      -2.1px -7.7px 0 0,
+      5.7px -5.7px 0 0;
+  }
+
+  20% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 0;
+    box-shadow:
+      15.5px 4.1px 0 -1px,
+      4.1px 15.5px 0 -1px,
+      -11.3px 11.3px 0 -1px,
+      -15.5px -4.1px 0 -1px,
+      -4.1px -15.5px 0 -1px,
+      11.3px -11.3px 0 -1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-reaction-burst > svg,
+  .cf-reaction-burst::after {
+    animation: none;
+  }
+}
+
+@keyframes workspace-remote-connecting-breathe {
+  0%,
+  100% {
+    background-color: color-mix(in oklab, var(--color-brand) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 10%, transparent);
+  }
+
+  50% {
+    background-color: color-mix(in oklab, var(--color-brand) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 18%, transparent);
+  }
+}
+
+@keyframes cf-task-interaction-countdown {
+  from {
+    transform: scaleX(var(--cf-interaction-progress, 1));
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.cf-task-interaction-countdown-fill {
+  animation: cf-task-interaction-countdown var(--cf-interaction-remaining-ms, 240000ms) linear
+    forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-task-interaction-countdown-fill {
+    animation: none;
+    transform: scaleX(var(--cf-interaction-progress, 1));
+  }
+}
+
+.workspace-remote-connecting-breathe {
+  animation: workspace-remote-connecting-breathe 1.8s ease-in-out infinite;
+}
+
+.cf-update-charge-progress [data-slot="progress-indicator"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.cf-update-charge-progress [data-slot="progress-indicator"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  width: min(3.5rem, 70%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--color-primary-foreground) 62%, transparent),
+    transparent
+  );
+  animation: cf-update-charge-sweep 1.15s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  transform: translateX(-120%);
+}
+
+@keyframes cf-update-charge-sweep {
+  0% {
+    opacity: 0.35;
+    transform: translateX(-120%);
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0.35;
+    transform: translateX(260%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-update-charge-progress [data-slot="progress-indicator"]::after {
+    animation: none;
+    opacity: 0.2;
+    transform: none;
+  }
+}
+
+@keyframes browser-use-operation-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.browser-use-operation-breathe {
+  transform-origin: center;
+  animation: browser-use-operation-breathe 900ms ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.browser-use-viewport {
+  transition: filter 160ms ease-out;
+}
+
+.browser-use-viewport[data-browser-resize-dimmed="true"] {
+  filter: brightness(0.88);
+  will-change: filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .browser-use-operation-breathe {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  .browser-use-viewport {
+    transition: none;
+  }
+}
+
+@keyframes task-search-result-highlight {
+  0% {
+    background-color: color-mix(in oklab, var(--color-brand) 20%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 28%, transparent);
+  }
+
+  45% {
+    background-color: color-mix(in oklab, var(--color-brand) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 20%, transparent);
+  }
+
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+
+.task-search-result-highlight {
+  animation: task-search-result-highlight 1.2s ease-out both;
+}
+
+@keyframes fork-highlight-pulse {
+  0% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+  20% {
+    background-color: color-mix(in oklab, var(--color-brand) 24%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-brand) 32%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+
+[data-fork-highlight="true"] {
+  animation: fork-highlight-pulse 1.6s ease-out 1;
+  border-radius: 0.5rem;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .task-title-marquee:hover .task-title-marquee-track {
+    will-change: transform;
+  }
+}
+
+.wf-rail-march::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: -4px;
+  top: -1.25px;
+  height: 1.5px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, var(--color-warning) 80%);
+}
+.wf-lit {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.wf-rail-stream {
+  border-top-color: transparent;
+}
+.wf-rail-stream::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-foreground-subtlest) calc(50% - 11px),
+    transparent calc(50% - 11px) calc(50% + 11px),
+    var(--color-foreground-subtlest) calc(50% + 11px)
+  );
+}
+@keyframes wf-stream-flow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wf-stream-flow {
+    animation: wf-stream-flow 1.2s var(--wf-ease, ease-in-out) infinite;
+  }
+}
+
+.wf-spine-march[data-rail-position="below"] {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, var(--color-warning) 70%, transparent)
+  );
+}
+.wf-spine-march[data-rail-position="above"] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-warning) 70%, transparent),
+    var(--color-warning)
+  );
+}
+.wf-spine-march[data-rail-position="full"] {
+  background: color-mix(in oklab, var(--color-warning) 70%, transparent);
+}
+
+.wf-motion {
+  --wf-t-fast: 120ms;
+  --wf-t-base: 160ms;
+  --wf-t-enter: 200ms;
+  --wf-t-ink: 320ms;
+  --wf-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  
+  --wf-beat: 1.6s;
+}
+.wf-pill {
+  box-shadow: inset 0 0 0 1px transparent;
+  transition:
+    background-color var(--wf-t-base) var(--wf-ease),
+    box-shadow var(--wf-t-base) var(--wf-ease),
+    transform var(--wf-t-fast) var(--wf-ease);
+}
+.wf-pill-avatar {
+  transition:
+    transform var(--wf-t-base) var(--wf-ease),
+    background-color var(--wf-t-base) var(--wf-ease);
+}
+.wf-pill-name {
+  transition: color var(--wf-t-base) var(--wf-ease);
+}
+.wf-pill-go {
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--wf-t-base) var(--wf-ease),
+    transform var(--wf-t-base) var(--wf-ease),
+    color var(--wf-t-base) var(--wf-ease);
+}
+.wf-pill-open:hover,
+.wf-pill-open:focus-visible {
+  background-color: var(--color-surface-hover);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--wf-avatar, var(--color-border-hover)) 35%, transparent);
+}
+
+.wf-agent-pill:hover {
+  box-shadow: none;
+}
+.wf-pill-open:hover .wf-pill-avatar,
+.wf-pill-open:focus-visible .wf-pill-avatar {
+  transform: scale(1.08);
+  background-color: color-mix(
+    in oklab,
+    var(--wf-avatar, var(--color-border-hover)) 30%,
+    transparent
+  );
+}
+.wf-pill-open:hover .wf-pill-name,
+.wf-pill-open:focus-visible .wf-pill-name {
+  color: var(--color-foreground);
+}
+.wf-pill-open:hover .wf-pill-go,
+.wf-pill-open:focus-visible .wf-pill-go {
+  opacity: 1;
+  transform: none;
+  color: var(--color-foreground-subtle);
+}
+
+.wf-pill-tile {
+  transition:
+    background-color var(--wf-t-base) var(--wf-ease),
+    color var(--wf-t-base) var(--wf-ease);
+}
+.wf-pill-open:hover .wf-pill-tile,
+.wf-pill-open:focus-visible .wf-pill-tile {
+  background-color: var(--color-hover);
+  color: var(--color-foreground);
+}
+
+.wf-pill-open:hover .wf-mark,
+.wf-pill-open:focus-visible .wf-mark {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.wf-pill-open:active {
+  transform: scale(0.985);
+}
+
+.wf-more-face {
+  border-radius: 35%;
+  box-shadow: 0 0 0 1.5px var(--color-background);
+  transition: margin-left var(--wf-t-base) var(--wf-ease);
+}
+.wf-more-deck > * + * {
+  margin-left: -5px;
+}
+.wf-more-row:hover .wf-more-deck > * + *,
+.wf-more-row:focus-visible .wf-more-deck > * + * {
+  margin-left: -2px;
+}
+.wf-pill-go-rest {
+  opacity: 1;
+  transform: none;
+}
+
+.wf-meter-seg {
+  transition: flex-grow var(--wf-t-ink) var(--wf-ease);
+}
+
+.wf-tile-hit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 0.5rem;
+}
+.wf-tile:has(.wf-tile-hit:focus-visible) {
+  outline: 2px solid color-mix(in oklab, var(--color-ring) 40%, transparent);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+.wf-tile-frame {
+  transition:
+    border-color var(--wf-t-base) var(--wf-ease),
+    transform var(--wf-t-fast) var(--wf-ease);
+}
+.wf-tile:has(.wf-tile-open:hover) .wf-tile-frame,
+.wf-tile:has(.wf-tile-open:focus-visible) .wf-tile-frame {
+  border-color: var(--color-border-hover);
+}
+.wf-tile-open:hover .wf-pill-tile,
+.wf-tile-open:focus-visible .wf-pill-tile {
+  background-color: var(--color-hover);
+  color: var(--color-foreground);
+}
+.wf-tile-open:hover .wf-pill-go,
+.wf-tile-open:focus-visible .wf-pill-go {
+  opacity: 1;
+  transform: none;
+  color: var(--color-foreground-subtle);
+}
+.wf-tile-open:hover .wf-mark,
+.wf-tile-open:focus-visible .wf-mark {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.wf-tile:has(.wf-tile-open:active) .wf-tile-frame {
+  transform: scale(0.99);
+}
+
+.wf-line {
+  transition: background-color var(--wf-t-base) var(--wf-ease);
+}
+.wf-line-icon {
+  transition: color var(--wf-t-base) var(--wf-ease);
+}
+.wf-line-open:hover,
+.wf-line-open:focus-visible {
+  background-color: var(--color-surface-hover);
+}
+.wf-line-open:hover .wf-line-icon,
+.wf-line-open:focus-visible .wf-line-icon {
+  color: var(--color-foreground);
+}
+.wf-line-open:hover .wf-pill-go,
+.wf-line-open:focus-visible .wf-pill-go {
+  opacity: 1;
+  transform: none;
+  color: var(--color-foreground-subtle);
+}
+.wf-line-open:hover .wf-mark,
+.wf-line-open:focus-visible .wf-mark {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.wf-preview-doc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+  transform-origin: top left;
+  padding: 22px 26px;
+  overflow: hidden;
+  animation: wf-arrive var(--wf-t-ink, 320ms) var(--wf-ease, ease);
+}
+.wf-station {
+  transition: color var(--wf-t-base) var(--wf-ease);
+}
+.wf-lamp {
+  transition:
+    background-color var(--wf-t-ink) var(--wf-ease),
+    border-color var(--wf-t-ink) var(--wf-ease),
+    box-shadow var(--wf-t-base) var(--wf-ease);
+}
+
+.wf-lamp-running {
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent),
+    0 0 0 3px transparent;
+}
+
+.wf-lamp-hole-waiting {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent);
+}
+.wf-tail-stub {
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
+}
+.wf-ghost {
+  opacity: 0.4;
+}
+
+.wf-fill-frame {
+  fill: none;
+  stroke: var(--color-workflow-trace);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  transition:
+    opacity 160ms var(--wf-ease),
+    stroke-dashoffset 0s linear 160ms,
+    stroke 0s linear 160ms,
+    stroke-width 0s linear 160ms;
+}
+.wf-fill-frame[data-fill-on="true"] {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition:
+    stroke-dashoffset 420ms var(--wf-ease),
+    opacity 0s;
+}
+.wf-fill-frame-fresh {
+  stroke: var(--color-warning);
+  stroke-width: 1.5;
+  animation: wf-fill-stroke 420ms var(--wf-ease);
+}
+@keyframes wf-fill-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.wf-fill-head {
+  transition: color var(--wf-t-base) var(--wf-ease);
+}
+.wf-station-open:hover .wf-lamp[data-lamp="pending"] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-foreground) 10%, transparent);
+}
+.wf-station-open:hover .wf-lamp[data-lamp="done"] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-success) 18%, transparent);
+}
+.wf-station-open:hover .wf-lamp[data-lamp="failed"] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-destructive) 18%, transparent);
+}
+.wf-ink {
+  transition:
+    stroke var(--wf-t-ink) var(--wf-ease),
+    fill var(--wf-t-ink) var(--wf-ease),
+    border-color var(--wf-t-ink) var(--wf-ease);
+}
+
+.wf-arrive {
+  animation: wf-arrive var(--wf-t-enter) var(--wf-ease);
+}
+.wf-mark {
+  transform-origin: center;
+  animation: wf-mark 180ms var(--wf-ease);
+  transition:
+    opacity var(--wf-t-base) var(--wf-ease),
+    transform var(--wf-t-base) var(--wf-ease);
+}
+.wf-unfold {
+  animation: wf-unfold var(--wf-t-enter) var(--wf-ease);
+}
+.wf-swap {
+  display: inline-block;
+  animation: wf-swap var(--wf-t-enter) var(--wf-ease);
+}
+.wf-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: wf-draw 420ms var(--wf-ease) forwards;
+}
+.wf-caret {
+  animation: wf-caret 1s step-end infinite;
+}
+
+.wf-rail-grow {
+  transform-origin: left center;
+  animation: wf-rail-grow var(--wf-t-base) var(--wf-ease);
+}
+.wf-land {
+  animation: wf-land var(--wf-t-enter) var(--wf-ease);
+}
+
+.wf-slide {
+  animation: wf-slide 320ms var(--wf-ease);
+}
+
+.wf-digest-plot {
+  transition: height var(--wf-t-ink) var(--wf-ease);
+}
+
+.wf-scroller {
+  scrollbar-width: none;
+}
+.wf-scroller::-webkit-scrollbar {
+  display: none;
+}
+.wf-foldable {
+  transition:
+    opacity var(--wf-t-base) var(--wf-ease),
+    visibility 0s linear 0s;
+}
+.wf-folded {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--wf-t-base) var(--wf-ease),
+    visibility 0s linear var(--wf-t-base);
+}
+.wf-ledge-lamp {
+  transition: transform var(--wf-t-base) var(--wf-ease);
+}
+.wf-ledge-lamp:hover,
+.wf-ledge-lamp:focus-visible {
+  transform: scale(1.25);
+}
+.wf-sb {
+  opacity: 0;
+  transition:
+    opacity var(--wf-t-base) var(--wf-ease),
+    height var(--wf-t-fast) var(--wf-ease);
+}
+.wf-timeline:hover .wf-sb,
+.wf-sb[data-scrolling="true"],
+.wf-sb[data-dragging="true"] {
+  opacity: 1;
+}
+.wf-sb:hover,
+.wf-sb[data-dragging="true"] {
+  height: 4px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wf-lamp-running {
+    animation: wf-beat var(--wf-beat, 1.6s) var(--wf-ease, ease-in-out) infinite;
+  }
+}
+
+.wf-ws-entry {
+  transition: background-color var(--wf-t-base) var(--wf-ease);
+}
+.wf-ws-landed {
+  animation: wf-ws-land 1.4s var(--wf-ease) 1;
+}
+
+.wf-landed {
+  animation: wf-land 1.2s var(--wf-ease) 1;
+}
+@keyframes wf-land {
+  0%,
+  33% {
+    background-color: var(--color-surface-hover);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-landed {
+    animation: none;
+  }
+}
+.wf-ws-body {
+  animation: wf-unfold var(--wf-t-enter) var(--wf-ease);
+}
+.wf-ws-peek {
+  animation: wf-unfold var(--wf-t-enter) var(--wf-ease);
+  -webkit-mask-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35), #000 40%),
+    linear-gradient(90deg, #000 82%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35), #000 40%),
+    linear-gradient(90deg, #000 82%, transparent);
+  mask-composite: intersect;
+}
+.wf-ws-rule {
+  transform-origin: left center;
+  animation: wf-rail-grow var(--wf-t-ink) var(--wf-ease);
+}
+.wf-ws-shine {
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    var(--color-foreground-subtle) 0%,
+    var(--color-foreground) 40%,
+    var(--color-foreground-subtle) 80%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: wf-ws-shine 2.4s linear infinite;
+}
+@keyframes wf-ws-land {
+  0% {
+    background-color: transparent;
+  }
+  20% {
+    background-color: var(--color-surface-hover);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@keyframes wf-ws-shine {
+  to {
+    background-position: 200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-ws-landed,
+  .wf-ws-body,
+  .wf-ws-peek,
+  .wf-ws-rule {
+    animation: none;
+  }
+  .wf-ws-shine {
+    animation: none;
+    color: var(--color-foreground-subtle);
+    background: none;
+  }
+}
+
+.wf-face {
+  min-width: 20px;
+  min-height: 20px;
+  flex-shrink: 0;
+  --wf-face-body: #54b9a6;
+  --wf-face-eye: #ffffff;
+  --wf-face-x: 0px;
+  --wf-face-y: 0px;
+}
+.wf-face-eyes {
+  transform: translate(var(--wf-face-x), var(--wf-face-y));
+  transition: transform 360ms ease-in-out;
+}
+.wf-face-lids {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.wf-face [data-eye-expression] {
+  display: none;
+}
+.wf-face[data-expression="dots"] [data-eye-expression="dots"],
+.wf-face[data-expression="pill"] [data-eye-expression="pill"] {
+  display: inline;
+}
+.wf-face[data-expression="happy"] [data-eye-expression="happy"] {
+  display: inline;
+}
+.wf-face[data-expression="sleepy"] [data-eye-expression="sleepy"] {
+  display: inline;
+}
+.wf-face[data-expression="focused"] [data-eye-expression="focused"] {
+  display: inline;
+}
+.wf-face[data-expression="sad"] [data-eye-expression="sad"] {
+  display: inline;
+}
+.wf-face[data-expression="confused"] [data-eye-expression="confused"] {
+  display: inline;
+}
+
+.wf-face[data-motion="blink"] .wf-face-lids {
+  animation: wf-face-blink var(--wf-face-blink-time, 230ms) ease-in-out var(--wf-face-blinks, 2);
+}
+.wf-face[data-motion="morph"] .wf-face-lids {
+  animation: wf-face-morph 180ms ease-in-out;
+}
+.wf-face[data-motion="hop"] .wf-face-bounce {
+  animation: wf-face-hop 240ms ease-in-out var(--wf-face-hops, 2);
+}
+.wf-face-closed {
+  opacity: 0;
+}
+.wf-face[data-motion="blink"] .wf-face-closed {
+  animation: wf-face-closed-blink var(--wf-face-blink-time, 230ms) ease-in-out
+    var(--wf-face-blinks, 2);
+}
+.wf-face[data-motion="morph"] .wf-face-closed {
+  animation: wf-face-closed-morph 180ms ease-in-out;
+}
+@keyframes wf-face-blink {
+  0%,
+  70%,
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  35% {
+    transform: scaleY(0.333333);
+    opacity: 0;
+  }
+}
+@keyframes wf-face-closed-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+}
+@keyframes wf-face-morph {
+  0%,
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  40%,
+  50% {
+    transform: scaleY(0.333333);
+    opacity: 0;
+  }
+}
+@keyframes wf-face-closed-morph {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  40%,
+  50% {
+    opacity: 1;
+  }
+}
+.wf-face[data-motion="float"] .wf-face-bounce {
+  animation: wf-face-float 600ms ease-in-out var(--wf-face-floats, 1);
+}
+.wf-face[data-motion="shake"] .wf-face-bounce {
+  animation: wf-face-shake 90ms linear var(--wf-face-shakes, 3);
+}
+@keyframes wf-face-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-0.5px);
+  }
+  70% {
+    transform: translateY(0.5px);
+  }
+}
+@keyframes wf-face-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-0.9px, -0.35px);
+  }
+  75% {
+    transform: translate(0.9px, 0.35px);
+  }
+}
+.wf-face[data-motion="dots-wave"] [data-eye-expression="dots"] circle {
+  animation: wf-face-dot-float 500ms ease-in-out both;
+}
+.wf-face[data-motion="dots-wave"] [data-eye-expression="dots"] circle:nth-child(2) {
+  animation-delay: 200ms;
+}
+.wf-face[data-motion="dots-wave"] [data-eye-expression="dots"] circle:nth-child(3) {
+  animation-delay: 400ms;
+}
+@keyframes wf-face-dot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes wf-face-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-1px);
+  }
+  70% {
+    transform: translateY(0.7px);
+  }
+}
+@keyframes wf-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes wf-mark {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes wf-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+@keyframes wf-swap {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+@keyframes wf-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes wf-caret {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes wf-rail-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes wf-land {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes wf-slide {
+  from {
+    transform: translateX(var(--wf-slide, 0px));
+  }
+}
+@keyframes wf-beat {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent),
+      0 0 0 3px color-mix(in oklab, var(--color-warning) 35%, transparent);
+  }
+  12% {
+    transform: scale(1.12);
+  }
+  40% {
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    box-shadow:
+      0 0 0 3px color-mix(in oklab, var(--color-warning) 20%, transparent),
+      0 0 0 8px color-mix(in oklab, var(--color-warning) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-arrive,
+  .wf-mark,
+  .wf-unfold,
+  .wf-swap,
+  .wf-draw,
+  .wf-caret,
+  .wf-rail-grow,
+  .wf-land,
+  .wf-slide,
+  .wf-fill-frame-fresh {
+    animation: none;
+  }
+  .wf-draw {
+    stroke-dashoffset: 0;
+  }
+  .wf-pill,
+  .wf-pill-avatar,
+  .wf-pill-tile,
+  .wf-pill-name,
+  .wf-pill-go,
+  .wf-mark,
+  .wf-station,
+  .wf-lamp,
+  .wf-ink,
+  .wf-tile-frame,
+  .wf-line,
+  .wf-line-icon,
+  .wf-meter-seg,
+  .wf-digest-plot,
+  .wf-foldable,
+  .wf-folded,
+  .wf-ledge-lamp,
+  .wf-fill-frame,
+  .wf-fill-head,
+  .wf-sb {
+    transition: none;
+  }
+  
+  .wf-fill-frame[data-fill-on="true"] {
+    transition: none;
+  }
+  .wf-preview-doc {
+    animation: none;
+  }
+  
+  .wf-face [data-eye-expression="dots"] circle,
+  .wf-face-body,
+  .wf-face-lids,
+  .wf-face-closed,
+  .wf-face-eyes,
+  .wf-face-bounce {
+    animation: none;
+    transition: none;
+  }
+}
+
+.prompt-mention::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background: var(--mention-icon-color, transparent) var(--mention-image, none) center / contain
+    no-repeat;
+  mask: var(--mention-mask, none) center / contain no-repeat;
+}
+
+.prompt-mention[data-mention-category="plugins"]::before {
+  border-radius: var(--radius-sm);
+}
+
+[data-workspace-shell]:has([data-project-sidebar-panel="navigation"][aria-hidden="true"])
+  [data-sidebar-divider-extension] {
+  display: none;
+}
+
+/*
+ * Windows: the workspace sidebar renders square while the macOS build carries a
+ * rounded contour. Give it a moderate radius on Windows for visual parity.
+ */
+.platform-windows-desktop [data-workspace-shell] aside[data-testid="sidebar"] {
+  border-radius: 10px;
+  overflow: hidden;
+}
+

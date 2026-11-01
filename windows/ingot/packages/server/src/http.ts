@@ -1,0 +1,462 @@
+
+import { randomUUID } from "node:crypto";
+import { readFile, stat } from "node:fs/promises";
+import { hostname, userInfo } from "node:os";
+import * as nodePath from "node:path";
+import { basename, extname, resolve } from "node:path";
+import { Hono, type Context } from "hono";
+import { serve } from "@hono/node-server";
+import { createNodeWebSocket } from "@hono/node-ws";
+import type { WebSocket } from "ws";
+import {
+  Emitter,
+  VSBuffer,
+  SocketProtocol,
+  ChannelServer,
+  ChannelClient,
+  LoggingChannelServer,
+  type ISocket,
+} from "@origin-ai/cf-rpc";
+import type { TopicResourcePeers } from "@origin-ai/cf-services/node";
+import { TOPIC_RESOURCE_RELAY_CHANNEL } from "@origin-ai/cf-shared";
+import {
+  ServiceCollection,
+  ICfAgentService,
+  createCfAgentConnectionScope,
+  IBotsService,
+  IProviderProvisioningTargetService,
+} from "@origin-ai/cf-services";
+import {
+  botProviders,
+  formatLogPrefix,
+  serverRemoteInfoOutputSchema,
+  SERVER_REMOTE_PROTOCOL_VERSION,
+  CF_RPC_HOST_CAPABILITY_HEADER,
+  CF_COMPATIBILITY_MANIFEST,
+  CF_VERSION,
+  type BotProvider,
+  type ServerRemoteInfo,
+  type ServerRemoteWorkspaceInfo,
+} from "@origin-ai/cf-shared";
+import {
+  SourceServerWorkspaceIdentityChannelServer,
+  type SourceServerWorkspaceIdentityMapper,
+} from "@origin-ai/cf-services/node";
+import { createHostCapabilityStore } from "./hostCapability.js";
+
+function wrapWebSocket(ws: WebSocket): ISocket {
+  const onData = new Emitter<VSBuffer>();
+  const onClose = new Emitter<void>();
+  const onEnd = new Emitter<void>();
+
+  ws.on("message", (raw: Buffer | ArrayBuffer | Buffer[]) => {
+    const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw as ArrayBuffer);
+    onData.fire(VSBuffer.wrap(new Uint8Array(buf)));
+  });
+  ws.on("close", () => {
+    onClose.fire();
+    onEnd.fire();
+  });
+  ws.on("error", () => {
+    onClose.fire();
+    onEnd.fire();
+  });
+
+  return {
+    onData: onData.event,
+    onClose: onClose.event,
+    onEnd: onEnd.event,
+    write(buffer: VSBuffer) {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(buffer.buffer);
+      }
+    },
+    end() {
+      ws.close();
+    },
+    drain() {
+      return Promise.resolve();
+    },
+    dispose() {
+      ws.close();
+    },
+  };
+}
+
+const log = (...args: unknown[]) =>
+  console.log(formatLogPrefix("cf-server:http", process.pid), ...args);
+
+function setupChannelServer(
+  ws: WebSocket,
+  services: ServiceCollection,
+  clientMode: "desktop-continuous" | "web-remote-replayable",
+  workspaceIdentityMapper?: SourceServerWorkspaceIdentityMapper,
+  resourcePeers?: TopicResourcePeers,
+) {
+  const socket = wrapWebSocket(ws);
+  const protocol = new SocketProtocol(socket);
+  const rawServer = new ChannelServer(protocol, "server");
+  const loggedServer = new LoggingChannelServer(rawServer, log);
+  const server = workspaceIdentityMapper
+    ? new SourceServerWorkspaceIdentityChannelServer(loggedServer, workspaceIdentityMapper)
+    : loggedServer;
+  const agentService = services.getOptional(ICfAgentService);
+  const reverseClient =
+    clientMode === "desktop-continuous" && resourcePeers ? new ChannelClient(protocol) : undefined;
+  const peer = reverseClient
+    ? resourcePeers?.attach(reverseClient.getChannel(TOPIC_RESOURCE_RELAY_CHANNEL))
+    : undefined;
+  const connectionScope = agentService
+    ? createCfAgentConnectionScope(peer ? peer.wrapAgent(agentService) : agentService, {
+        connectionId: `server-ws-${randomUUID()}`,
+        clientMode,
+        role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",
+      })
+    : undefined;
+  const overrides = new Map<string, unknown>();
+  if (connectionScope) {
+    overrides.set(ICfAgentService.channelName, connectionScope.service);
+  }
+  if (
+    clientMode !== "desktop-continuous" &&
+    services.getOptional(IProviderProvisioningTargetService)
+  ) {
+    overrides.set(IProviderProvisioningTargetService.channelName, {
+      apply: async () => {
+        throw new Error("Provider Provisioning only supported for trusted Desktop Hosts.");
+      },
+    });
+  }
+  services.exposeOnChannelServer(server, overrides);
+  socket.onClose(() => {
+    peer?.dispose();
+    reverseClient?.dispose();
+    void connectionScope?.dispose();
+    rawServer.dispose();
+  });
+}
+
+export interface HttpServerOptions {
+  topicResourcePeers?: TopicResourcePeers;
+  serverId?: string;
+  virtualProjects?: boolean;
+  migrationFailedPathCount?: number;
+  workspaceIdentityMapper?: SourceServerWorkspaceIdentityMapper;
+  name?: string;
+  host?: string;
+  authRequired?: boolean;
+  authToken?: string;
+  spaFallback?: boolean;
+  staticRoot?: string;
+  workspaces?: ServerRemoteWorkspaceInfo[];
+}
+
+function readTrimmedEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value ? value : undefined;
+}
+
+export function resolveHttpServerId(options: HttpServerOptions = {}): string {
+  return (
+    options.serverId?.trim() || readTrimmedEnv("CF_SERVER_ID") || hostname() || "cf-server"
+  );
+}
+
+function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorkspaceInfo[] {
+  if (options.workspaces) {
+    return options.workspaces;
+  }
+  const workspacePath = readTrimmedEnv("CF_SERVER_WORKSPACE") || process.cwd();
+  return [
+    {
+      path: workspacePath,
+      label: basename(workspacePath) || workspacePath,
+    },
+  ];
+}
+
+function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
+  return serverRemoteInfoOutputSchema.parse({
+    serverId: resolveHttpServerId(options),
+    ...(options.name?.trim() || readTrimmedEnv("CF_SERVER_NAME")
+      ? { name: options.name?.trim() || readTrimmedEnv("CF_SERVER_NAME") }
+      : {}),
+    version: CF_VERSION,
+    protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
+    authRequired: options.authRequired ?? Boolean(readTrimmedEnv("CF_SERVER_TOKEN")),
+    workspaces: resolveServerWorkspaces(options),
+    compatibility: CF_COMPATIBILITY_MANIFEST,
+    migration: { failedPathCount: options.migrationFailedPathCount ?? 0 },
+    identity: { osUser: userInfo().username, hostname: hostname() },
+    capabilities: {
+      desktopContinuous: true,
+      websocketRpc: true,
+      ...(options.virtualProjects ? { virtualProjects: true } : {}),
+      processResourceTelemetry: true,
+    },
+  });
+}
+
+const cfLiteTokenCookieName = "cf_lite_token";
+
+const staticMimeTypes: Record<string, string> = {
+  ".css": "text/css; charset=utf-8",
+  ".gif": "image/gif",
+  ".html": "text/html; charset=utf-8",
+  ".ico": "image/x-icon",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".map": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
+  ".wasm": "application/wasm",
+  ".webp": "image/webp",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+};
+
+function parseCookieHeader(header: string | undefined): Map<string, string> {
+  const cookies = new Map<string, string>();
+  if (!header) {
+    return cookies;
+  }
+  for (const part of header.split(";")) {
+    const separator = part.indexOf("=");
+    if (separator <= 0) {
+      continue;
+    }
+    const name = part.slice(0, separator).trim();
+    const value = part.slice(separator + 1).trim();
+    if (name) {
+      cookies.set(name, value);
+    }
+  }
+  return cookies;
+}
+
+function hasValidLiteToken(c: Context, token: string): boolean {
+  const authorization = c.req.header("authorization");
+  if (
+    authorization?.startsWith("Bearer ") &&
+    authorization.slice("Bearer ".length).trim() === token
+  ) {
+    return true;
+  }
+  const url = new URL(c.req.url);
+  if (url.searchParams.get("token") === token) {
+    c.header(
+      "Set-Cookie",
+      `${cfLiteTokenCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`,
+    );
+    return true;
+  }
+  return parseCookieHeader(c.req.header("cookie")).get(cfLiteTokenCookieName) === token;
+}
+
+function isTokenProtectedPath(pathname: string): boolean {
+  return pathname === "/ws" || pathname.startsWith("/ws/") || pathname.startsWith("/api/");
+}
+
+function isStaticFallbackAllowed(pathname: string): boolean {
+  return !isTokenProtectedPath(pathname);
+}
+
+const DRIVE_QUALIFIED_PATH_PATTERN = /^[a-zA-Z]:/;
+
+export function isPathDriveQualified(pathname: string): boolean {
+  return DRIVE_QUALIFIED_PATH_PATTERN.test(pathname);
+}
+
+export function isInsideDirectory(
+  root: string,
+  candidate: string,
+  pathApi: Pick<typeof nodePath, "relative" | "isAbsolute" | "sep"> = nodePath,
+): boolean {
+  const diff = pathApi.relative(root, candidate);
+  if (pathApi.isAbsolute(diff)) return false;
+  return diff === "" || (!diff.startsWith("..") && !diff.includes(`..${pathApi.sep}`));
+}
+
+async function resolveStaticFile(
+  staticRoot: string,
+  pathname: string,
+  spaFallback: boolean,
+): Promise<string | null> {
+  const root = resolve(staticRoot);
+  const normalizedPathname = pathname === "/" ? "/index.html" : pathname;
+  const relativePath = decodeURIComponent(normalizedPathname).replace(/^\/+/, "");
+  if (isPathDriveQualified(relativePath)) {
+    return null;
+  }
+  let candidate = resolve(root, relativePath);
+  if (!isInsideDirectory(root, candidate)) {
+    return null;
+  }
+
+  try {
+    const candidateStat = await stat(candidate);
+    if (candidateStat.isDirectory()) {
+      candidate = resolve(candidate, "index.html");
+      if (!isInsideDirectory(root, candidate)) {
+        return null;
+      }
+      const indexStat = await stat(candidate);
+      return indexStat.isFile() ? candidate : null;
+    }
+    if (candidateStat.isFile()) {
+      return candidate;
+    }
+  } catch {
+  }
+
+  if (!spaFallback || !isStaticFallbackAllowed(pathname)) {
+    return null;
+  }
+  const indexFile = resolve(root, "index.html");
+  try {
+    const indexStat = await stat(indexFile);
+    return indexStat.isFile() ? indexFile : null;
+  } catch {
+    return null;
+  }
+}
+
+function staticContentType(filePath: string): string {
+  return staticMimeTypes[extname(filePath).toLowerCase()] ?? "application/octet-stream";
+}
+
+export function createHttpServer(
+  services: ServiceCollection,
+  port = 3030,
+  options: HttpServerOptions = {},
+) {
+  const app = new Hono();
+  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  const hostCapabilities = createHostCapabilityStore();
+
+  const authToken = options.authToken?.trim();
+  if (authToken) {
+    app.use("*", async (c, next) => {
+      const pathname = new URL(c.req.url).pathname;
+      const validToken = hasValidLiteToken(c, authToken);
+      if (!isTokenProtectedPath(pathname) || validToken) {
+        await next();
+        return;
+      }
+      return c.json({ error: "Unauthorized" }, 401);
+    });
+  }
+
+  app.get("/api/server-info", (c) => c.json(createServerInfo(options)));
+  app.post("/api/rpc-host-capability", (c) => c.json(hostCapabilities.issue()));
+
+  app.get(
+    "/ws",
+    upgradeWebSocket(() => ({
+      onOpen(_event, ws) {
+        setupChannelServer(
+          ws.raw as WebSocket,
+          services,
+          "web-remote-replayable",
+          options.workspaceIdentityMapper,
+        );
+      },
+    })),
+  );
+
+  const upgradeTrustedHostWebSocket = upgradeWebSocket(() => ({
+    onOpen(_event, ws) {
+      setupChannelServer(
+        ws.raw as WebSocket,
+        services,
+        "desktop-continuous",
+        options.workspaceIdentityMapper,
+        options.topicResourcePeers,
+      );
+    },
+  }));
+  app.use("/ws/host", async (c, next) => {
+    const capability = c.req.header(CF_RPC_HOST_CAPABILITY_HEADER);
+    if (!hostCapabilities.consume(capability)) {
+      return c.json({ error: "Invalid or expired host capability" }, 401);
+    }
+    await next();
+  });
+  app.get("/ws/host", upgradeTrustedHostWebSocket);
+
+  const handleBotCallback = async (c: Context) => {
+    const provider = c.req.param("provider") as BotProvider;
+    if (!botProviders.includes(provider)) {
+      return c.json({ error: `Unsupported provider: ${provider}` }, 400);
+    }
+    if (provider !== "webhook") {
+      return c.json({ error: `Provider ${provider} does not support HTTP callbacks.` }, 400);
+    }
+    const botsService = services.getOptional(IBotsService);
+    if (!botsService) {
+      return c.json({ error: "Bots service is not available." }, 503);
+    }
+    const rawBodyText = await c.req.text().catch(() => "");
+    let rawBody: unknown = {};
+    if (rawBodyText) {
+      try {
+        rawBody = JSON.parse(rawBodyText) as unknown;
+      } catch {
+        rawBody = { payload: rawBodyText };
+      }
+    }
+    const webhookSecret = c.req.header("x-cf-bot-secret");
+    const botId = c.req.param("botId");
+    const result = await botsService.handleProviderCallbackResponse(provider, {
+      ...(typeof rawBody === "object" && rawBody !== null ? rawBody : { payload: rawBody }),
+      rawBody: rawBodyText,
+      ...(botId ? { botId } : {}),
+      ...(webhookSecret ? { webhookSecret } : {}),
+    });
+    const responseBody = result.responseBody ?? { ok: result.ok, replies: result.replies };
+    if (result.status === 400) {
+      return c.json(responseBody, 400);
+    }
+    if (result.status === 401) {
+      return c.json(responseBody, 401);
+    }
+    if (result.status === 503) {
+      return c.json(responseBody, 503);
+    }
+    return c.json(responseBody, 200);
+  };
+
+  app.post("/api/bots/:provider", handleBotCallback);
+  app.post("/api/bots/:provider/:botId", handleBotCallback);
+
+  if (options.staticRoot?.trim()) {
+    const staticRoot = options.staticRoot.trim();
+    app.get("*", async (c) => {
+      const pathname = new URL(c.req.url).pathname;
+      const filePath = await resolveStaticFile(staticRoot, pathname, options.spaFallback ?? true);
+      if (!filePath) {
+        return c.notFound();
+      }
+      return c.body(await readFile(filePath), 200, {
+        "Cache-Control": filePath.endsWith("index.html")
+          ? "no-cache"
+          : "public, max-age=31536000, immutable",
+        "Content-Type": staticContentType(filePath),
+      });
+    });
+  }
+
+  const server = serve({ fetch: app.fetch, hostname: options.host, port }, () => {
+    const address = server.address();
+    const listenPort = typeof address === "object" && address ? address.port : port;
+    const listenHost = options.host?.trim() || "localhost";
+    log(`http://${listenHost}:${listenPort}`);
+  });
+
+  injectWebSocket(server);
+
+  return server;
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-switch-queue",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-switch-queue.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-switch-queue.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-model-switch-held-running-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Model switching with a held queue requires the current turn to keep streaming, whereas a real model may complete too quickly."
+    },
+    {
+      "id": "upstream-model-switch-held-send-now-secondary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover model/thought captured by request; response only needs to complete stably."
+    },
+    {
+      "id": "upstream-model-switch-queue-running-slow",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Switching models before consuming queued text requires current turn to keep streaming, whereas a real model may complete too quickly."
+    },
+    {
+      "id": "upstream-model-switch-queue-auto-drain-secondary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core assertions cover model/thought captured by request; response only needs to complete stably."
+    },
+    {
+      "id": "upstream-model-switch-slow-marker-contract",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Used to make fixture check explicitly cover the generic E2E_SLOW_STREAM marker in spec."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+packages:
+  - "packages/*"
+  - "packages/mad/*"
+  - "tools/*"
+  - "vendor/*"
+
+supportedArchitectures:
+  os:
+    - current
+    - darwin
+    - linux
+    - win32
+  cpu:
+    - current
+    - x64
+    - arm64
+  libc:
+    - current
+    - glibc

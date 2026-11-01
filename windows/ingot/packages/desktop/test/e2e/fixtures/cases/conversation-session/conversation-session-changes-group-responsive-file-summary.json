@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-changes-group-responsive-file-summary",
+  "spec": "./test/e2e/conversation-session/conversation-session-changes-group-responsive-file-summary.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-changes-group-responsive-file-summary.json"
+  ],
+  "fileFixtures": [
+    { "path": ".cf-e2e/conversation-session-changes-group-responsive-file-summary", "source": "created-by-spec", "description": "TGE03 case-owned fixture for four written files and repeated Edit." }
+  ],
+  "requests": [
+    { "id": "tge03-write-app", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix file order across multiple extensions to verify Changes file chips." },
+    { "id": "tge03-write-css", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix CSS chip and the second Changes child." },
+    { "id": "tge03-write-json", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "Fix JSON chip and the third Changes child." },
+    { "id": "tge03-write-markdown", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "The fourth short file stably produces +N on narrow screens." },
+    { "id": "tge03-edit-app", "kind": "main", "source": "synthetic", "timingPolicy": "tool-use", "syntheticReason": "重复 App.tsx path 验证唯一文件数与首次出现顺序。" },
+    { "id": "tge03-final", "kind": "main", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Fix completed state to avoid file chip measurements occurring during streaming jitter." }
+  ]
+}

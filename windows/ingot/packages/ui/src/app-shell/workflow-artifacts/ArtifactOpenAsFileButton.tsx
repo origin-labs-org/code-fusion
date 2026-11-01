@@ -1,0 +1,200 @@
+import { useCallback, useRef, useState } from "react";
+import type { EditorInfo, IPlatformService } from "@origin-ai/cf-shared";
+import { ChevronDownIcon, CopyIcon, ExternalLinkIcon, FolderOpenIcon } from "lucide-react";
+import { Button } from "@/components/ui/button.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.js";
+import { toast } from "@/components/ui/toast.js";
+import { useOptionalPlatform } from "@/hooks/usePlatform.js";
+import { useCfIntl } from "@/i18n/IntlProvider.js";
+import { persistLastSelectedEditorId } from "@/lib/editorPreference.js";
+import { sortInstalledEditorsForOpenWith } from "@/lib/openWithEditors.js";
+import { logger } from "@/logger.js";
+
+interface ArtifactOpenAsFileButtonProps {
+  runId: string;
+  artifactId: string;
+  version: number;
+  
+  fileName: string;
+  
+  bytes: Uint8Array | null;
+  
+  onReveal?: () => void;
+}
+
+type MaterializeCapablePlatform = IPlatformService &
+  Required<Pick<IPlatformService, "materializeWorkflowArtifactFile" | "openExternalFile">>;
+
+function canOpenAsFile(platform: IPlatformService | null): platform is MaterializeCapablePlatform {
+  return (
+    platform !== null &&
+    platform.materializeWorkflowArtifactFile !== undefined &&
+    platform.openExternalFile !== undefined
+  );
+}
+
+export function useCanOpenArtifactAsFile(): boolean {
+  return canOpenAsFile(useOptionalPlatform());
+}
+
+export function ArtifactOpenAsFileButton(props: ArtifactOpenAsFileButtonProps) {
+  const platform = useOptionalPlatform();
+  if (!canOpenAsFile(platform)) return null;
+  return <OpenAsFileSplitButton {...props} platform={platform} />;
+}
+
+function OpenAsFileSplitButton({
+  runId,
+  artifactId,
+  version,
+  fileName,
+  bytes,
+  onReveal,
+  platform,
+}: ArtifactOpenAsFileButtonProps & { platform: MaterializeCapablePlatform }) {
+  const { intl } = useCfIntl();
+  const [editors, setEditors] = useState<EditorInfo[] | null>(null);
+
+  const pathsRef = useRef(new Map<string, Promise<string>>());
+  const ensureLocalPath = useCallback((): Promise<string> => {
+    const key = `${runId}\u0000${artifactId}\u0000${version}\u0000${fileName}`;
+    const cached = pathsRef.current.get(key);
+    if (cached !== undefined) return cached;
+    if (bytes === null) return Promise.reject(new Error("artifact bytes are not loaded"));
+    const pending = platform
+      .materializeWorkflowArtifactFile({ runId, artifactId, version, fileName, bytes })
+      .then((result) => result.localPath);
+    pathsRef.current.set(key, pending);
+    pending.catch(() => pathsRef.current.delete(key));
+    return pending;
+  }, [artifactId, bytes, fileName, platform, runId, version]);
+
+  const reportFailure = useCallback(
+    (action: string, error: unknown) => {
+      logger.warn("[workflow-artifacts] 作为文件打开失败", {
+        action,
+        artifactId,
+        error: error instanceof Error ? error.message : String(error),
+        runId,
+        version,
+      });
+      toast(intl.formatMessage({ id: "chat.toolCall.workflow.run.artifacts.openAsFileFailed" }));
+    },
+    [artifactId, intl, runId, version],
+  );
+
+  const openWith = useCallback(
+    (
+      action: string,
+      open: (localPath: string) => Promise<{ success: boolean; error?: string }>,
+    ) => {
+      void ensureLocalPath()
+        .then(open)
+        .then((result) => {
+          if (!result.success) reportFailure(action, result.error ?? "unknown-error");
+        })
+        .catch((error: unknown) => reportFailure(action, error));
+    },
+    [ensureLocalPath, reportFailure],
+  );
+
+  const handleOpenDefault = () =>
+    openWith("default-app", (localPath) => platform.openExternalFile(localPath));
+
+  const handleOpenInEditor = (editor: EditorInfo) => {
+    persistLastSelectedEditorId(editor.id);
+    openWith(`editor:${editor.id}`, (localPath) =>
+      platform.openInEditor(editor.id, localPath, { pathKind: "file" }),
+    );
+  };
+
+  const handleCopyPath = () => {
+    void ensureLocalPath()
+      .then((localPath) => navigator.clipboard?.writeText(localPath))
+      .catch((error: unknown) => reportFailure("copy-path", error));
+  };
+
+  const loadEditors = () => {
+    if (editors !== null) return;
+    void platform
+      .getInstalledEditors()
+      .then((installed) => setEditors(sortInstalledEditorsForOpenWith(installed)))
+      .catch((error: unknown) => {
+        logger.warn("[workflow-artifacts] Failed to get open options", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        setEditors([]);
+      });
+  };
+
+  const disabled = bytes === null;
+  const label = intl.formatMessage({ id: "chat.toolCall.workflow.run.artifacts.openAsFile" });
+  const chooseLabel = intl.formatMessage({ id: "appHeader.selectOpenApp" });
+
+  return (
+    <DropdownMenu onOpenChange={(open) => open && loadEditors()}>
+      {}
+      <div className="flex h-6 shrink-0 items-center overflow-hidden rounded-md border border-border bg-input transition-colors hover:border-border-hover">
+        <Button
+          className="h-6 rounded-none border-0 pr-1.5"
+          data-testid="workflow-artifact-open-as-file"
+          disabled={disabled}
+          onClick={handleOpenDefault}
+          size="sm"
+          type="button"
+          variant="ghost"
+        >
+          <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
+          {label}
+        </Button>
+        <DropdownMenuTrigger asChild>
+          <Button
+            aria-label={chooseLabel}
+            className="!w-5 rounded-none border-0 text-foreground-subtlest"
+            data-testid="workflow-artifact-open-as-file-menu"
+            disabled={disabled}
+            size="icon-sm"
+            title={chooseLabel}
+            type="button"
+            variant="ghost"
+          >
+            <ChevronDownIcon aria-hidden="true" className="size-3.5" />
+          </Button>
+        </DropdownMenuTrigger>
+      </div>
+      <DropdownMenuContent align="end" className="w-48">
+        {editors === null || editors.length === 0 ? (
+          <DropdownMenuItem disabled>
+            {intl.formatMessage({
+              id: editors === null ? "common.loading" : "chat.previewCards.noOpenApps",
+            })}
+          </DropdownMenuItem>
+        ) : (
+          editors.map((editor) => (
+            <DropdownMenuItem key={editor.id} onSelect={() => handleOpenInEditor(editor)}>
+              <img alt="" className="size-4 shrink-0" src={editor.iconDataUrl} />
+              <span className="truncate">{editor.name}</span>
+            </DropdownMenuItem>
+          ))
+        )}
+        <DropdownMenuSeparator />
+        {onReveal === undefined ? null : (
+          <DropdownMenuItem data-testid="workflow-artifact-open-as-file-reveal" onSelect={onReveal}>
+            <FolderOpenIcon aria-hidden="true" className="size-4" />
+            {intl.formatMessage({ id: "chat.toolCall.workflow.run.artifacts.reveal" })}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onSelect={handleCopyPath}>
+          <CopyIcon aria-hidden="true" className="size-4" />
+          {intl.formatMessage({ id: "fileActions.copyAbsolutePath" })}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

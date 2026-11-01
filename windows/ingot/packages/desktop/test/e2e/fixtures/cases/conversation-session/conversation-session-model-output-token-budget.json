@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-output-token-budget",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-output-token-budget.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-output-token-budget.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-output-token-budget-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to avoid interfering with budget request matching."
+    },
+    {
+      "id": "otb01-default-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core evidence comes from request.body.max_completion_tokens of a successful model-io; response only needs to finish reliably."
+    },
+    {
+      "id": "otb02-16k-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core evidence comes from the request body of a successful model-io; response only needs to finish reliably."
+    },
+    {
+      "id": "otb02-16k-history",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Round 2 only satisfies the existing two-round history prerequisite for Compact, and still needs to maintain 16K."
+    },
+    {
+      "id": "otb02-16k-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core evidence comes from the successful model-io request body with querySource=compact."
+    },
+    {
+      "id": "otb03-64k-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Response only serves to complete the request; the model-io request body is the acceptance evidence."
+    },
+    {
+      "id": "otb06-64k-history",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Auto Compact retains the latest round; establishing a low-usage history first allows subsequent high-usage seeds to trigger a real summary request."
+    },
+    {
+      "id": "otb06-64k-seed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Controlled usage is used to reliably trigger the Auto Compact decision with 128K context and 21K reserve."
+    },
+    {
+      "id": "otb06-64k-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The successful request body and decision logs of Auto Compact jointly prove that reserve/summary budgets are consistent."
+    },
+    {
+      "id": "otb06-64k-post-compact-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verifies that the main request does not fall back to the old 32K cap after Auto Compact."
+    },
+    {
+      "id": "otb07-before-refresh-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "First establishes the old runtime budget for the same active session; core evidence comes from the successful model-io request body."
+    },
+    {
+      "id": "otb07-after-refresh-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Request response only needs to finish reliably; session identity and the successful model-io request body jointly prove that active runtime has refreshed."
+    },
+    {
+      "id": "otb07-after-refresh-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Core evidence comes from the successful model-io request body with querySource=compact in the same session."
+    }
+  ]
+}

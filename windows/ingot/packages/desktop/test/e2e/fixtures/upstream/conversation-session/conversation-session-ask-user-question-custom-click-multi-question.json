@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ask-user-question-custom-click-multi-question",
+  "spec": "./test/e2e/conversation-session/conversation-session-ask-user-question-custom-click-multi-question.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-ask-user-question-custom-click-multi-question-call",
+      "description": "AskUserQuestion custom mouse click: First round returns 3 valid Q&A tool calls.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably produce AskUserQuestion three-question waiting state to prevent real model generating illegal option counts or question structure drift from affecting mouse-click answer collection reproduction."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_ASK_USER_QUESTION_CUSTOM_CLICK_MULTI"],
+        "bodyIncludes": [
+          "E2E_ASK_USER_QUESTION_CUSTOM_CLICK_MULTI",
+          "E2E_ASK_USER_QUESTION_CLICK_MULTI_TOOL",
+          "E2E_AQ_CLICK_MULTI_Q1_CUSTOM",
+          "E2E_AQ_CLICK_MULTI_Q2_CUSTOM",
+          "E2E_AQ_CLICK_MULTI_Q3_CUSTOM"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_ask_user_question_custom_click_multi_question",
+          "name": "AskUserQuestion",
+          "input": {
+            "questions": [
+              {
+                "question": "E2E_AQ_CLICK_MULTI_Q1_CUSTOM: Which custom dashboard feature should be prioritized?",
+                "header": "Click Q1",
+                "options": [
+                  {
+                    "label": "Use default Q1",
+                    "description": "Continue with the first default answer."
+                  },
+                  {
+                    "label": "Use fallback Q1",
+                    "description": "Continue with the first fallback answer."
+                  }
+                ]
+              },
+              {
+                "question": "E2E_AQ_CLICK_MULTI_Q2_CUSTOM: Which custom notification path should be prioritized?",
+                "header": "Click Q2",
+                "options": [
+                  {
+                    "label": "Use default Q2",
+                    "description": "Continue with the second default answer."
+                  },
+                  {
+                    "label": "Use fallback Q2",
+                    "description": "Continue with the second fallback answer."
+                  }
+                ]
+              },
+              {
+                "question": "E2E_AQ_CLICK_MULTI_Q3_CUSTOM: Which custom theme update should be prioritized?",
+                "header": "Click Q3",
+                "options": [
+                  {
+                    "label": "Use default Q3",
+                    "description": "Continue with the third default answer."
+                  },
+                  {
+                    "label": "Use fallback Q3",
+                    "description": "Continue with the third fallback answer."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-ask-user-question-custom-click-multi-question-final",
+      "description": "AskUserQuestion custom mouse click: Final reply after custom answers to all 3 questions enter the next model request.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "This response proves custom answers submitted via mouse click across three questions have been consumed by the agent; core assertions are on answer collection and UI answered records."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_AQ_CLICK_MULTI_A1",
+          "E2E_AQ_CLICK_MULTI_A2",
+          "E2E_AQ_CLICK_MULTI_A3",
+          "E2E_ASK_USER_QUESTION_CLICK_MULTI_TOOL",
+          "toolu_e2e_ask_user_question_custom_click_multi_question"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

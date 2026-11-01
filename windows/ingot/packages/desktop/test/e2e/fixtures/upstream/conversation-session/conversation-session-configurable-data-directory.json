@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-configurable-data-directory",
+  "spec": "./test/e2e/conversation-session/conversation-session-configurable-data-directory.test.ts",
+  "fixtures": [
+    {
+      "id": "cdd01-before-migration-title",
+      "description": "Stable title response for task before migration.",
+      "metadata": {
+        "kind": "common",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Use CDD01 marker to isolate title requests, preventing title generation from affecting main path replay."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CDD01_BEFORE_MIGRATION"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cdd01-before-migration-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Data Directory Migration"}"
+        }
+      }
+    },
+    {
+      "id": "cdd01-before-migration-main",
+      "description": "Complete a normal conversation turn before migration to form a recoverable historical task.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fix pre-migration completed assistant marker to avoid relying on real model text."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CDD01_BEFORE_MIGRATION"],
+        "bodyExcludes": ["Generate a concise title", "E2E_CDD01_AFTER_MIGRATION"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cdd01-before-migration-main",
+          "inputTokens": 96,
+          "outputTokens": 8,
+          "text": "CDD01_BEFORE_MIGRATION_DONE"
+        }
+      }
+    },
+    {
+      "id": "cdd01-after-migration-main",
+      "description": "Complete follow-up in the same task after cold restart.",
+      "metadata": {
+        "kind": "main",
+        "source": "synthetic",
+        "timingPolicy": "fast-text",
+        "syntheticReason": "Fix post-migration completed assistant marker to verify the original task can still continue under the new App root."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CDD01_AFTER_MIGRATION"],
+        "bodyIncludes": ["CDD01_BEFORE_MIGRATION_DONE"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cdd01-after-migration-main",
+          "inputTokens": 128,
+          "outputTokens": 8,
+          "text": "CDD01_AFTER_MIGRATION_DONE"
+        }
+      }
+    }
+  ]
+}

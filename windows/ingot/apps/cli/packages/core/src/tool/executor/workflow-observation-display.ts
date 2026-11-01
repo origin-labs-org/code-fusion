@@ -1,0 +1,293 @@
+
+
+import {
+  CREATE_WORKFLOW_DISPLAY_MAX_DIAGNOSTICS,
+  CREATE_WORKFLOW_DISPLAY_MAX_MESSAGE_CHARS,
+  EVAL_WORKFLOW_SNIPPET_TOOL_NAME,
+  EvalWorkflowSnippetOutputSchema,
+  GET_WORKFLOW_RUN_TOOL_NAME,
+  GetWorkflowRunOutputSchema,
+  LIST_MODELS_TOOL_NAME,
+  ListModelsOutputSchema,
+  LIST_SAVED_WORKFLOWS_TOOL_NAME,
+  ListSavedWorkflowsOutputSchema,
+  LIST_WORKFLOW_RUNS_TOOL_NAME,
+  ListWorkflowRunsOutputSchema,
+  RESUME_WORKFLOW_RUN_TOOL_NAME,
+  ResumeWorkflowRunOutputSchema,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_ACTORS,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_CHARS,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_ENTRIES,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_META_CHARS,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_MODELS,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_PHASES,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_RESULT_CHARS,
+  WORKFLOW_OBSERVATION_DISPLAY_MAX_SUBAGENTS,
+  type GetWorkflowRunOutput,
+  type GetWorkflowRunToolResultDisplayPayload,
+  type ToolResultDisplayPayload,
+} from "@origin-ai/cf-contracts";
+
+import { boundDisplayText } from "./display-text.js";
+
+export function createWorkflowObservationDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  return (
+    createGetWorkflowRunDisplay(toolName, output) ??
+    createListWorkflowRunsDisplay(toolName, output) ??
+    createEvalWorkflowSnippetDisplay(toolName, output) ??
+    createSavedWorkflowListDisplay(toolName, output) ??
+    createListModelsDisplay(toolName, output) ??
+    createResumeWorkflowRunDisplay(toolName, output)
+  );
+}
+
+function createGetWorkflowRunDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== GET_WORKFLOW_RUN_TOOL_NAME) return undefined;
+  const parsed = GetWorkflowRunOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+
+  const data = parsed.data;
+  let truncated = false;
+
+  const actors = data.actors.slice(0, WORKFLOW_OBSERVATION_DISPLAY_MAX_ACTORS);
+  if (actors.length < data.actors.length) truncated = true;
+
+  const droppedLogEntries = Math.max(0, data.logTail.length - WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_ENTRIES);
+  const logTail = data.logTail
+    .slice(-WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_ENTRIES)
+    .map((entry) => {
+      const bounded = boundDisplayText(entry.message, WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_CHARS);
+      if (bounded.truncated) truncated = true;
+      return {
+        sequence: entry.sequence,
+        message: bounded.value,
+        ...(entry.at === undefined ? {} : { at: entry.at }),
+      };
+    });
+  if (droppedLogEntries > 0) truncated = true;
+
+  let result: string | undefined;
+  if (data.result !== undefined) {
+    const bounded = boundDisplayText(data.result, WORKFLOW_OBSERVATION_DISPLAY_MAX_RESULT_CHARS);
+    if (bounded.truncated) truncated = true;
+    result = bounded.value;
+  }
+
+  const error =
+    data.error === undefined ? undefined : { code: data.error.code, message: data.error.message };
+
+  const phases = data.phases?.slice(0, WORKFLOW_OBSERVATION_DISPLAY_MAX_PHASES);
+  if (phases !== undefined && phases.length < data.phases!.length) truncated = true;
+  const subagents = data.subagents.slice(0, WORKFLOW_OBSERVATION_DISPLAY_MAX_SUBAGENTS);
+  if (subagents.length < data.subagents.length || data.subagentsTruncated === true) truncated = true;
+
+  return {
+    kind: "get_workflow_run",
+    runId: data.runId,
+    label: data.label,
+    status: data.status,
+    ...(data.stopReason === undefined ? {} : { stopReason: data.stopReason }),
+    ...(data.possiblyInterrupted === true ? { possiblyInterrupted: true } : {}),
+    summary: data.summary,
+    generatedAt: data.generatedAt,
+    usage: data.usage,
+    ...(phases === undefined || phases.length === 0 ? {} : { phases }),
+    subagents: subagents.map(toDisplaySubagent),
+    health: data.health,
+    actors,
+    logTail,
+    ...(result !== undefined ? { result } : {}),
+    ...(error !== undefined ? { error } : {}),
+    ...(truncated ? { truncated: true } : {}),
+  };
+}
+
+function toDisplaySubagent(
+  subagent: GetWorkflowRunOutput["subagents"][number],
+): NonNullable<GetWorkflowRunToolResultDisplayPayload["subagents"]>[number] {
+  const ask = subagent.currentAsk;
+  return {
+    siteId: subagent.siteId,
+    ordinal: subagent.ordinal,
+    ...(subagent.name === undefined ? {} : { name: subagent.name }),
+    state: subagent.state,
+    ...(subagent.phaseName === undefined ? {} : { phaseName: subagent.phaseName }),
+    ...(ask?.instructionsHead === undefined ? {} : { instructionsHead: ask.instructionsHead }),
+    ...(ask?.startedAt === undefined ? {} : { startedAt: ask.startedAt }),
+    ...(ask?.turn === undefined ? {} : { turn: ask.turn }),
+    ...(ask?.toolCalls === undefined ? {} : { toolCalls: ask.toolCalls }),
+    ...(ask?.lastTool === undefined ? {} : { lastTool: ask.lastTool }),
+    ...(subagent.wait === undefined
+      ? {}
+      : {
+          waitCause: subagent.wait.cause,
+          ...(subagent.wait.retryAfterMs === undefined
+            ? {}
+            : { retryAfterMs: subagent.wait.retryAfterMs }),
+          ...(subagent.wait.since === undefined ? {} : { waitSince: subagent.wait.since }),
+        }),
+    ...(subagent.parkedOn === undefined ? {} : { parkedOn: subagent.parkedOn }),
+    stepsSettled: subagent.stepsSettled,
+    stepsFailed: subagent.stepsFailed,
+    tokens: subagent.tokens,
+    ...(subagent.lastProgressAt === undefined ? {} : { lastProgressAt: subagent.lastProgressAt }),
+  };
+}
+
+function createListWorkflowRunsDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== LIST_WORKFLOW_RUNS_TOOL_NAME) return undefined;
+  const parsed = ListWorkflowRunsOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+
+  return {
+    kind: "list_workflow_runs",
+    runs: parsed.data.runs,
+    ...(parsed.data.truncated === true ? { truncated: true } : {}),
+  };
+}
+
+function createEvalWorkflowSnippetDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== EVAL_WORKFLOW_SNIPPET_TOOL_NAME) return undefined;
+  const parsed = EvalWorkflowSnippetOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+
+  const data = parsed.data;
+  let truncated = false;
+
+  const diagnostics = data.diagnostics
+    .slice(0, CREATE_WORKFLOW_DISPLAY_MAX_DIAGNOSTICS)
+    .map((diagnostic) => ({
+      line: diagnostic.line,
+      column: diagnostic.column,
+      code: diagnostic.code,
+      message: diagnostic.message.slice(0, CREATE_WORKFLOW_DISPLAY_MAX_MESSAGE_CHARS),
+    }));
+  if (diagnostics.length < data.diagnostics.length) truncated = true;
+
+  const droppedLogs = Math.max(0, data.logs.length - WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_ENTRIES);
+  const logs = data.logs.slice(-WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_ENTRIES).map((entry) => {
+    const bounded = boundDisplayText(entry, WORKFLOW_OBSERVATION_DISPLAY_MAX_LOG_CHARS);
+    if (bounded.truncated) truncated = true;
+    return bounded.value;
+  });
+  if (droppedLogs > 0) truncated = true;
+
+  const boundedResponse = boundDisplayText(data.response, WORKFLOW_OBSERVATION_DISPLAY_MAX_RESULT_CHARS);
+  if (boundedResponse.truncated) truncated = true;
+
+  return {
+    kind: "eval_workflow_snippet",
+    ok: data.ok,
+    diagnostics,
+    logs,
+    response: boundedResponse.value,
+    durationMs: data.durationMs,
+    ...(truncated ? { truncated: true } : {}),
+  };
+}
+
+function createSavedWorkflowListDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== LIST_SAVED_WORKFLOWS_TOOL_NAME) return undefined;
+  const parsed = ListSavedWorkflowsOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+
+  const data = parsed.data;
+  let truncated = false;
+
+  const boundMeta = (value: string | undefined): string | undefined => {
+    if (value === undefined) return undefined;
+    const bounded = boundDisplayText(value, WORKFLOW_OBSERVATION_DISPLAY_MAX_META_CHARS);
+    if (bounded.truncated) truncated = true;
+    return bounded.value;
+  };
+
+  const workflows = data.workflows.map((entry) => ({
+    name: entry.name,
+    description: boundMeta(entry.description),
+    whenToUse: boundMeta(entry.whenToUse),
+    scope: entry.scope,
+    path: entry.path,
+    argNames: entry.args === undefined ? [] : Object.keys(entry.args),
+  }));
+
+  const invalid = data.invalid?.map((entry) => ({
+    path: entry.path,
+    reason: boundMeta(entry.reason),
+  }));
+
+  return {
+    kind: "saved_workflow_list",
+    workflows,
+    ...(invalid !== undefined && invalid.length > 0 ? { invalid } : {}),
+    ...(truncated ? { truncated: true } : {}),
+  };
+}
+
+function createListModelsDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== LIST_MODELS_TOOL_NAME) return undefined;
+  const parsed = ListModelsOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+
+  const data = parsed.data;
+  let truncated = false;
+
+  const boundMeta = (value: string | undefined): string | undefined => {
+    if (value === undefined) return undefined;
+    const bounded = boundDisplayText(value, WORKFLOW_OBSERVATION_DISPLAY_MAX_META_CHARS);
+    if (bounded.truncated) truncated = true;
+    return bounded.value;
+  };
+
+  const models = data.models.slice(0, WORKFLOW_OBSERVATION_DISPLAY_MAX_MODELS).map((model) => {
+    const providerLabel = boundMeta(model.providerLabel);
+    const disabledReason = boundMeta(model.disabledReason);
+    return {
+      id: model.id,
+      providerId: model.providerId,
+      modelId: model.modelId,
+      ...(providerLabel === undefined ? {} : { providerLabel }),
+      reasoningLevels: [...model.reasoningLevels],
+      ...(model.defaultReasoningLevel === undefined
+        ? {}
+        : { defaultReasoningLevel: model.defaultReasoningLevel }),
+      ...(model.contextWindow === undefined ? {} : { contextWindow: model.contextWindow }),
+      ...(disabledReason === undefined ? {} : { disabledReason }),
+    };
+  });
+  if (models.length < data.models.length) truncated = true;
+
+  return {
+    kind: "list_models",
+    ...(data.current === undefined ? {} : { current: data.current }),
+    models,
+    ...(truncated ? { truncated: true } : {}),
+  };
+}
+
+function createResumeWorkflowRunDisplay(
+  toolName: string,
+  output: unknown,
+): ToolResultDisplayPayload | undefined {
+  if (toolName !== RESUME_WORKFLOW_RUN_TOOL_NAME) return undefined;
+  const parsed = ResumeWorkflowRunOutputSchema.safeParse(output);
+  if (!parsed.success) return undefined;
+  return { kind: "resume_workflow_run", runId: parsed.data.runId };
+}

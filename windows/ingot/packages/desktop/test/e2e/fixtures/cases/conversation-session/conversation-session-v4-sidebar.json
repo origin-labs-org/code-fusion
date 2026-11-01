@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-sidebar",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-sidebar.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-sidebar.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-sidebar-title",
+      "description": "Case-local title generation response for E2E_V4_SIDEBAR_SEED initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch of E2E_V4_SIDEBAR_SEED triggers default title sidecar; fix case-local title response to prevent default replay from falling back to legacy provider-basic and use this initial marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-sidebar-seed",
+      "description": "M5 ② sidebar data source gate: Fixed first-round response establishes session, subsequent rename/delete are both local commands.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify sidebar list data source has switched to sessions-index: create -> appear -> rename -> update -> delete -> disappear."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-background-guide-steer",
+  "spec": "./test/e2e/conversation-session/conversation-session-background-guide-steer.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-background-guide-steer.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-background-guide-steer-agent-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-tool-use",
+      "syntheticReason": "延迟 Agent tool_use 响应，稳定覆盖 background Agent 创建过程中发送 guide 的窗口。"
+    },
+    {
+      "id": "upstream-background-guide-steer-child-result",
+      "kind": "subagent",
+      "source": "synthetic",
+      "timingPolicy": "delayed-text",
+      "syntheticReason": "Delay background Agent completion to prevent notification from finishing before launch+guide merge assertion."
+    },
+    {
+      "id": "upstream-background-guide-steer-launch-and-guide",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that guide text merges with background Agent launch tool result instead of entering the normal future queue."
+    },
+    {
+      "id": "upstream-background-guide-steer-notification-consumed",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "task-notification",
+      "syntheticReason": "Verify that after launch+guide merge, background Agent completion notification is still consumed via the standard pipeline."
+    }
+  ]
+}

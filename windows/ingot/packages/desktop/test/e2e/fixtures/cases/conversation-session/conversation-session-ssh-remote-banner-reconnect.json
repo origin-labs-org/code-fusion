@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-banner-reconnect",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-banner-reconnect.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-banner-reconnect.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    { "id": "ssh-banner-reconnect-title", "description": "SSH banner reconnect task title auxiliary response.", "kind": "common", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "Titles are not part of disconnection/reconnection assertions." },
+    { "id": "ssh-banner-reconnect-main", "description": "SSH banner reconnect initial response.", "kind": "main", "source": "synthetic", "timingPolicy": "fast-text", "syntheticReason": "The initial turn only needs to complete stably to establish a session; disconnection and reconnection assertions do not depend on model content." }
+  ]
+}

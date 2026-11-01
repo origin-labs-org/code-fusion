@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-automation-cron-create",
+  "spec": "./test/e2e/conversation-session/conversation-session-automation-cron-create.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-automation-cron-create.json"
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-automation-cron-create-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of scheduled task product semantics; simply return stably to avoid title requests mistakenly matching main flow fixtures."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-create-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real providers may not stably choose CronCreate; this response fixes tool triggering specifically to verify in-session creation -> chat card -> direct navigation to task details via automationId."
+    },
+    {
+      "id": "upstream-conversation-automation-cron-create-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "End the case after CronCreate tool_result enters history; real provider response content does not affect product semantics."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-remote-hooks",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-remote-hooks.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-remote-hooks.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-hooks-local-title",
+      "description": "Trigger UserPromptSubmit in real local turn, verifying remote hook does not execute locally or append records to remote marker.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Trigger UserPromptSubmit in real local turn, verifying remote hook does not execute locally or append records to remote marker."
+    },
+    {
+      "id": "r3-hooks-local-reply",
+      "description": "Trigger UserPromptSubmit in real local turn, verifying remote hook does not execute locally or append records to remote marker.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Trigger UserPromptSubmit in real local turn, verifying remote hook does not execute locally or append records to remote marker."
+    },
+    {
+      "id": "r3-hooks-reconnect-title",
+      "description": "Auxiliary title response for R3 remote hooks task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-hooks-reconnect-main",
+      "description": "Generic response for R3 remote hooks initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "slow-stream",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-use-iab-full-chain",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-use-iab-full-chain.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-browser-use-iab-full-chain.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-browser-use-iab-title",
+      "description": "Fix title responses within the Browser Use case to prevent asynchronous title requests from polluting main chain matchers.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Titles are not part of this use case's product semantics; they only need to return reliably and stay isolated from Browser tool continuation."
+    },
+    {
+      "id": "upstream-browser-use-iab-bootstrap",
+      "description": "在 fresh kernel 初始化 Browser client、创建真实 IAB tab，并把 stable id 与 snapshot 返回模型。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably drive the real BrowserControl pipeline and ensure the next model response can only recover the stable tab id from real tool results."
+    },
+    {
+      "id": "upstream-browser-use-iab-action",
+      "description": "Reinitialize Browser client in a new fresh kernel, recover the tab using the dynamic stable id from the previous tool result, and cover locators, CUA, clicks, and screenshots.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify tab/page continuity independent of cross-cell bindings, reliably covering actionability, trusted input, page side effects, multi-image galleries for the same result, and viewport readbacks."
+    },
+    {
+      "id": "upstream-browser-use-iab-final",
+      "description": "Complete turn normally, triggering an independent turn-end automatic screenshot.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reliably verify that explicit emitImage and Browser turn-end screenshots are both preserved."
+    }
+  ]
+}

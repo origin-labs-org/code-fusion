@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-empty-completion-retry",
+  "spec": "./test/e2e/conversation-session/conversation-session-empty-completion-retry.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-empty-completion-retry.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "empty-completion-retry-title",
+      "description": "Fixed title sidecar response for empty completion retry case.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title is not part of empty completion retry product semantics; fixed response avoids title sidecar relying on shared legacy fixture."
+    },
+    {
+      "id": "empty-completion-retry-stream-first-empty",
+      "description": "First main request closed normally with EOF, but finish=other and text/reasoning/tool/usage are all empty.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Stably produce provider normal EOF + finish=other zero-output completion to verify adapter hides the first attempt and only retries once."
+    },
+    {
+      "id": "empty-completion-retry-stream-second-success",
+      "description": "Second main request returns normal text as the successful result of the single retry.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix successful text after retry, proving the first empty attempt did not leak to UI and the logical turn closed normally."
+    },
+    {
+      "id": "empty-context-finish-title",
+      "description": "Fixed title sidecar response for empty completion retry case.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Title is not part of empty completion retry product semantics; fixed response avoids title sidecar relying on shared legacy fixture."
+    },
+    {
+      "id": "empty-context-finish-seed",
+      "description": "Two completed session rounds establish compressible history.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Reactive Compact requires full history; use real main requests to prepare two rounds to avoid directly injecting runtime state."
+    },
+    {
+      "id": "empty-context-finish-first-empty",
+      "description": "First request yields zero output and raw finish indicates an explicit context limit, handed over to Reactive Compact.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Construct explicit context limit with zero text/reasoning/tool and non-zero usage (80 input / 5 output) to verify no stacked empty-response retry and retention of incurred usage before recovery."
+    },
+    {
+      "id": "empty-context-finish-compact",
+      "description": "Generate Reactive Compact summary after explicit context limit.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Verify compacting occurs immediately after the first empty response, with no extra empty-response retries or Continue."
+    },
+    {
+      "id": "empty-context-finish-retry-success",
+      "description": "Accept only original request retries that carry compressed summary and do not contain Continue.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Strictly match compressed requests to distinguish Reactive Compact recovery from uncompressed resends or Continue."
+    },
+    {
+      "id": "empty-context-finish-unexpected-retry",
+      "description": "未压缩重发或错误 Continue 的诊断响应，立即使恢复断言失败。",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Turn uncompressed duplicate main requests into deterministic assertion failures to prevent fixture misses from triggering unrelated network retries."
+    }
+  ]
+}

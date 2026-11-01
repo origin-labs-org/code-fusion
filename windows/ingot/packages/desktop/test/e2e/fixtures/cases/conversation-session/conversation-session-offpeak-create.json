@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-offpeak-create",
+  "spec": "./test/e2e/conversation-session/conversation-session-offpeak-create.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-offpeak-create.json"
+  ],
+  "requests": [
+    {
+      "id": "upstream-conversation-offpeak-create-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of off-peak task product semantics; just return stably to prevent title requests from accidentally hitting main flow fixtures."
+    },
+    {
+      "id": "upstream-conversation-offpeak-create-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Real providers may not reliably choose OffPeakCreate; this response deterministically triggers the tool to specifically verify in-session creation -> end-of-turn card -> direct navigation to off-peak edit form via offPeakTaskId."
+    },
+    {
+      "id": "upstream-conversation-offpeak-create-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "End the case after OffPeakCreate tool_result enters history; actual provider reply content does not affect product semantics."
+    }
+  ]
+}

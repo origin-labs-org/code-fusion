@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-mixed-entries",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-mixed-entries.test.ts",
+  "fixtures": [
+    {
+      "id": "r3-mixed-reconnect-title",
+      "description": "Auxiliary title response for R3 mixed entries task.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题不属于冷恢复断言。"
+      },
+      "maxMatches": 4,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_R3_MIXED_ENTRIES"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"r3-mixed-title","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{\"content\":\"{\\\"title\\\":\\\"R3 mixed entries\"}\"},"finish_reason":null}]}\n\ndata: {\"id\":"r3-mixed-title","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "r3-mixed-reconnect-follow",
+      "description": "Original task continuation after cold resume returns an independent marker and must not hit the old initial launch response.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Continuation proves post-resume actual routing via independent response and current request history, with no need for pinned stream latency."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["E2E_R3_MIXED_ENTRIES_A_FOLLOW_PROMPT"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"r3-mixed-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{\"content\":"R3_MIXED_ENTRIES_FOLLOW_REPLY"},"finish_reason":null}]}\n\ndata: {\"id\":"r3-mixed-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "r3-mixed-reconnect-main",
+      "description": "General response for R3 mixed entries initial launch and continuation.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "slow-stream",
+        "source": "synthetic",
+        "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+      },
+      "maxMatches": 10,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["E2E_R3_MIXED_ENTRIES_"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "delayMs": 1200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":"r3-mixed-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{\"content\":"R3_MIXED_ENTRIES_REPLY"},"finish_reason":null}]}\n\ndata: {\"id\":"r3-mixed-main","object":"chat.completion.chunk","created":0,"model":"e2e-ssh-remote-lifecycle-model","choices":[{\"index\":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

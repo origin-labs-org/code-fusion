@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-zoom-coordinates",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-zoom-coordinates.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-browser-zoom-coordinates.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "zoom-title",
+      "description": "Fix title responses within the Browser Use case to prevent asynchronous title requests from polluting main chain matchers.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of this use case's product semantics; they only need to return reliably and stay isolated from Browser tool continuation."
+    },
+    {
+      "id": "zoom-action-0",
+      "description": "Zoom regression round 0 screenshot and fixed-coordinate click",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-final-0",
+      "description": "第 0 轮正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-action-1",
+      "description": "Zoom regression round 1 screenshot and fixed-coordinate click",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-final-1",
+      "description": "第 1 轮正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-action-2",
+      "description": "Zoom regression round 2 screenshot and fixed-coordinate click",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-final-2",
+      "description": "第 2 轮正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-action-3",
+      "description": "Zoom regression round 3 screenshot and fixed-coordinate click",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-final-3",
+      "description": "第 3 轮正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-action-4",
+      "description": "Zoom regression round 4 screenshot and fixed-coordinate click",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-final-4",
+      "description": "第 4 轮正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-natural-action",
+      "description": "Natural viewport, media query, screenshot pixels, and trusted click after standard foreground zoom-out",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-natural-final",
+      "description": "自然 viewport 回归正常完成",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls; real screenshots and mouse events still go through Node REPL, Host, Main, and Chromium, eliminating visual recognition errors."
+    },
+    {
+      "id": "zoom-recovery-action",
+      "description": "Pause tools after 110% background screenshot, then resume clicking the natural viewport after real guest reconstruction",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls and failure timing; background screenshots, guest crash reconstruction, and mouse input use the real Electron product pipeline."
+    },
+    {
+      "id": "zoom-recovery-final",
+      "description": "Guest generational coordinates normalized successfully",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Fix model tool calls and failure timing; background screenshots, guest crash reconstruction, and mouse input use the real Electron product pipeline."
+    }
+  ]
+}

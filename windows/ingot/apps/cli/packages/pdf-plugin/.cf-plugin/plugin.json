@@ -1,0 +1,41 @@
+{
+  "name": "pdf",
+  "version": "0.2.1",
+  "description": "PDF production skills and a PDF viewer panel, published as an official CodeFusion plugin.",
+  "description_i18n": {
+    "en": "PDF production skills: typeset and render reports, resumes, posters, and covers to PDF. View PDFs in a side panel: reference passages in chat, and the agent can read, search, point at and capture pages.",
+    "zh-CN": "PDF creation skills: typesetting and rendering output for reports, resumes, posters, and covers; view PDFs in the sidebar, quote content into the conversation, and enable the Agent to read, search, locate highlights, and capture pages."
+  },
+  "author": {
+    "name": "Z.ai"
+  },
+  "license": "Apache-2.0",
+  "skills": "skills",
+  "agents": "agents",
+  "mcpServers": {
+    "pdf": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CF_PLUGIN_ROOT}/dist/server.mjs"],
+      "cwd": "${CF_PROJECT_DIR}",
+      "env": {
+        "CF_WORKSPACE_ROOT": "${CF_PROJECT_DIR}"
+      }
+    }
+  },
+  "ui": {
+    "surfaces": [
+      {
+        "id": "pdf",
+        "title": {
+          "zh-CN": "PDF",
+          "en-US": "PDF"
+        },
+        "icon": "file-text",
+        "server": "pdf",
+        "resourceUri": "ui://pdf/panel.html",
+        "availability": "session"
+      }
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-approval-feedback-user-message",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-approval-feedback-user-message.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plan-approval-feedback-user-message.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-plan-approval-enter-plan-call",
+      "description": "First-round request returns EnterPlanMode, entering plan mode.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+    },
+    {
+      "id": "upstream-conversation-plan-approval-exit-plan-call",
+      "description": "Return ExitPlanMode within plan mode, triggering the approval dialog.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably trigger the ExitPlanMode approval dialog to prevent the model from outputting text and bypassing the tool."
+    },
+    {
+      "id": "upstream-conversation-plan-approval-feedback-final",
+      "description": "Send approval feedback to the model as the next user message.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Prove that custom feedback has entered the provider-visible request as the next user message."
+    }
+  ]
+}

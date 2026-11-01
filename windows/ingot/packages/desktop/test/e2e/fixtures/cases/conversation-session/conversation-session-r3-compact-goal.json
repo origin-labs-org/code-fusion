@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-compact-goal",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-compact-goal.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-compact-goal.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-cg-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-cg-compact",
+      "description": "M4 /compact gate: successful response for manual compact streaming summary.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Core assertion for manual compact is that v4 projection outputs [compact] · completed marker; summary text just needs to be pinned."
+    },
+    {
+      "id": "r3-cg-goal-continuation",
+      "description": "Slow continuation stream after M4 /goal setup, maintaining active target window to assert goal banner.",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "A streaming window is needed after goal setup to stably verify active target banner, which real models might complete or trigger verification too quickly."
+    },
+    {
+      "id": "r3-cg-goal-verifier",
+      "description": "Naturally completed verifier pass for goal.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the passed result to reliably produce a completed goal."
+    },
+    {
+      "id": "r3-cg-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch/fork/edit"
+    }
+  ]
+}

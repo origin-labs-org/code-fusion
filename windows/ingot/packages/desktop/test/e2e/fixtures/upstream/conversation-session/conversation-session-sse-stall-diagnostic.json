@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-sse-stall-diagnostic",
+  "spec": "./test/e2e/conversation-session/conversation-session-sse-stall-diagnostic.test.ts",
+  "fixtures": [
+    {
+      "id": "sse-stall-diagnostic-title",
+      "description": "Fixed title response shared by six SSE stall diagnostic categories.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题生成不是本 diagnostic 的验证目标，只需稳定收口。"
+      },
+      "maxMatches": 6,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_SSE_STALL_"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_title",
+          "text": "{\"title\":"SSE Stall Diagnostic"}"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-prelude-stalled",
+      "description": "Sends only message_start, then remains eventless beyond the E2E idle timeout.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Trigger an actual SSE stall at the retry-safe prelude boundary."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_PRELUDE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_prelude_partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-prelude-recovered",
+      "description": "The second primary request for prelude stall succeeds immediately.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Prove that the retry-safe prelude can settle via an actual second provider request."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_PRELUDE"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_prelude_recovered",
+          "text": "E2E_SSE_STALL_PRELUDE_DONE"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-thinking-stalled",
+      "description": "Remains eventless beyond the E2E idle timeout after sending thinking_delta.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Trigger an actual SSE stall at the reasoning-only visible boundary."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_THINKING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_thinking_partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 40,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 80,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_SSE_STALL_THINKING_PARTIAL"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-thinking-recovered",
+      "description": "thinking stall 的恢复请求立即成功。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify the actual Desktop recovery request for S02-R1."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_THINKING"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_thinking_recovered",
+          "text": "E2E_SSE_STALL_THINKING_DONE"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-text-stalled",
+      "description": "Remains eventless beyond the E2E idle timeout after sending text_delta.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Trigger an actual SSE stall at the user-visible body boundary to sample S03's current behavior."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_TEXT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_text_partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 40,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 80,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"E2E_SSE_STALL_TEXT_PARTIAL"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-text-recovered",
+      "description": "If text stall triggers recovery, the second request succeeds immediately; if the current implementation aborts, this fixture is not consumed.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Allow the diagnostic to distinguish whether the current implementation recovers or transitions directly to terminal."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_TEXT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_text_recovered",
+          "text": "E2E_SSE_STALL_TEXT_DONE"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-tool-input-stalled",
+      "description": "tool input_json_delta 仍是未闭合 JSON 时保持无 event。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Verify that uncommitted tool inputs are not executed during stall/recovery."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_TOOL_INPUT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_tool_input_partial","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 40,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"tool_use","id":"toolu_e2e_sse_stall_partial_read","name":"Read","input":{}}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 80,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"input_json_delta","partial_json":\"{\\\"file_path\\\":\\\"E2E_SSE_STALL_TOOL_INPUT_PARTIAL\"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-tool-input-recovered",
+      "description": "未闭合 tool input stall 的恢复请求立即成功。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "证明未提交工具不会阻止安全恢复。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_TOOL_INPUT"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_tool_input_recovered",
+          "text": "E2E_SSE_STALL_TOOL_INPUT_DONE"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-tool-committed-stalled",
+      "description": "Omits message_delta/message_stop after a complete Read tool block and remains eventless.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Trigger a stall at the boundary where the tool content block is complete but the message is not terminal, diagnosing execution, recovery, and duplication."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_TOOL_COMMITTED"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_tool_committed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 40,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"tool_use","id":"toolu_e2e_sse_stall_committed_read","name":"Read","input":{}}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 80,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"input_json_delta","partial_json":\"{\\\"file_path\\\":\\\"{{e2eRuntimeRoot}}/shared/readonly-tool.txt\\\"}\"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 120,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-tool-committed-continuation",
+      "description": "完整 tool block stall 后，带同一 tool_use 和成功 tool_result 的恢复请求立即收口。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Proves that content_block_stop was committed and the tool executed, with the successful tool_result serving as the recovery anchor."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SSE_STALL_TOOL_COMMITTED",
+          "toolu_e2e_sse_stall_committed_read",
+          "readonly-tool.txt"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_tool_committed_continued",
+          "text": "E2E_SSE_STALL_TOOL_COMMITTED_DONE"
+        }
+      }
+    },
+    {
+      "id": "sse-stall-post-tool-call",
+      "description": "First fully end the first model stream and execute a read-only Read once.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-tool-use",
+        "source": "synthetic",
+        "syntheticReason": "Construct an actual prerequisite state where the tool has successfully executed and tool_result has entered the next model request."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_SSE_STALL_POST_TOOL"],
+        "bodyExcludes": [
+          "toolu_e2e_sse_stall_post_tool_read",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "toolUse": {
+          "id": "toolu_e2e_sse_stall_post_tool_read",
+          "name": "Read",
+          "input": {
+            "file_path": "{{e2eRuntimeRoot}}/shared/readonly-tool.txt"
+          }
+        }
+      }
+    },
+    {
+      "id": "sse-stall-post-tool-continuation-stalled",
+      "description": "After Read succeeds, the next model request sends only message_start and then remains eventless.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fault-stream",
+        "source": "synthetic",
+        "syntheticReason": "Place the stall after a successfully executed tool to verify that recovery does not replay the tool."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SSE_STALL_POST_TOOL",
+          "toolu_e2e_sse_stall_post_tool_read",
+          "E2E_READONLY_TOOL_FILE_CONTENT"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"msg_e2e_sse_stall_post_tool_continuation","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"service_tier":"standard"}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 5000,
+            "text": "event: ping\ndata: {\"type\":"ping"}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sse-stall-post-tool-continuation-recovered",
+      "description": "The stalled continuation after successfully executing the tool succeeds immediately upon retry.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "证明 post-tool continuation 只重试模型请求，不重复执行工具。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_SSE_STALL_POST_TOOL",
+          "toolu_e2e_sse_stall_post_tool_read",
+          "E2E_READONLY_TOOL_FILE_CONTENT"
+        ],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "msg_e2e_sse_stall_post_tool_recovered",
+          "text": "E2E_SSE_STALL_POST_TOOL_DONE"
+        }
+      }
+    }
+  ]
+}

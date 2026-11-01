@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-readstate-model-isolation",
+  "spec": "./test/e2e/conversation-session/conversation-session-readstate-model-isolation.test.ts",
+  "fixtures": [
+    {
+      "id": "readstate-model-isolation-title",
+      "description": "Fixed title generation response for the readState model isolation case, avoiding strict case-local replay dependency on legacy provider-basic.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-e2e-readstate-model-isolation-title","type":"message","role":"assistant","model":"deepseek-v4-pro","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"ReadState Model Isolation\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":125,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":24,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "readstate-model-isolation-first",
+      "description": "I67 historical session completes the first normal send round using the secondary / provider non-first model.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is using non-first model under provider for first turn of historical session; response only needs to complete stably and include agreed text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_READSTATE_MODEL_ISOLATION_FIRST"],
+        "bodyIncludes": ["E2E_READSTATE_MODEL_ISOLATION_FIRST", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_READSTATE_MODEL_ISOLATION_FOLLOW"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-readstate-model-isolation-first",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    },
+    {
+      "id": "readstate-model-isolation-follow",
+      "description": "I67 switches back to the old session after creating a draft triggers readState; follow-up still uses the secondary / provider non-first model.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion is that after new draft readState hydration and switching back to old session, follow-up request still uses old session's non-first model."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_READSTATE_MODEL_ISOLATION_FOLLOW"],
+        "bodyIncludes": ["E2E_READSTATE_MODEL_ISOLATION_FOLLOW", "upstream-e2e-ok"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "upstream-e2e-readstate-model-isolation-follow",
+          "inputTokens": 128,
+          "outputTokens": 12,
+          "text": "upstream-e2e-ok"
+        }
+      }
+    }
+  ]
+}

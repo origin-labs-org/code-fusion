@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-scroll",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-scroll.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-scroll.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-scroll-title",
+      "description": "Case-local title generation response for E2E_V4_SCROLL_HISTORY_001 initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch of E2E_V4_SCROLL_HISTORY_001 triggers default title sidecar; fix case-local title response to prevent default replay from falling back to legacy provider-basic and use this initial marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-scroll-turn1-long-history",
+      "description": "M5④ / SRM02 long-session scrolling gate: 14 completed turns form stable turn render units, extending history far beyond the viewport, and verifying restoration of scrolled-away reading position after switching to draft.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Virtual scroll assertions require a deterministic number of completed turns and scrollable height; real providers cannot stably reproduce this window boundary."
+    },
+    {
+      "id": "v4-scroll-turn2-controlled-stream",
+      "description": "M5④ / SRM03 long-session scrolling gate turn 2: Controllable slow streaming (first delta 0.4s, full stream ~11.5s), covering non-pullback during streaming when scrolled away, background output after switching away when pinned to bottom, and switching back to current bottom.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "\"Scrolling up is not pulled back by streaming\" assertion requires a stable streaming window."
+    }
+  ]
+}

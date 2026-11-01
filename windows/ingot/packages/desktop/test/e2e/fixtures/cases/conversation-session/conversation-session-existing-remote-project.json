@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-existing-remote-project",
+  "spec": "./test/e2e/conversation-session/conversation-session-existing-remote-project.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-existing-remote-project.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "RDUX15 real SSH existing project identity, history, duplicate add, and cancellation acceptance; task imported via public history without sending model requests.",
+  "requests": []
+}

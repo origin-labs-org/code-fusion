@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-app-exit-running",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-app-exit-running.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-app-exit-running.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-exit-title",
+      "description": "Auxiliary title response",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "The standalone replay service releases responses after all Desktop instances exit to verify remote execution and history resumption."
+    },
+    {
+      "id": "ssh-exit-slow",
+      "description": "Keep remote task running until update guard appears and user cancels; allow normal update only after explicit release",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "The standalone replay service releases responses after all Desktop instances exit to verify remote execution and history resumption."
+    },
+    {
+      "id": "ssh-exit-main-fallback",
+      "description": "Other requests in this case (follow-up history may include SLOW/Q/PERMISSION, excluded only by last user message)",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Prepare real remote history with fixed replies and verify follow-up chat after exit."
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-rewind-compact-extended",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-rewind-compact-extended.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-rewind-compact-extended.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "pv4-18-title",
+      "description": "PV4-18 attachment edit case-local 标题。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不影响附件 branch cut 语义。"
+    },
+    {
+      "id": "pv4-18-original",
+      "description": "PV4-18 original attachment response before compact.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "被 same-session branch cut 移出 active branch。"
+    },
+    {
+      "id": "pv4-18-compact",
+      "description": "PV4-18 stable compact summary covering attachment turn.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Proves that compact-covered attachment edits do not fork."
+    },
+    {
+      "id": "pv4-18-edited",
+      "description": "PV4-18 response after replaying attachment canonical ref.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "新 provider request 必须同时携带 edited text 和原附件。"
+    },
+    {
+      "id": "pv4-19-title",
+      "description": "PV4-19 multiple compact case-local 标题。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不参与 boundary 选择。"
+    },
+    {
+      "id": "pv4-19-first",
+      "description": "PV4-19 第一轮回复。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Establishes the first compact boundary that still needs to be retained."
+    },
+    {
+      "id": "pv4-19-compact-first",
+      "description": "PV4-19 first compact summary, still valid before the edit target.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Cold follow-up must still be able to see PV4_19_FIRST_SUMMARY."
+    },
+    {
+      "id": "pv4-19-second-original",
+      "description": "PV4-19 original response to latest input covered by second compact.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "编辑后必须退出 active/cold/provider history。"
+    },
+    {
+      "id": "pv4-19-compact-second",
+      "description": "PV4-19 second compact summary, should be invalidated after cross-boundary edit.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "cold follow-up 不得再看到 PV4_19_SECOND_SUMMARY。"
+    },
+    {
+      "id": "pv4-19-second-edited",
+      "description": "PV4-19 new second-round response after same-session branch cut.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Proves replay according to edited intent after crossing latest boundary."
+    },
+    {
+      "id": "pv4-19-followup",
+      "description": "PV4-19 follow-up response after cold restore.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Captures request body to assert that the first summary is retained and the second summary/old input is invalidated."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-built-in-subagent-model-overrides",
+  "spec": "./test/e2e/conversation-session/conversation-session-built-in-subagent-model-overrides.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-built-in-subagent-model-overrides.json"
+  ],
+  "fileFixtures": [
+    {
+      "kind": "app-config",
+      "path": "~/.cf/v2/agents-state.json",
+      "description": "Write initial builtin model/effort values before cold start to verify Settings correction, combined persistence, bootstrap injection, and child provider-visible requests.",
+      "source": "created-by-helper"
+    },
+    {
+      "kind": "app-config",
+      "path": "~/.cf/agents/e2e-reasoning-reviewer.md",
+      "description": "Write a custom agent with an invalid thoughtLevel to verify save blocking, clearing on model switch, persistence of valid values, and cold start child requests.",
+      "source": "created-by-helper"
+    }
+  ],
+  "requests": [
+    {
+      "id": "built-in-subagent-model-overrides-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not the product semantics of this case; it only needs to return stably to prevent title requests from accidentally matching business fixtures."
+    },
+    {
+      "id": "built-in-subagent-general-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is that Agent schema no longer declares model, and legacy extra parameters cannot override the builtin general-purpose profile; the parent request only needs to stably trigger legacy-shaped Agent tool_use."
+    },
+    {
+      "id": "built-in-subagent-general-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The child request itself is the verification evidence for this case; the response only needs to complete stably and return sub-result tokens."
+    },
+    {
+      "id": "built-in-subagent-general-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The final reply is only used to verify that Agent tool_result continues to be consumed by the parent session and returns to idle."
+    },
+    {
+      "id": "built-in-subagent-model-overrides-cold-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "A process-level cold start restores the full parent session and triggers auto-compact before the next turn; fixing the summary prevents sidecars from blocking the target path."
+    },
+    {
+      "id": "built-in-subagent-explore-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core verification point is that the builtin Explore child request uses the override model and its tool surface is calculated by effective model; the parent request only needs to stably trigger Agent tool_use."
+    },
+    {
+      "id": "built-in-subagent-explore-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The child request itself is the verification evidence for this case; the response only needs to complete stably and return sub-result tokens."
+    },
+    {
+      "id": "built-in-subagent-model-overrides-explore-auto-compact",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The full E2E system prompt causes the Explore turn to trigger auto-compact again before consuming child tool_result; fix the summary to preserve current request semantics."
+    },
+    {
+      "id": "built-in-subagent-explore-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The final reply is only used to verify that Agent tool_result continues to be consumed by the parent session and returns to idle."
+    },
+    {
+      "id": "custom-subagent-reasoning-parent-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The parent request only needs to stably trigger the custom agent saved in Settings; core evidence is provided by the subsequent child provider request."
+    },
+    {
+      "id": "custom-subagent-reasoning-child",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The child request is used to verify that model and thoughtLevel in custom Markdown actually enter the provider request after cold start."
+    },
+    {
+      "id": "custom-subagent-reasoning-parent-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The final reply is only used to verify that custom Agent tool_result continues to be consumed by the parent session and returns to idle."
+    }
+  ]
+}

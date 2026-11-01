@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-output-limit-continue-markdown-protocols",
+  "spec": "./test/e2e/conversation-session/conversation-session-output-limit-continue-markdown-protocols.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-output-limit-continue-markdown-protocols.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/continue-markdown-protocols/cross-seam.svg",
+      "source": "created-by-spec",
+      "description": "OTC11 writes a fixed SVG, allowing Chat Completions and Responses API sub-cases to reuse OTC09's workspace-relative image seam."
+    }
+  ],
+  "requests": [
+    {
+      "id": "otc11-chat-title",
+      "description": "Fixed response for Chat Completions sub-case title sidecar.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of the Continue protocol normalization probe; fixed response avoids consuming fixtures across the four main requests."
+    },
+    {
+      "id": "otc11-chat-partial-p1",
+      "description": "First Chat Completions main request returns OTC09 p1 with finish_reason=length.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Chat Completions 标准 length 会触发第一条 Continue 并保留 Markdown 拼接缝。"
+    },
+    {
+      "id": "otc11-chat-partial-p2",
+      "description": "Second Chat Completions main request returns OTC09 p2 with finish_reason=length.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Chat Completions 标准 length 会触发第二条 Continue。"
+    },
+    {
+      "id": "otc11-chat-partial-p3",
+      "description": "Third Chat Completions main request returns OTC09 p3 with finish_reason=length.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Chat Completions 标准 length 会触发第三条 Continue。"
+    },
+    {
+      "id": "otc11-chat-final-p4",
+      "description": "Fourth Chat Completions main request returns OTC09 p4 with finish_reason=stop.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Normally ends the Chat Completions Continue chain and provides the final accumulated Markdown DOM."
+    },
+    {
+      "id": "otc11-responses-title",
+      "description": "Fixed response for Responses API sub-case title sidecar.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title is not part of the Continue protocol normalization probe; fixed response avoids consuming fixtures across the four main requests."
+    },
+    {
+      "id": "otc11-responses-partial-p1",
+      "description": "First Responses API main request returns OTC09 p1 with response.incomplete/max_output_tokens.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Responses 标准 incomplete reason 会归一化为 length 并触发第一条 Continue。"
+    },
+    {
+      "id": "otc11-responses-partial-p2",
+      "description": "Second Responses API main request returns OTC09 p2 with response.incomplete/max_output_tokens.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Responses 标准 incomplete reason 会触发第二条 Continue。"
+    },
+    {
+      "id": "otc11-responses-partial-p3",
+      "description": "Third Responses API main request returns OTC09 p3 with response.incomplete/max_output_tokens.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "确定性证明 Responses 标准 incomplete reason 会触发第三条 Continue。"
+    },
+    {
+      "id": "otc11-responses-final-p4",
+      "description": "Fourth Responses API main request returns OTC09 p4 with response.completed.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Normally ends the Responses Continue chain and provides the final accumulated Markdown DOM."
+    }
+  ]
+}

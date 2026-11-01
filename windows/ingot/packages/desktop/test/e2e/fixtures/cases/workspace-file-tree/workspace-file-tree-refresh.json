@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "workspace-file-tree-refresh",
+  "spec": "./test/e2e/workspace-file-tree-refresh.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "runtime-workspace-files",
+      "path": "e2e-file-tree-refresh/",
+      "purpose": "Test renaming and adding files in real workspace file system to verify file tree refresh button and watcher real-time updates."
+    }
+  ],
+  "requests": []
+}

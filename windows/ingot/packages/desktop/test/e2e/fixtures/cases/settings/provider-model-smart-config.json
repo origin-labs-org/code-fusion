@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "provider-model-smart-config",
+  "spec": "./test/e2e/settings/provider-model-smart-config.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-data-seed",
+      "path": "provider_config.json",
+      "purpose": "Seed provider isolation on window exit; SC90 verifies smart/fixed editing, F98 verifies real Built-in Map inheritance and Personal saved as-is, without requesting models."
+    }
+  ],
+  "requests": []
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "caseName": "provider-key-native-open",
+  "spec": "./test/e2e/settings/provider-key-native-open.test.ts",
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerFixtures": [],
+  "fileFixtures": [
+    {
+      "kind": "app-data-seed",
+      "path": "provider_config.json",
+      "purpose": "Isolate standard / Coding Plan Key Provider; unique link points to local temporary canary and opens in real system browser, without requesting models or operating accounts."
+    }
+  ],
+  "requests": []
+}

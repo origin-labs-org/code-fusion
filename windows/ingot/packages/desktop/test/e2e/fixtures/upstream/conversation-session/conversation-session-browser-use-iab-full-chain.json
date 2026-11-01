@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-browser-use-iab-full-chain",
+  "spec": "./test/e2e/conversation-session/conversation-session-browser-use-iab-full-chain.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-browser-use-iab-title",
+      "description": "Fix title responses within the Browser Use case to prevent asynchronous title requests from polluting main chain matchers.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Titles are not part of this use case's product semantics; they only need to return reliably and stay isolated from Browser tool continuation."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_BROWSER_USE_IAB_FULL_CHAIN"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"id\":"upstream-browser-use-iab-title","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[{\"type\":"text","text":\"{\\\"title\\\":\\\"Browser Use IAB\\\"}\"}],"stop_reason":"end_turn","stop_sequence":null,"usage":{\"input_tokens\":64,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":8,"service_tier":"standard"}}"
+      }
+    },
+    {
+      "id": "upstream-browser-use-iab-bootstrap",
+      "description": "Initialize Browser client in fresh node_repl kernel, create IAB tab, navigate to local fixture, and return stable tab id and DOM snapshot to model.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Reliably drive the real BrowserControl pipeline and ensure the next model response can only recover the stable tab id from real tool results."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_BROWSER_USE_IAB_FULL_CHAIN",
+          "E2E_BROWSER_FIXTURE_URL:"
+        ],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_iab_bootstrap",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "code": "const browserPluginRoot = process.env.CF_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nif (!browserPluginRoot) throw new Error('Browser plugin root is unavailable in the node_repl host');\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst browserClientUrl = pathToFileURL(join(browserPluginRoot, 'scripts', 'browser-client.mjs')).href;\nconst { setupBrowserRuntime } = await import(browserClientUrl);\nawait setupBrowserRuntime({ globals: globalThis });\nconst browser = await agent.browsers.get('iab');\nconst tab = await browser.tabs.new();\nawait tab.goto('{{browserFixtureUrl}}');\nawait tab.setViewportSize({ width: 375, height: 667 });\nconst snapshot = await tab.playwright.domSnapshot();\n({ marker: 'E2E_BROWSER_USE_IAB_BOOTSTRAP_OK', e2eBrowserTabId: tab.id, snapshot });",
+            "title": "打开 Browser Use 测试页面"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-browser-use-iab-action",
+      "description": "Reinitialize Browser client in new fresh kernel, restore tab using dynamic stable id from previous tool result, then cover locator, CUA, click, and screenshots.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify tab/page continuity independent of cross-cell binding, while stably covering actionability, trusted guest input, page side effects, explicit images, and viewport readback."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_USE_IAB_FULL_CHAIN",
+          "toolu_e2e_browser_iab_bootstrap",
+          "E2E_BROWSER_USE_IAB_BOOTSTRAP_OK",
+          "e2eBrowserTabId",
+          "E2E Browser Use Fixture",
+          "Submit"
+        ],
+        "bodyExcludes": [
+          "Submitted CodeFusion",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_browser_iab_action",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "code": "const browserPluginRoot = process.env.CF_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nif (!browserPluginRoot) throw new Error('Browser plugin root is unavailable in the node_repl host');\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst browserClientUrl = pathToFileURL(join(browserPluginRoot, 'scripts', 'browser-client.mjs')).href;\nconst { setupBrowserRuntime } = await import(browserClientUrl);\nawait setupBrowserRuntime({ globals: globalThis });\nconst browser = await agent.browsers.get('iab');\nconst expectedTabId = '{{latestBrowserTabId}}';\nconst tab = await browser.tabs.get(expectedTabId);\nconst animatedInput = tab.playwright.getByLabel('Animated Name');\nconst sharedCount = await animatedInput.count();\nconst fillStartedAt = Date.now();\nawait animatedInput.fill('CodeFusion');\nconst fillCompletedBefore25s = Date.now() - fillStartedAt < 25000;\nlet strictMessage = '';\ntry {\n  await tab.playwright.getByRole('button', { name: 'Duplicate' }).click();\n} catch (error) {\n  strictMessage = error instanceof Error ? error.message : String(error);\n}\nlet overlayMessage = '';\ntry {\n  await tab.playwright.locator('#covered-button').click();\n} catch (error) {\n  overlayMessage = error instanceof Error ? error.message : String(error);\n}\nconst leakedInternalError = /AbortError|Cannot read properties of undefined|undefined.*count/i.test(strictMessage + '\\n' + overlayMessage);\nconst cuaInput = tab.playwright.getByLabel('CUA Name');\nawait cuaInput.click();\nawait new Promise((resolve) => setTimeout(resolve, 4000));\nawait tab.cua.type({ text: 'CodeFusion' });\nawait tab.playwright.getByRole('button', { name: 'Submit' }).click();\nfor (const width of [373, 374]) {\n  await tab.setViewportSize({ width, height: 667 });\n  await nodeRepl.emitImage(await tab.screenshot());\n}\nawait tab.setViewportSize({ width: 375, height: 667 });\nconst status = await tab.playwright.getByRole('status').innerText();\nconst recoveredSameTab = tab.id === expectedTabId;\nconst allActionabilityChecksPassed = recoveredSameTab && sharedCount === 2 && fillCompletedBefore25s && strictMessage.length > 0 && overlayMessage.length > 0 && !leakedInternalError && status === 'Submitted CodeFusion / CodeFusion';\n({\n  marker: allActionabilityChecksPassed ? 'E2E_BROWSER_USE_IAB_ACTIONABILITY_OK' : 'E2E_BROWSER_USE_IAB_ACTIONABILITY_FAILED',\n  recoveredSameTab,\n  sharedCount,\n  fillCompletedBefore25s,\n  strictRejected: strictMessage.length > 0,\n  overlayRejected: overlayMessage.length > 0,\n  leakedInternalError,\n  animatedInputValue: await animatedInput.getAttribute('value'),\n  inputValue: await cuaInput.getAttribute('value'),\n  status,\n  viewport: tab.viewportSize(),\n  tabs: await browser.tabs.list()\n});",
+            "title": "填写并截图 Browser Use 测试页面"
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-browser-use-iab-final",
+      "description": "Consume real page action and screenshot results, completing turn normally to trigger auto-screenshot at turn end.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Stably achieve normal completion, verifying that explicit emitImage does not suppress Browser turn-end screenshot."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_BROWSER_USE_IAB_FULL_CHAIN",
+          "toolu_e2e_browser_iab_action",
+          "E2E_BROWSER_USE_IAB_ACTIONABILITY_OK",
+          "Submitted CodeFusion / CodeFusion"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_BROWSER_USE_IAB_DONE"
+      }
+    }
+  ]
+}

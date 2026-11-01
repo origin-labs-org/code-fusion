@@ -1,0 +1,448 @@
+import { pluginUiStateKey } from "@/plugin-ui/adapters/pluginUiStateKey.js";
+import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
+import { getPluginUiSessionActions } from "./pluginUiSessionActions.js";
+import { logger } from "@/logger.js";
+import { createPluginUiMessagePortTransport } from "@/plugin-ui/adapters/messagePortTransport.js";
+import { createPluginUiDownloadInteraction } from "@/plugin-ui/adapters/pluginUiDownloads.js";
+import { readPluginUiStyleVariables } from "@/plugin-ui/adapters/readPluginUiStyleVariables.js";
+import {
+  createPluginUiHostController,
+  type PluginUiHostController,
+  type PluginUiHostPhase,
+} from "@/plugin-ui/app/pluginUiHostController.js";
+import { createPluginUiResourceNotificationRegistrar } from "@/plugin-ui/app/pluginUiResourceNotificationBus.js";
+import {
+  clearPluginUiWidgetState,
+  getPluginUiWidgetState,
+  setPluginUiWidgetState,
+} from "@/plugin-ui/app/pluginUiWidgetStateStore.js";
+import type {
+  McpUiAppCapabilities,
+  McpUiHostContext,
+} from "@modelcontextprotocol/ext-apps/app-bridge";
+import type { PluginSandboxHandle } from "@origin-ai/cf-shared/mcp-apps";
+import { buildPluginSandboxScopeId } from "@origin-ai/cf-shared/mcp-apps";
+import { clearPluginUiSurfaceFeed } from "../app/pluginUiSurfaceFeedStore.js";
+import {
+  PLUGIN_UI_CARD_DEFAULT_HEIGHT_PX,
+  PLUGIN_UI_CARD_MAX_HEIGHT_PX,
+  PLUGIN_UI_CARD_MIN_HEIGHT_PX,
+} from "../contract.js";
+import { buildPluginUiHostCapabilities } from "../domain/buildPluginUiHostCapabilities.js";
+import { buildPluginUiHostContext } from "../domain/buildPluginUiHostContext.js";
+
+import { acquireWorkspaceConnection } from "@/v4/workspaceConnectionRegistry.js";
+import type { IServiceAccessor } from "@origin-ai/cf-services";
+import type { IPlatformService } from "@origin-ai/cf-shared";
+import { buildPluginUiSessionKey } from "../contract.js";
+import type { Page, UsePluginUiHostInput, UsePluginUiHostResult } from "./pluginUiHostTypes.js";
+import { createPluginUiPagePlane } from "./pluginUiPagePlane.js";
+import { pluginUiPages } from "./pluginUiPageRegistry.js";
+import { attachPluginUiResourceDeltaFeed } from "./pluginUiResourceDeltaFeed.js";
+type Platform = IPlatformService;
+type Services = IServiceAccessor;
+export function createPage(
+  key: string,
+  input: UsePluginUiHostInput,
+  platform: Platform,
+  services: Services,
+): Page {
+  const reportUsage = (action: string, failed = false) => {
+    void reportAppTelemetryEvent(
+      platform,
+      {
+        elementName: failed ? "plugin_runtime_error" : "plugin_usage",
+        eventRegion: "app",
+        eventType: "result",
+        eventExtraDetail: {
+          schema_version: "1",
+          action,
+          plugin_id: input.presentation.pluginId,
+          plugin_component: "ui",
+          client_kind: "desktop",
+          ...(failed ? { error_category: "unknown", result: "failure" } : {}),
+        },
+      },
+      "plugin-ui",
+    );
+  };
+  const bridge = services.pluginUiBridgeService!;
+  const sandboxPlatform = platform.pluginSandbox!;
+  const surfaceKey = key;
+  const latest = { current: input };
+  const listeners = new Set<() => void>();
+  let surfaceStateKey: string | undefined;
+  let controller: PluginUiHostController | null = null;
+  let releaseFeed: (() => void) | undefined;
+  let releaseLease: (() => void) | undefined;
+  let executionKey = "";
+  let disposed = false;
+  let starting = false;
+  let incarnation = 0;
+  let releasing: Promise<unknown> = Promise.resolve();
+  let contextInputs = "";
+  let lastFeed = "";
+  let lastContext = "";
+  let appIdentity: string | undefined;
+  const notify = () => {
+    for (const listener of listeners) listener();
+  };
+  let snapshot: UsePluginUiHostResult = {
+    pageKey: key,
+    supported: true,
+    phase: "idle",
+    handle: null,
+    height: PLUGIN_UI_CARD_DEFAULT_HEIGHT_PX,
+    error: null,
+    appCapabilities: undefined,
+    reload: () => {
+      clearPluginUiWidgetState(key);
+      void page.suspend(true).then(ensure);
+    },
+  };
+  const patch = (value: Partial<UsePluginUiHostResult>) => {
+    snapshot = { ...snapshot, ...value };
+    notify();
+  };
+  const setPhase = (phase: PluginUiHostPhase) => patch({ phase });
+  const setHandle = (handle: PluginSandboxHandle) => {
+    if (appIdentity && appIdentity !== handle.instance.appIdentity) clearPluginUiWidgetState(key);
+    appIdentity = handle.instance.appIdentity;
+    patch({ handle });
+    plane.mount(handle);
+    syncExecution();
+  };
+  const setHeight = (height: number) => patch({ height });
+  const setError = (error: string) => patch({ error });
+  const setAppCapabilities = (appCapabilities: McpUiAppCapabilities | undefined) =>
+    patch({ appCapabilities });
+  const plane = createPluginUiPagePlane({
+    onVisibility(visible) {
+      if (page.visible !== visible) pluginUiPages.visibility(page, visible);
+      if (visible) ensure();
+      syncExecution();
+    },
+    onCrash() {
+      void page.suspend(true);
+      patch({ phase: "error", error: "MCP App page stopped" });
+    },
+  });
+  function syncExecution() {
+    const active = controller !== null;
+    plane.setExecutionActive(active);
+    const handle = snapshot.handle;
+    if (!handle || !sandboxPlatform.setExecutionActive) return;
+    const background = active && (!page.visible || document.hidden);
+    const nextKey = `${handle.sandboxId}:${handle.initId}:${background}`;
+    if (nextKey === executionKey) return;
+    executionKey = nextKey;
+    logger.lifecycle.info("[plugin-ui] background execution", {
+      sessionId: input.scope.sessionId,
+      sandboxId: handle.sandboxId,
+      active: background,
+    });
+    void sandboxPlatform
+      .setExecutionActive(handle.sandboxId, handle.initId, background)
+      .catch((error: unknown) => {
+        if (snapshot.handle !== handle || disposed) return;
+        logger.warn("[plugin-ui] background execution failed", { error: String(error) });
+      });
+  }
+  async function ensure() {
+    if (disposed || controller || starting || snapshot.phase === "error") return;
+    starting = true;
+    const epoch = ++incarnation;
+    try {
+      await releasing;
+      surfaceStateKey = await pluginUiStateKey(surfaceKey);
+      if (disposed || epoch !== incarnation) return;
+      await pluginUiPages.reserve(page);
+    } catch (error) {
+      starting = false;
+      patch({ phase: "error", error: String(error) });
+      return;
+    }
+    if (disposed || epoch !== incarnation) {
+      pluginUiPages.released(page);
+      return;
+    }
+    starting = false;
+    try {
+      const connection = acquireWorkspaceConnection(
+        latest.current.scope,
+        services.cfAgentService,
+        platform.createLocalMediaPreviewUrl,
+      );
+      releaseLease = () => connection.release();
+      const lease = connection.layer.acquire(latest.current.scope.sessionId);
+      const runtimeStopped = () => {
+        void page.suspend(true);
+        patch({ phase: "error", error: "MCP App runtime is no longer available" });
+      };
+      const offRestart = connection.transport.onRuntimeRestart(runtimeStopped);
+      const offLifecycle = connection.transport.onRuntimeLifecycle?.((state) => {
+        if (state === "unavailable") runtimeStopped();
+      });
+      releaseLease = () => {
+        offRestart();
+        offLifecycle?.();
+        lease.release();
+        connection.release();
+      };
+      releaseFeed = attachPluginUiResourceDeltaFeed(lease.store, latest.current.scope);
+      patch({ phase: "preparing", error: null, handle: null });
+      createController();
+    } catch (error) {
+      void page.suspend(true);
+      patch({ phase: "error", error: String(error) });
+    }
+  }
+  function createController() {
+    const initialHostContext: McpUiHostContext = buildPluginUiHostContext({
+      theme: latest.current.theme,
+      locale: latest.current.locale,
+      displayMode: latest.current.displayMode,
+      width: latest.current.width,
+      ...(latest.current.titleBar ? { titleBar: latest.current.titleBar } : {}),
+      ...(latest.current.availableDisplayModes
+        ? { availableDisplayModes: latest.current.availableDisplayModes }
+        : {}),
+      styleVariables: readPluginUiStyleVariables(),
+    });
+    const scope = latest.current.scope;
+    const presentation = latest.current.presentation;
+    const platformInteractions = createPluginUiDownloadInteraction({
+      platform,
+      bridge,
+      scope,
+      presentation,
+      getInstance: () => {
+        if (!snapshot.handle) throw new Error("MCP App is not prepared");
+        return snapshot.handle.instance;
+      },
+    });
+    const nextController = createPluginUiHostController({
+      bridge,
+      sampling: services?.pluginUiSamplingService,
+      ...(services?.pluginUiAppToolsService ? { appTools: services.pluginUiAppToolsService } : {}),
+      createTransport: createPluginUiMessagePortTransport,
+      platform: sandboxPlatform,
+      scope,
+      presentation,
+      resourceNotifications: createPluginUiResourceNotificationRegistrar(
+        scope,
+        presentation.serverName,
+      ),
+      initialHostContext,
+      hostVersion: latest.current.hostVersion,
+      getToolFeed: () => ({
+        ...(latest.current.toolInput ? { toolInput: { arguments: latest.current.toolInput } } : {}),
+        ...(latest.current.toolResult ? { toolResult: latest.current.toolResult } : {}),
+        ...(latest.current.toolCancelled ? { toolCancelled: true } : {}),
+      }),
+      getWidgetState: () => getPluginUiWidgetState(surfaceKey),
+      getHostCapabilities: () =>
+        buildPluginUiHostCapabilities({
+          canSendFollowUpMessage: Boolean(latest.current.interactions?.onSendFollowUpMessage),
+          canUpdateModelContext: Boolean(latest.current.interactions?.onUpdateModelContext),
+          canSetWidgetState: true,
+          canSample: Boolean(services?.pluginUiSamplingService && getPluginUiSessionActions(scope)),
+          canSubscribeResources: true,
+          canDownloadFile: Boolean(platformInteractions?.onDownloadFile),
+          ...(scope.scope.kind === "surface"
+            ? { surfaceId: scope.scope.surfaceId, surfaceStateKey }
+            : {}),
+        }),
+      ...platformInteractions,
+      onSendFollowUpMessage: (payload, context) =>
+        latest.current.interactions?.onSendFollowUpMessage
+          ? latest.current.interactions.onSendFollowUpMessage(payload, context)
+          : Promise.reject(Object.assign(new Error("Not supported"), { code: -32601 })),
+      onUpdateModelContext: (payload) =>
+        latest.current.interactions?.onUpdateModelContext
+          ? latest.current.interactions.onUpdateModelContext(payload)
+          : Promise.reject(Object.assign(new Error("Not supported"), { code: -32601 })),
+      onUpdateWidgetState: async (widgetState) => {
+        setPluginUiWidgetState(surfaceKey, widgetState);
+      },
+      onPhase: (next, detail) => {
+        if (controller !== nextController) return;
+        if (next === "running" && snapshot.phase !== "running") reportUsage("ui_ready");
+        if (next === "error" && snapshot.phase !== "error") reportUsage("ui_open_request", true);
+        logger.lifecycle.info("[plugin-ui] lifecycle", {
+          phase: next,
+          sessionId: latest.current.scope.sessionId,
+          pluginId: latest.current.presentation.pluginId,
+          scopeId: buildPluginSandboxScopeId(latest.current.scope.scope),
+          ...(detail?.error ? { error: detail.error } : {}),
+        });
+        if (next === "error") {
+          void page.suspend(true);
+          patch({ phase: "error", error: detail?.error ?? "MCP App failed" });
+          return;
+        }
+        setPhase(next);
+        if (detail?.handle) {
+          setHandle(detail.handle);
+          const hint = detail.handle.resourceMeta?.heightHint;
+          if (hint !== undefined) setHeight(clampCardHeight(hint, detail.handle));
+          const permissions = detail.handle.resourceMeta?.permissions;
+          if (permissions?.length) {
+            nextController.updateHostContext({
+              permissions: Object.fromEntries(permissions.map((item) => [item, {}])),
+            });
+          }
+        }
+        if (detail?.error) setError(detail.error);
+      },
+      onInstanceClosed: () => {
+        void page.suspend(true);
+        clearPluginUiWidgetState(key);
+        patch({ phase: "error", error: "MCP App connection is no longer available" });
+      },
+      onBusyChange: () => {
+        if (controller === nextController) pluginUiPages.settled(page);
+      },
+      onAppCapabilities: setAppCapabilities,
+      onHeight: (next) => setHeight(clampCardHeight(next, snapshot.handle)),
+      onDisplayModeRequest: (mode) => latest.current.onDisplayModeRequest?.(mode) ?? mode,
+      onOpenExternal: (url) => latest.current.onOpenExternal?.(url),
+      log: (message, detail) => logger.warn(message, detail),
+    });
+
+    controller = nextController;
+    reportUsage("ui_open_request");
+    controller.start();
+  }
+  const task = buildPluginUiSessionKey(input.scope);
+  const workspaceEvents = services.cfTaskService.onDynamicWorkspaceEvent({
+    workspacePath: input.scope.workspacePath,
+    workspaceIdentity: input.scope.workspaceIdentity,
+  })((event) => {
+    if (
+      event.type === "workspace_task_list_changed" &&
+      event.reason === "task_deleted" &&
+      event.taskId === input.scope.sessionId
+    )
+      pluginUiPages.removeTask(task);
+  });
+  const page: Page = {
+    kind: "mcp",
+    key,
+    task,
+    visible: false,
+    snapshot: () => snapshot,
+    start: () => void ensure(),
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    busy: () => controller?.isBusy() ?? false,
+    running: () => controller !== null || starting,
+    bind(node, sidebar) {
+      const off = plane.bind({
+        node,
+        kind: sidebar ? "sidebar" : "inline",
+        container: node.closest<HTMLElement>("[data-sandbox-page-container]") ?? undefined,
+      });
+      ensure();
+      return off;
+    },
+    update(next) {
+      if (next.enabled === false) return;
+      latest.current = next;
+      const nextContextInputs = JSON.stringify([
+        next.theme,
+        next.locale,
+        next.displayMode,
+        next.width,
+        next.titleBar,
+        next.availableDisplayModes,
+      ]);
+      if (nextContextInputs !== contextInputs) {
+        contextInputs = nextContextInputs;
+        const context = buildPluginUiHostContext({
+          theme: next.theme,
+          locale: next.locale,
+          displayMode: next.displayMode,
+          width: next.width,
+          titleBar: next.titleBar,
+          availableDisplayModes: next.availableDisplayModes,
+          styleVariables: readPluginUiStyleVariables(),
+        });
+        const contextKey = JSON.stringify(context);
+        if (contextKey !== lastContext) {
+          lastContext = contextKey;
+          controller?.updateHostContext(context);
+        }
+      }
+      page.updateToolFeed(next);
+    },
+    updateToolFeed(next) {
+      if (disposed) return;
+      latest.current = {
+        ...latest.current,
+        toolCallId: next.toolCallId,
+        toolInput: next.toolInput,
+        toolResult: next.toolResult,
+        toolCancelled: next.toolCancelled,
+      };
+      const feed = JSON.stringify([
+        next.toolCallId,
+        next.toolInput,
+        next.toolResult,
+        next.toolCancelled,
+      ]);
+      if (feed !== lastFeed) {
+        lastFeed = feed;
+        if (next.toolInput) controller?.notifyToolInput({ arguments: next.toolInput });
+        if (next.toolResult) controller?.notifyToolResult(next.toolResult);
+        if (next.toolCancelled) controller?.notifyToolCancelled();
+      }
+    },
+    async suspend(force = false) {
+      if (!force) return false;
+      incarnation++;
+      starting = false;
+      const previous = controller;
+      controller = null;
+      plane.setExecutionActive(false);
+      executionKey = "";
+      const previousHandle = snapshot.handle;
+      const offFeed = releaseFeed,
+        offLease = releaseLease;
+      releaseFeed = undefined;
+      releaseLease = undefined;
+      patch({ phase: "idle", handle: null, appCapabilities: undefined });
+      if (previousHandle) plane.prepareUnmount(previousHandle.sandboxId);
+      if (previous) reportUsage("ui_close");
+      const closing = previous?.dispose();
+      releasing = Promise.all([releasing, closing]).then(() => {
+        if (previousHandle) plane.unmount(previousHandle.sandboxId);
+        offFeed?.();
+        offLease?.();
+        pluginUiPages.released(page);
+      });
+      await releasing;
+      return true;
+    },
+    destroy() {
+      document.removeEventListener("visibilitychange", syncExecution);
+      workspaceEvents.dispose();
+      clearPluginUiSurfaceFeed(key);
+      disposed = true;
+      void page.suspend(true).finally(() => plane.dispose());
+      clearPluginUiWidgetState(key);
+      listeners.clear();
+    },
+  };
+  document.addEventListener("visibilitychange", syncExecution);
+  return page;
+}
+
+function clampCardHeight(next: number, handle: PluginSandboxHandle | null): number {
+  const min = Math.max(PLUGIN_UI_CARD_MIN_HEIGHT_PX, handle?.resourceMeta?.minFrameHeight ?? 0);
+  return Math.min(PLUGIN_UI_CARD_MAX_HEIGHT_PX, Math.max(min, next));
+}

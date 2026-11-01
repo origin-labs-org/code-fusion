@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plugin-reference",
+  "spec": "./test/e2e/conversation-session/conversation-session-plugin-reference.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-plugin-reference.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": "plugin-reference-e2e/note.md",
+      "source": "created-by-spec",
+      "description": "Target file for Read test tool; spec writes to DEFAULT_WORKSPACE before sending."
+    }
+  ],
+  "requests": [
+    {
+      "id": "plugin-reference-title",
+      "description": "Case-local title generation response for E2E_PLUGIN_REFERENCE initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Initial launch triggers default title sidecar; pin case-local title response and use initial launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "plugin-reference-reminder-tool-call",
+      "description": "PLG01 wire gate: request body must contain identifiers-only <plugin_reference> reminder (including skill-creator stable id) to pass, driving one Read test tool call.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically verify provider receives reminder: fixture gates match on bodyIncludes <plugin_reference>, independent of real model random preference."
+    },
+    {
+      "id": "plugin-reference-final-reply",
+      "description": "Closing response after feeding back Read tool results, outputting timeline assertion marker.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Step two matches on tool result content + tool id to ensure sequential determinism."
+    }
+  ]
+}

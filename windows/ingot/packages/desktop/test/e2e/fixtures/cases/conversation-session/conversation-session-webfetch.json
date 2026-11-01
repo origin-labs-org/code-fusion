@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-webfetch",
+  "spec": "./test/e2e/conversation-session/conversation-session-webfetch.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-webfetch.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "upstream-conversation-webfetch-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Title generation is not part of O10 product semantics; it only needs a stable response to prevent title requests from accidentally hitting main flow fixtures."
+    },
+    {
+      "id": "upstream-conversation-webfetch-tool-use",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "tool-use",
+      "syntheticReason": "Deterministically trigger WebFetch to verify end-to-end fetch loop from desktop session to agent runtime's WebFetch HttpClientPort."
+    },
+    {
+      "id": "upstream-conversation-webfetch-lite-extraction",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stub WebFetch internal lite model output to verify HTML extraction results can enter tool_result."
+    },
+    {
+      "id": "upstream-conversation-webfetch-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stub final reply to verify WebFetch tool_result has entered main model continuation."
+    }
+  ]
+}

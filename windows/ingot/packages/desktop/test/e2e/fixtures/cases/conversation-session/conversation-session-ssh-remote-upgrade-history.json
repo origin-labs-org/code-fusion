@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-ssh-remote-upgrade-history",
+  "spec": "./test/e2e/conversation-session/conversation-session-ssh-remote-upgrade-history.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-ssh-remote-upgrade-history.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "ssh-history-reconnect-title",
+      "description": "SSH directory resilience task title auxiliary response.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "ssh-history-reconnect-main",
+      "description": "SSH directory resilience generic response for initial and follow-up turns.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Use fixed replies to prepare and continue real remote history, letting the legacy program naturally generate data before switching between current and fallback programs for verification."
+    }
+  ]
+}

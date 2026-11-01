@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-model-provider-settings-transition",
+  "spec": "./test/e2e/conversation-session/conversation-session-model-provider-settings-transition.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-model-provider-settings-transition.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "model-provider-transition-s01",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that after switching BigModel Family connection, initial request of upstream deferred draft still uses upstream."
+    },
+    {
+      "id": "model-provider-transition-s02",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify that repeatedly selecting current Team Plan does not change upstream draft."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-configurable-data-directory",
+  "spec": "./test/e2e/conversation-session/conversation-session-configurable-data-directory.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-configurable-data-directory.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cdd01-before-migration-title",
+      "description": "Stable title response for task before migration.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Use CDD01 marker to isolate title requests, preventing title generation from affecting main path replay."
+    },
+    {
+      "id": "cdd01-before-migration-main",
+      "description": "Complete a normal conversation turn before migration to form a recoverable historical task.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix pre-migration completed assistant marker to avoid relying on real model text."
+    },
+    {
+      "id": "cdd01-after-migration-main",
+      "description": "Complete follow-up in the same task after cold restart.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix post-migration completed assistant marker to verify the original task can still continue under the new App root."
+    }
+  ]
+}

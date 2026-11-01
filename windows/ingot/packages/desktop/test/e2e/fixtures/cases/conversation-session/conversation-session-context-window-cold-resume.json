@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-context-window-cold-resume",
+  "spec": "./test/e2e/conversation-session/conversation-session-context-window-cold-resume.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-context-window-cold-resume.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cw-create-history",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Create target session via real UI requests instead of pseudo-cold history written directly to sqlite."
+    },
+    {
+      "id": "cw-create-parking",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Ensure the target session has not been restored by Agent before the first click after restart."
+    },
+    {
+      "id": "cw-high-usage-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Deterministically reproduce the 157,762 provider usage from user logs without generating a real 150k token history."
+    },
+    {
+      "id": "cw-tool-result-followup",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably verify that Compact is not mistakenly inserted after high usage, but directly consumes the readonly tool result instead."
+    },
+    {
+      "id": "cw-literal-continue",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Reproduce the \"Continue\" recovery chain from user logs and ensure any unexpected Compact fails closed due to missing fixtures."
+    },
+    {
+      "id": "cw-manual-compact-summary",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Fix the compact summary and preserve high provider usage so CW04 can deterministically verify cold recovery reads the post-compact boundary instead of pre-compact assistant usage."
+    }
+  ]
+}

@@ -1,0 +1,773 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-anthropic-reasoning-history-replay",
+  "spec": "./test/e2e/conversation-session/conversation-session-anthropic-reasoning-history-replay.test.ts",
+  "fixtures": [
+    {
+      "id": "anthropic-reasoning-title",
+      "description": "Fixed response for title generation in reasoning history case.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Title is not part of the product semantics for this case; pin response to prevent title requests from mistakenly hitting the primary reasoning request."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "anthropic-reasoning-title",
+          "model": "deepseek-v4-flash",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"Reasoning Replay"}"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-signature-start-seed",
+      "description": "I70 Round 1 places signature only in thinking content_block_start, verifying compat layer supplements standard signature_delta.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Provider wire shape of a real compatibility issue: start has a signature but no native signature_delta."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_SIGNATURE_START_SEED"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-signature-start-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-ar-signature-from-start"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_SIGNATURE_START_THINKING"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":"E2E_AR_SIGNATURE_START_REPLY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":128,"output_tokens":24}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-standard-signature-delta-seed",
+      "description": "I70 standard Anthropic stream: thinking start is empty, signature returned only via native signature_delta.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Explicitly lock standard native signature_delta parsing to avoid only covering the start-signature compatibility branch."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_STANDARD_SIGNATURE_DELTA_SEED"],
+        "bodyIncludes": [
+          "E2E_AR_SIGNATURE_START_THINKING",
+          "e2e-ar-signature-from-start"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-standard-signature-delta-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":144,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_STANDARD_SIGNATURE_DELTA_THINKING"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"signature_delta","signature":"e2e-ar-standard-signature-delta"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":"E2E_AR_STANDARD_SIGNATURE_DELTA_REPLY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":144,"output_tokens":24}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-native-signature-seed",
+      "description": "I70 同时返回 start signature 与原生 signature_delta，并携带 unsigned/redacted thinking。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Simultaneously verify that existing native deltas are not redundantly patched and that all three types of reasoning metadata can enter live history."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_NATIVE_SIGNATURE_SEED"],
+        "bodyIncludes": [
+          "E2E_AR_SIGNATURE_START_THINKING",
+          "e2e-ar-signature-from-start",
+          "E2E_AR_STANDARD_SIGNATURE_DELTA_THINKING",
+          "e2e-ar-standard-signature-delta"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-native-signature-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":160,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-ar-native-start-must-not-survive"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_NATIVE_SIGNATURE_THINKING"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"signature_delta","signature":"e2e-ar-native-signature"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_UNSIGNED_THINKING"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":2,"content_block":{\"type\":"redacted_thinking","data":"E2E_AR_REDACTED_DATA"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":2}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":3,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":3,"delta":{\"type\":"text_delta","text":"E2E_AR_NATIVE_SIGNATURE_REPLY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":3}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":160,"output_tokens":40}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-live-replay",
+      "maxMatches": 1,
+      "description": "Multi-round follow-up for same model before I70 reload, simultaneously verifying all three types of final signatures and unsigned/redacted.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Use independent provider attempts to prove that standard delta, start fallback, and native precedence have all entered multi-turn live history."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_LIVE_REPLAY"],
+        "bodyIncludes": [
+          "e2e-ar-signature-from-start",
+          "e2e-ar-standard-signature-delta",
+          "e2e-ar-native-signature",
+          "E2E_AR_UNSIGNED_THINKING",
+          "E2E_AR_REDACTED_DATA"
+        ],
+        "bodyExcludes": [
+          "e2e-ar-native-start-must-not-survive",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "anthropic-reasoning-live-replay",
+          "model": "deepseek-v4-flash",
+          "inputTokens": 240,
+          "outputTokens": 12,
+          "text": "E2E_AR_LIVE_REPLAY_OK"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-cold-replay",
+      "maxMatches": 1,
+      "description": "Continued send with same model after full I70 restart; fixture matcher constrains signed/unsigned/redacted history simultaneously.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The response only needs to complete reliably; core evidence is that cold request body preserves historical metadata and provenance."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_COLD_REPLAY"],
+        "bodyIncludes": [
+          "e2e-ar-signature-from-start",
+          "e2e-ar-standard-signature-delta",
+          "e2e-ar-native-signature",
+          "E2E_AR_UNSIGNED_THINKING",
+          "E2E_AR_REDACTED_DATA",
+          "E2E_AR_LIVE_REPLAY_OK"
+        ],
+        "bodyExcludes": [
+          "e2e-ar-native-start-must-not-survive",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "anthropic-reasoning-cold-replay",
+          "model": "deepseek-v4-flash",
+          "inputTokens": 220,
+          "outputTokens": 12,
+          "text": "E2E_AR_COLD_REPLAY_OK"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-cross-model",
+      "maxMatches": 1,
+      "description": "Only unsigned thinking and plain text are allowed into request after I70 model switch.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The matcher directly locks the provider wire where cross-model signed/redacted are removed and unsigned is preserved."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_CROSS_MODEL"],
+        "bodyIncludes": [
+          "deepseek-v4-pro",
+          "E2E_AR_UNSIGNED_THINKING",
+          "E2E_AR_SIGNATURE_START_REPLY",
+          "E2E_AR_STANDARD_SIGNATURE_DELTA_REPLY",
+          "E2E_AR_NATIVE_SIGNATURE_REPLY",
+          "E2E_AR_LIVE_REPLAY_OK"
+        ],
+        "bodyExcludes": [
+          "E2E_AR_SIGNATURE_START_THINKING",
+          "e2e-ar-signature-from-start",
+          "E2E_AR_STANDARD_SIGNATURE_DELTA_THINKING",
+          "e2e-ar-standard-signature-delta",
+          "E2E_AR_NATIVE_SIGNATURE_THINKING",
+          "e2e-ar-native-signature",
+          "E2E_AR_REDACTED_DATA",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "id": "anthropic-reasoning-cross-model",
+          "model": "deepseek-v4-pro",
+          "inputTokens": 240,
+          "outputTokens": 12,
+          "text": "E2E_AR_CROSS_MODEL_OK"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-orphan-seed",
+      "maxMatches": 1,
+      "description": "I71 constructs assistant with only unsigned reasoning and no text/tool calls.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "A reasoning-only turn must be truly persisted so the next logical request can verify the cleanup of orphaned assistants."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_ORPHAN_SEED"],
+        "bodyIncludes": ["deepseek-v4-flash"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-orphan-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_ORPHAN_UNSIGNED_THINKING"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-orphan-follow",
+      "maxMatches": 1,
+      "description": "Successful response for next round after I71 reasoning-only assistant cleanup.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The matcher requires orphaned reasoning markers to be removed from the provider request."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_ORPHAN_FOLLOW"],
+        "bodyExcludes": [
+          "E2E_AR_ORPHAN_UNSIGNED_THINKING",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": "E2E_AR_ORPHAN_OK"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-empty-envelope-seed",
+      "maxMatches": 1,
+      "description": "I71 constructs signed-only assistant that becomes empty content after cross-model cleanup.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The real turn only produces signed reasoning; after switching models in the next turn, structural repair should backfill the assistant envelope."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_EMPTY_ENVELOPE_SEED"],
+        "bodyIncludes": ["deepseek-v4-flash"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-empty-envelope-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-ar-empty-envelope-signature"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_EMPTY_ENVELOPE_SIGNED"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":8}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-empty-envelope-follow",
+      "maxMatches": 1,
+      "description": "Signed-only assistant after I71 model switch must retain turn with no-content envelope.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The matcher constrains that signed reasoning is removed while the (no content) assistant still exists."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_EMPTY_ENVELOPE_FOLLOW"],
+        "bodyIncludes": ["deepseek-v4-pro", "(no content)"],
+        "bodyExcludes": [
+          "E2E_AR_EMPTY_ENVELOPE_SIGNED",
+          "e2e-ar-empty-envelope-signature",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "model": "deepseek-v4-pro",
+          "text": "E2E_AR_EMPTY_ENVELOPE_OK"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-whitespace-seed",
+      "maxMatches": 1,
+      "description": "I71 constructs signed reasoning + whitespace text assistant.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Switching models leaves only whitespace after signature cleanup; verify assistant deletion and merging with normal user."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_WHITESPACE_SEED"],
+        "bodyIncludes": ["deepseek-v4-pro"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-whitespace-seed","type":"message","role":"assistant","model":"deepseek-v4-pro","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-ar-whitespace-signature"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_WHITESPACE_SIGNED"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":\"   \\n\"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":9}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-whitespace-follow",
+      "maxMatches": 1,
+      "description": "Cross-model successful response after I71 whitespace assistant deletion.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The matcher constrains that both normal user markers exist concurrently and no signed reasoning is present."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_AR_WHITESPACE_SEED",
+          "E2E_AR_WHITESPACE_FOLLOW"
+        ],
+        "bodyIncludes": [
+          "deepseek-v4-flash",
+          "E2E_AR_WHITESPACE_SEED",
+          "E2E_AR_WHITESPACE_FOLLOW"
+        ],
+        "bodyExcludes": [
+          "E2E_AR_WHITESPACE_SIGNED",
+          "e2e-ar-whitespace-signature",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": {
+          "model": "deepseek-v4-flash",
+          "text": "E2E_AR_WHITESPACE_OK"
+        }
+      }
+    },
+    {
+      "id": "anthropic-reasoning-retry-seed",
+      "maxMatches": 1,
+      "description": "I72 constructs same-model signed/unsigned/redacted reasoning canonical history.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Subsequent retry branches reuse the same real persisted history to verify repairs only modify the request copy."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_RETRY_SEED"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-retry-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":"e2e-ar-retry-signature"}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_RETRY_SIGNED"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_RETRY_UNSIGNED"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":2,"content_block":{\"type\":"redacted_thinking","data":"E2E_AR_RETRY_REDACTED"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":2}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":3,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":3,"delta":{\"type\":"text_delta","text":"E2E_AR_RETRY_SEED_REPLY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":3}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":128,"output_tokens":36}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-http-signature-400",
+      "description": "First HTTP attempt of I72 returns narrowed thinking signature 400.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Deterministically trigger signature rejection before the first token to verify request copy repair and a zero-backoff single retry."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_HTTP_SIGNATURE_RETRY"],
+        "bodyIncludes": [
+          "e2e-ar-retry-signature",
+          "E2E_AR_RETRY_UNSIGNED",
+          "E2E_AR_RETRY_REDACTED"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"signature in thinking block is invalid"}}"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-http-signature-retry-success",
+      "maxMatches": 1,
+      "description": "Second attempt after I72 HTTP signature repair.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The matcher proves that the second attempt only removes signed/redacted while preserving unsigned and normal answers."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_HTTP_SIGNATURE_RETRY"],
+        "bodyIncludes": ["E2E_AR_RETRY_UNSIGNED", "E2E_AR_RETRY_SEED_REPLY"],
+        "bodyExcludes": [
+          "E2E_AR_RETRY_SIGNED",
+          "e2e-ar-retry-signature",
+          "E2E_AR_RETRY_REDACTED",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": "E2E_AR_HTTP_SIGNATURE_RETRY_OK"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-retry-canonical-history",
+      "maxMatches": 1,
+      "description": "Next logical request after successful I72 repair must see canonical signed/redacted history again.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Prove that retry cleanup does not write back to MessageHistory or persisted data."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_RETRY_CANONICAL"],
+        "bodyIncludes": [
+          "E2E_AR_RETRY_SIGNED",
+          "e2e-ar-retry-signature",
+          "E2E_AR_RETRY_REDACTED"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": "E2E_AR_RETRY_CANONICAL_OK"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-sse-signature-400",
+      "description": "I72 HTTP 200 SSE 在首个可见 content 前抛出 code=400 signature error。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Cover the same signature repair entry point where the error originates from stream consume rather than HTTP setup."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_SSE_SIGNATURE_RETRY"],
+        "bodyIncludes": ["e2e-ar-retry-signature"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: error\ndata: {\"type\":"error","error":{\"type\":"invalid_request_error","code":400,"message":"thinking block cannot be modified"}}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-sse-signature-retry-success",
+      "maxMatches": 1,
+      "description": "Second attempt after I72 SSE signature error repair.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "第二 attempt 的 matcher 与 HTTP 分支相同，保证两条错误入口使用同一修复投影。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_SSE_SIGNATURE_RETRY"],
+        "bodyIncludes": ["E2E_AR_RETRY_UNSIGNED"],
+        "bodyExcludes": [
+          "e2e-ar-retry-signature",
+          "E2E_AR_RETRY_REDACTED",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "text": "E2E_AR_SSE_SIGNATURE_RETRY_OK"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-unrelated-400",
+      "maxMatches": 1,
+      "description": "Signature repair prohibited when I72 signed history encounters unrelated 400.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Verify narrowed error message matching; other invalid_request errors must not modify history or make additional requests."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_UNRELATED_400"],
+        "bodyIncludes": ["e2e-ar-retry-signature"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"unrelated invalid request"}}"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-double-signature-400-first",
+      "description": "First attempt of I72 consecutive signature rejections.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The first leg allows request-local repair; maxMatches ensures the next physical request enters the second rejection fixture."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_DOUBLE_SIGNATURE_400"],
+        "bodyIncludes": ["e2e-ar-retry-signature"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"signature in thinking block is invalid"}}"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-double-signature-400-second",
+      "maxMatches": 1,
+      "description": "Must terminate and not make a third request if still rejected after I72 request-local repair.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "The second leg requires signed/redacted to be removed and returns the same 400 again to verify the one-shot ceiling."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_DOUBLE_SIGNATURE_400"],
+        "bodyIncludes": ["E2E_AR_RETRY_UNSIGNED"],
+        "bodyExcludes": [
+          "e2e-ar-retry-signature",
+          "E2E_AR_RETRY_REDACTED",
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"signature in thinking block is invalid"}}"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-visible-signature-error",
+      "maxMatches": 1,
+      "description": "I72 first submits visible text, then throws signature 400 from SSE.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "controlled-stream",
+        "source": "synthetic",
+        "syntheticReason": "Bug root cause: under coverage instrumentation, 180ms is insufficient to ensure AI SDK consumes completed text blocks; errors arrive early and are misidentified as pre-output. Preserve a 5s consumption window before injecting signature errors to verify retries are forbidden once visible output has been committed."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_VISIBLE_THEN_SIGNATURE_ERROR"],
+        "bodyIncludes": ["e2e-ar-retry-signature"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "events": [
+          {
+            "sequence": 0,
+            "offsetMs": 0,
+            "byteLength": 265,
+            "text": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-visible-signature-error","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":128,"output_tokens":0}}}\n\n"
+          },
+          {
+            "sequence": 1,
+            "offsetMs": 10,
+            "byteLength": 139,
+            "text": "event: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"text","text":""}}\n\n"
+          },
+          {
+            "sequence": 2,
+            "offsetMs": 30,
+            "byteLength": 154,
+            "text": "event: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"text_delta","text":"E2E_AR_VISIBLE_PARTIAL"}}\n\n"
+          },
+          {
+            "sequence": 3,
+            "offsetMs": 60,
+            "byteLength": 73,
+            "text": "event: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\n"
+          },
+          {
+            "sequence": 4,
+            "offsetMs": 5000,
+            "byteLength": 161,
+            "text": "event: error\ndata: {\"type\":"error","error":{\"type\":"invalid_request_error","code":400,"message":"thinking block cannot be modified"}}\n\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anthropic-reasoning-unsigned-only-seed",
+      "maxMatches": 1,
+      "description": "I72 构造只有 unsigned reasoning 的历史。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Persist an old session containing only unsigned reasoning, and verify cold replay after a full restart."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_UNSIGNED_ONLY_SEED"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "headers": {
+          "cache-control": "no-cache",
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "event: message_start\ndata: {\"type\":"message_start","message":{\"id\":"anthropic-reasoning-unsigned-only-seed","type":"message","role":"assistant","model":"deepseek-v4-flash","content":[],"stop_reason":null,"stop_sequence":null,"usage":{\"input_tokens\":96,"output_tokens":0}}}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":0,"content_block":{\"type\":"thinking","thinking":"","signature":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":0,"delta":{\"type\":"thinking_delta","thinking":"E2E_AR_UNSIGNED_ONLY_THINKING"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":0}\n\nevent: content_block_start\ndata: {\"type\":"content_block_start","index":1,"content_block":{\"type\":"text","text":""}}\n\nevent: content_block_delta\ndata: {\"type\":"content_block_delta","index":1,"delta":{\"type\":"text_delta","text":"E2E_AR_UNSIGNED_ONLY_REPLY"}}\n\nevent: content_block_stop\ndata: {\"type\":"content_block_stop","index":1}\n\nevent: message_delta\ndata: {\"type\":"message_delta","delta":{\"stop_reason\":"end_turn","stop_sequence":null},"usage":{\"input_tokens\":96,"output_tokens":20}}\n\nevent: message_stop\ndata: {\"type\":"message_stop"}\n\n"
+      }
+    },
+    {
+      "id": "anthropic-reasoning-no-change-signature-400",
+      "maxMatches": 1,
+      "description": "I72 exact signature 400 但历史无 signed/redacted block。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Cold-restored unsigned reasoning is sent to the provider first; since existing cleanup is unchanged, there must be only one physical attempt."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_AR_NO_CHANGE_SIGNATURE_400"],
+        "bodyIncludes": ["E2E_AR_UNSIGNED_ONLY_THINKING"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 400,
+        "statusMessage": "Bad Request",
+        "headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "body": "{\"type\":"error","error":{\"type\":"invalid_request_error","message":"signature in thinking block is invalid"}}"
+      }
+    }
+  ]
+}

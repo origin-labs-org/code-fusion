@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-bot-continuous-worker",
+  "spec": "./test/e2e/conversation-session/conversation-session-bot-continuous-worker.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-bot-continuous-worker.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "queue-running",
+      "kind": "main",
+      "timingPolicy": "controlled-stream",
+      "source": "synthetic",
+      "syntheticReason": "Real CLI sequentially promotes group chat queues and ongoing direct message subscriptions; model and platform HTTP are isolated."
+    },
+    {
+      "id": "queue-next",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Real CLI sequentially promotes group chat queues and ongoing direct message subscriptions; model and platform HTTP are isolated."
+    },
+    {
+      "id": "private-first",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Real CLI sequentially promotes group chat queues and ongoing direct message subscriptions; model and platform HTTP are isolated."
+    },
+    {
+      "id": "private-next",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Real CLI sequentially promotes group chat queues and ongoing direct message subscriptions; model and platform HTTP are isolated."
+    }
+  ]
+}

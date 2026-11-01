@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-fork-edit-branch",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-fork-edit-branch.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-fork-edit-branch.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "v4-fork-edit-branch-title",
+      "description": "Case-local title generation response for E2E_V4_BRANCH_T1 initial send.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_BRANCH_T1 initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-branch-edited",
+      "description": "E09: New branch reply after edit rerun.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Edit rerun requires a new branch sentinel distinguishable from the original reply."
+    },
+    {
+      "id": "v4-branch-t1",
+      "description": "E09: Original first-round reply (old branch before edit).",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "fork-after-edit 需要旧分支哨兵证明 child 未继承被 rewind 的历史。"
+    }
+  ]
+}

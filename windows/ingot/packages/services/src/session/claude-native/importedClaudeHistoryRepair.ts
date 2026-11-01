@@ -1,0 +1,206 @@
+import { existsSync, readFileSync } from "node:fs";
+import type {
+  CfAgentMcpServer,
+  CfSessionImportHistory,
+  CfSessionImportMessage,
+  CfSessionStateSnapshot,
+} from "@origin-ai/cf-shared";
+import {
+  getLegacyDeletedTaskSessionSnapshotPath,
+  getLegacyTaskSessionSnapshotPath,
+} from "#src/paths.js";
+import { buildImportedClaudeTaskId } from "#src/session/claude-native/buildImportedClaudeTaskFile.js";
+import { claudeNativeSessionImportRepo } from "#src/session/claude-native/claudeNativeSessionImportRepo.js";
+import { parseClaudeNativeSessionFile } from "#src/session/claude-native/claudeNativeSessionImportParser.js";
+import { safeParseLegacyTaskSessionFile } from "#src/session/legacyTaskSessionFile.js";
+
+export interface ImportedClaudeHistoryRepairTarget {
+  workspacePath: string;
+  workspaceIdentity?: string;
+  taskId: string;
+}
+
+export interface ImportedClaudeHistoryRepairResult {
+  title?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  messages: CfSessionImportMessage[];
+  source: "legacySnapshot" | "nativeJsonl";
+}
+
+export interface ImportedClaudeSessionRepairTarget extends ImportedClaudeHistoryRepairTarget {
+  mcpServers?: CfAgentMcpServer[];
+}
+
+export interface ImportedClaudeSessionRepairCreateParams {
+  workspacePath: string;
+  workspaceIdentity?: string;
+  sessionId: string;
+  mode: CfSessionStateSnapshot["session"]["mode"];
+  model: CfSessionStateSnapshot["settings"]["model"]["current"];
+  thoughtLevel?: string;
+  persistence: "immediate";
+  mcpServers?: CfAgentMcpServer[];
+  importedHistory: CfSessionImportHistory;
+}
+
+function toImportMessages(
+  messages: readonly { role: string; content: string; timestamp?: number }[],
+): CfSessionImportMessage[] {
+  return messages
+    .filter((message) => message.role === "user" || message.role === "assistant")
+    .map((message) => ({
+      role: message.role as "user" | "assistant",
+      content: message.content,
+      timestamp: message.timestamp,
+    }));
+}
+
+function countAssistantMessages(messages: readonly CfSessionImportMessage[]): number {
+  return messages.filter((message) => message.role === "assistant").length;
+}
+
+export function shouldRepairImportedClaudeSnapshot(
+  snapshot: Pick<CfSessionStateSnapshot, "messages" | "runtime" | "session">,
+): boolean {
+  if (snapshot.session.status === "running" || snapshot.runtime.activeTurnId) {
+    return false;
+  }
+  const hasLegacyFixedMessageIds = snapshot.messages.some((message) =>
+    /^msg_import_\d+$/u.test(message.info.messageId),
+  );
+  if (!snapshot.session.sessionId.startsWith("claude-import-") && !hasLegacyFixedMessageIds) {
+    return false;
+  }
+  const hasAssistant = snapshot.messages.some((message) => message.info.role === "assistant");
+  if (!hasAssistant) {
+    return true;
+  }
+  if (snapshot.messages[0]?.info.role === "assistant") {
+    return true;
+  }
+  return hasLegacyFixedMessageIds;
+}
+
+function readLegacyImportedClaudeHistory(
+  target: ImportedClaudeHistoryRepairTarget,
+): ImportedClaudeHistoryRepairResult | null {
+  const snapshotPath = [
+    getLegacyTaskSessionSnapshotPath(
+      target.workspacePath,
+      target.taskId,
+      target.workspaceIdentity,
+    ),
+    getLegacyDeletedTaskSessionSnapshotPath(
+      target.workspacePath,
+      target.taskId,
+      target.workspaceIdentity,
+    ),
+  ].find((path) => existsSync(path));
+  if (!snapshotPath) {
+    return null;
+  }
+
+  const parsed = safeParseLegacyTaskSessionFile(
+    JSON.parse(readFileSync(snapshotPath, "utf-8")) as unknown,
+  );
+  if (!parsed.success || parsed.data.meta.migrationSource !== "claudeCode") {
+    return null;
+  }
+  const messages = toImportMessages(parsed.data.messages);
+  return messages.length > 0
+    ? {
+        title: parsed.data.meta.title,
+        createdAt: parsed.data.meta.createdAt,
+        updatedAt: parsed.data.meta.updatedAt,
+        messages,
+        source: "legacySnapshot",
+      }
+    : null;
+}
+
+async function readNativeImportedClaudeHistory(
+  target: ImportedClaudeHistoryRepairTarget,
+): Promise<ImportedClaudeHistoryRepairResult | null> {
+  const candidates = await claudeNativeSessionImportRepo.scanImportableSessions({
+    workspacePath: target.workspacePath,
+  });
+  const candidate = candidates.find(
+    (item) => buildImportedClaudeTaskId(item.workspacePath, item.sessionId) === target.taskId,
+  );
+  if (!candidate) {
+    return null;
+  }
+
+  const importedSource = await parseClaudeNativeSessionFile({
+    filePath: candidate.sourcePath,
+    workspacePath: candidate.workspacePath,
+    sessionId: candidate.sessionId,
+    sourcePath: candidate.sourcePath,
+    fallbackCreatedAt: candidate.createdAt,
+    fallbackUpdatedAt: candidate.updatedAt,
+  });
+  const messages = toImportMessages(importedSource.messages);
+  return messages.length > 0
+    ? {
+        title: importedSource.title,
+        createdAt: importedSource.createdAt,
+        updatedAt: importedSource.updatedAt,
+        messages,
+        source: "nativeJsonl",
+      }
+    : null;
+}
+
+export async function resolveImportedClaudeHistoryForRepair(
+  target: ImportedClaudeHistoryRepairTarget,
+): Promise<ImportedClaudeHistoryRepairResult | null> {
+  const legacyHistory = readLegacyImportedClaudeHistory(target);
+  if (legacyHistory && countAssistantMessages(legacyHistory.messages) > 0) {
+    return legacyHistory;
+  }
+
+  const nativeHistory = await readNativeImportedClaudeHistory(target);
+  if (
+    nativeHistory &&
+    countAssistantMessages(nativeHistory.messages) >= countAssistantMessages(legacyHistory?.messages ?? [])
+  ) {
+    return nativeHistory;
+  }
+
+  return legacyHistory;
+}
+
+export async function repairImportedClaudeSessionSnapshot<T>(params: {
+  snapshot: CfSessionStateSnapshot;
+  target: ImportedClaudeSessionRepairTarget;
+  createSession(input: ImportedClaudeSessionRepairCreateParams): Promise<T>;
+  onRepair?(history: ImportedClaudeHistoryRepairResult): void;
+}): Promise<T | null> {
+  if (!shouldRepairImportedClaudeSnapshot(params.snapshot)) {
+    return null;
+  }
+  const history = await resolveImportedClaudeHistoryForRepair(params.target);
+  if (!history) {
+    return null;
+  }
+
+  params.onRepair?.(history);
+  return params.createSession({
+    workspacePath: params.target.workspacePath,
+    workspaceIdentity: params.target.workspaceIdentity,
+    sessionId: params.target.taskId,
+    mode: params.snapshot.session.mode,
+    model: params.snapshot.settings.model.current,
+    thoughtLevel: params.snapshot.settings.thoughtLevel.current,
+    persistence: "immediate",
+    mcpServers: params.target.mcpServers,
+    importedHistory: {
+      source: "claudeCode",
+      title: history.title,
+      createdAt: history.createdAt,
+      updatedAt: history.updatedAt,
+      messages: history.messages,
+    },
+  });
+}

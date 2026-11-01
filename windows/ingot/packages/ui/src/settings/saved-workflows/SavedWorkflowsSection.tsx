@@ -1,0 +1,369 @@
+import { useSavedWorkflowProjectOptions } from "@/project-sidebar/useSavedWorkflowProjectOptions.js";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Plus, Settings2 } from "lucide-react";
+import {
+  TID_WORKFLOWS_CREATE_VIA_CHAT,
+  TID_WORKFLOWS_EMPTY,
+  TID_WORKFLOWS_OPEN_SETTINGS,
+  TID_WORKFLOWS_REFRESH,
+  readDynamicWorkflowOfferedMode,
+  resolveWorkspaceKey,
+} from "@origin-ai/cf-shared";
+import { Button } from "@/components/ui/button.js";
+import { Spinner } from "@/components/ui/spinner.js";
+import { cn } from "@/components/lib/utils.js";
+import { ControlHintTooltip } from "@/ControlHintTooltip.js";
+import { useCfIntl } from "@/i18n/IntlProvider.js";
+import { useTabStore } from "@/store/TabStoreProvider.js";
+import { useDynamicWorkflowAvailability } from "@/hooks/useDynamicWorkflowAvailability.js";
+import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
+import { type AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
+import { AutomationRefreshIcon } from "@/settings/AutomationDesignPrimitives.js";
+import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
+import { buildSavedWorkflowCreatePrompt } from "@/settings/saved-workflows/savedWorkflowLaunchPrompt.js";
+import { SavedWorkflowProjectGroup } from "@/settings/saved-workflows/SavedWorkflowProjectGroup.js";
+import { SavedWorkflowGlobalGroup } from "@/settings/saved-workflows/SavedWorkflowGlobalGroup.js";
+import type { SavedWorkflowLaunchTarget } from "@/settings/saved-workflows/useSavedWorkflowLauncher.js";
+import type {
+  SavedWorkflowGroupState,
+  SavedWorkflowProjectTarget,
+  SavedWorkflowsOpenArtifactParams,
+  SavedWorkflowsOpenRunParams,
+} from "@/settings/saved-workflows/savedWorkflowContract.js";
+
+export type {
+  SavedWorkflowProjectTarget,
+  SavedWorkflowsOpenArtifactParams,
+  SavedWorkflowsOpenRunParams,
+  SavedWorkflowLaunchTarget,
+};
+
+export type SavedWorkflowsOpenTarget =
+  | { scope?: "project"; workspaceKey: string; name: string }
+  | { scope: "global"; name: string };
+
+interface SavedWorkflowsSectionProps {
+  
+  header?: ReactNode;
+  
+  workspacePath?: string | null;
+  workspaceIdentity?: string;
+  
+  onNavigateToLaunchedRun?: (target: SavedWorkflowLaunchTarget, sessionId: string) => void;
+  
+  onCreateViaChat?: (prompt: string, target: SavedWorkflowProjectTarget) => void;
+  
+  onOpenWorkflowRun?: (params: SavedWorkflowsOpenRunParams) => void;
+  
+  onOpenWorkflowArtifact?: (params: SavedWorkflowsOpenArtifactParams) => void;
+  
+  openWorkflow?: SavedWorkflowsOpenTarget | null;
+  onOpenWorkflowConsumed?: () => void;
+}
+
+type SavedWorkflowsView =
+  | { mode: "list" }
+  | { mode: "detail"; scope: "project"; workspaceKey: string; name: string }
+  | { mode: "detail"; scope: "global"; name: string };
+
+const GLOBAL_READINESS_KEY = "global";
+
+function resolveOptionKey(option: AutomationWorkspaceOption): string {
+  return resolveWorkspaceKey({
+    workspacePath: option.workspacePath,
+    ...(option.workspaceIdentity ? { workspaceIdentity: option.workspaceIdentity } : {}),
+  });
+}
+
+export function SavedWorkflowsSection({
+  header,
+  workspacePath,
+  workspaceIdentity,
+  onNavigateToLaunchedRun,
+  onCreateViaChat,
+  onOpenWorkflowRun,
+  onOpenWorkflowArtifact,
+  openWorkflow,
+  onOpenWorkflowConsumed,
+}: SavedWorkflowsSectionProps) {
+  const { intl, locale } = useCfIntl();
+  const openSettingsTab = useTabStore((store) => store.openSettingsTab);
+  const dynamicWorkflowConfig = useDynamicWorkflowAvailability().config;
+  const dynamicWorkflowMode = dynamicWorkflowConfig?.mode;
+  const showWorkflowSettings =
+    dynamicWorkflowConfig !== null &&
+    readDynamicWorkflowOfferedMode(dynamicWorkflowConfig) !== undefined;
+  const handleOpenWorkflowSettings = useCallback(() => {
+    setPendingSettingsSectionIntent("general");
+    openSettingsTab();
+  }, [openSettingsTab]);
+  const projects = useSavedWorkflowProjectOptions();
+  const localProjects = useMemo(
+    () => projects.filter((project) => !project.workspaceIdentity),
+    [projects],
+  );
+
+  const [view, setView] = useState<SavedWorkflowsView>({ mode: "list" });
+  const [refreshSeq, setRefreshSeq] = useState(0);
+  const [readiness, setReadiness] = useState<Record<string, SavedWorkflowGroupState>>({});
+
+  const activeKey = useMemo(
+    () =>
+      workspacePath
+        ? resolveWorkspaceKey({
+            workspacePath,
+            ...(workspaceIdentity ? { workspaceIdentity } : {}),
+          })
+        : null,
+    [workspaceIdentity, workspacePath],
+  );
+
+  const handleStateChange = useCallback((key: string, next: SavedWorkflowGroupState) => {
+    setReadiness((current) => {
+      const prev = current[key];
+      if (
+        prev &&
+        prev.loaded === next.loaded &&
+        prev.empty === next.empty &&
+        prev.count === next.count
+      ) {
+        return current;
+      }
+      return { ...current, [key]: next };
+    });
+  }, []);
+
+  const handleMoved = useCallback(() => setRefreshSeq((seq) => seq + 1), []);
+
+  const consumedRef = useRef<SavedWorkflowsOpenTarget | null>(null);
+  useEffect(() => {
+    if (!openWorkflow) {
+      consumedRef.current = null;
+      return;
+    }
+    if (consumedRef.current === openWorkflow) return;
+    consumedRef.current = openWorkflow;
+    if (openWorkflow.scope === "global") {
+      setView({ mode: "detail", scope: "global", name: openWorkflow.name });
+    } else if (
+      projects.some((project) => resolveOptionKey(project) === openWorkflow.workspaceKey)
+    ) {
+      setView({
+        mode: "detail",
+        scope: "project",
+        workspaceKey: openWorkflow.workspaceKey,
+        name: openWorkflow.name,
+      });
+    }
+    onOpenWorkflowConsumed?.();
+  }, [onOpenWorkflowConsumed, openWorkflow, projects]);
+
+  useEffect(() => {
+    if (
+      view.mode === "detail" &&
+      view.scope === "project" &&
+      !projects.some((project) => resolveOptionKey(project) === view.workspaceKey)
+    ) {
+      setView({ mode: "list" });
+    }
+  }, [projects, view]);
+
+  const emptyCardTarget = useMemo<SavedWorkflowProjectTarget | null>(() => {
+    const active = projects.find((project) => resolveOptionKey(project) === activeKey);
+    const target = active ?? projects[0];
+    if (!target) return null;
+    return {
+      projectId: target.projectId,
+      hostId: target.hostId,
+      workspacePath: target.workspacePath,
+      ...(target.workspaceIdentity ? { workspaceIdentity: target.workspaceIdentity } : {}),
+    };
+  }, [activeKey, projects]);
+
+  const handleCreateFromEmpty = useCallback(() => {
+    if (!emptyCardTarget) return;
+    onCreateViaChat?.(buildSavedWorkflowCreatePrompt(locale), emptyCardTarget);
+  }, [emptyCardTarget, locale, onCreateViaChat]);
+
+  const globalGroupCommonProps = {
+    refreshSeq,
+    onStateChange: handleStateChange,
+    onNavigateToLaunchedRun,
+    onCreateViaChat,
+    onOpenWorkflowRun,
+    onOpenWorkflowArtifact,
+    localProjects,
+    activeProjectKey: activeKey,
+    onMoved: handleMoved,
+  };
+
+  if (view.mode === "detail" && view.scope === "global") {
+    return (
+      <SavedWorkflowGlobalGroup
+        {...globalGroupCommonProps}
+        mode={{ kind: "detail", name: view.name }}
+        onOpenDetail={(name) => setView({ mode: "detail", scope: "global", name })}
+        onBack={() => setView({ mode: "list" })}
+      />
+    );
+  }
+  if (view.mode === "detail") {
+    const project = projects.find((candidate) => resolveOptionKey(candidate) === view.workspaceKey);
+    if (project) {
+      return (
+        <SavedWorkflowProjectGroup
+          key={view.workspaceKey}
+          project={project}
+          isCurrent={activeKey === view.workspaceKey}
+          refreshSeq={refreshSeq}
+          mode={{ kind: "detail", name: view.name }}
+          onStateChange={handleStateChange}
+          onOpenDetail={(name) =>
+            setView({ mode: "detail", scope: "project", workspaceKey: view.workspaceKey, name })
+          }
+          onBack={() => setView({ mode: "list" })}
+          onNavigateToLaunchedRun={onNavigateToLaunchedRun}
+          onCreateViaChat={onCreateViaChat}
+          onOpenWorkflowRun={onOpenWorkflowRun}
+          onOpenWorkflowArtifact={onOpenWorkflowArtifact}
+        />
+      );
+    }
+  }
+
+  const globalReady = readiness[GLOBAL_READINESS_KEY];
+  const anyLoaded =
+    Boolean(globalReady?.loaded) ||
+    projects.some((project) => readiness[resolveOptionKey(project)]?.loaded);
+  const allProjectsLoaded =
+    projects.length > 0 &&
+    projects.every((project) => readiness[resolveOptionKey(project)]?.loaded);
+  const allProjectsEmpty =
+    allProjectsLoaded && projects.every((project) => readiness[resolveOptionKey(project)]?.empty);
+  const totalCount = projects.reduce(
+    (sum, project) => {
+      const entry = readiness[resolveOptionKey(project)];
+      return sum + (entry?.loaded ? entry.count : 0);
+    },
+    globalReady?.loaded ? globalReady.count : 0,
+  );
+
+  return (
+    <div data-automations-content className={cn(SETTINGS_FRAME_CONTENT_CLASSNAME, "flex flex-col")}>
+      {header}
+
+      <div className="mt-8 flex items-center justify-between">
+        <h2 className="text-ui-base font-medium leading-5 text-foreground-subtle">
+          {intl.formatMessage({ id: "workflows.hub.sectionTitle" })}
+          {totalCount > 0 ? (
+            <span className="ml-1 font-normal text-foreground-subtlest">{totalCount}</span>
+          ) : null}
+        </h2>
+        <div className="flex items-center gap-3">
+          {showWorkflowSettings ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              data-testid={TID_WORKFLOWS_OPEN_SETTINGS}
+              className="text-foreground-subtle hover:text-foreground"
+              onClick={handleOpenWorkflowSettings}
+            >
+              <Settings2 className="size-4" aria-hidden="true" />
+              <span>{intl.formatMessage({ id: "workflows.hub.openSettings" })}</span>
+              {dynamicWorkflowMode ? (
+                <span className="ml-0.5 text-ui-sm text-foreground-subtlest">
+                  {intl.formatMessage({
+                    id: `settings.dynamicWorkflow.option.${dynamicWorkflowMode}`,
+                  })}
+                </span>
+              ) : null}
+            </Button>
+          ) : null}
+          <ControlHintTooltip title={intl.formatMessage({ id: "workflows.hub.refresh" })}>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label={intl.formatMessage({ id: "workflows.hub.refresh" })}
+              data-testid={TID_WORKFLOWS_REFRESH}
+              onClick={() => setRefreshSeq((seq) => seq + 1)}
+            >
+              <AutomationRefreshIcon className="size-3.5" aria-hidden="true" />
+            </Button>
+          </ControlHintTooltip>
+        </div>
+      </div>
+
+      {!anyLoaded ? (
+        <div className="mt-8 flex h-40 items-center justify-center">
+          <Spinner className="size-5" />
+        </div>
+      ) : null}
+
+      {}
+      <div className={cn("flex flex-col", anyLoaded ? "mt-5" : "hidden")}>
+        <SavedWorkflowGlobalGroup
+          {...globalGroupCommonProps}
+          mode={{ kind: "list" }}
+          onOpenDetail={(name) => setView({ mode: "detail", scope: "global", name })}
+          onBack={() => setView({ mode: "list" })}
+        />
+
+        {projects.length === 0 ? (
+          <p className="mt-8 text-ui-base text-foreground-subtlest">
+            {intl.formatMessage({ id: "workflows.hub.noWorkspace" })}
+          </p>
+        ) : allProjectsEmpty ? (
+          <div
+            data-testid={TID_WORKFLOWS_EMPTY}
+            className="mt-8 flex h-[226px] w-full items-center justify-center rounded-2xl border border-card-border bg-background px-4"
+          >
+            <div className="flex translate-y-2 flex-col items-center gap-5">
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <p className="text-ui-base font-medium leading-5 text-foreground-subtlest">
+                  {intl.formatMessage({ id: "workflows.hub.empty.title" })}
+                </p>
+                <p className="max-w-[420px] text-ui-base leading-5 text-foreground-subtlest">
+                  {intl.formatMessage({ id: "workflows.hub.empty.hint" })}
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                data-icon="inline-start"
+                data-testid={TID_WORKFLOWS_CREATE_VIA_CHAT}
+                onClick={handleCreateFromEmpty}
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                {intl.formatMessage({ id: "workflows.hub.createViaChat" })}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {projects.map((project) => {
+          const workspaceKey = resolveOptionKey(project);
+          return (
+            <SavedWorkflowProjectGroup
+              key={workspaceKey}
+              project={project}
+              isCurrent={activeKey === workspaceKey}
+              refreshSeq={refreshSeq}
+              mode={{ kind: "list" }}
+              onStateChange={handleStateChange}
+              onOpenDetail={(name) =>
+                setView({ mode: "detail", scope: "project", workspaceKey, name })
+              }
+              onBack={() => setView({ mode: "list" })}
+              onNavigateToLaunchedRun={onNavigateToLaunchedRun}
+              onCreateViaChat={onCreateViaChat}
+              onOpenWorkflowRun={onOpenWorkflowRun}
+              onOpenWorkflowArtifact={onOpenWorkflowArtifact}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}

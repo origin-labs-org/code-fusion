@@ -1,0 +1,2187 @@
+import { SettingsMachinesProvider } from "@/settings/SettingsMachine.js";
+import { getWorkspaceSourceServerId } from "@/conversation-workspace-target/sourceIdentity.js";
+import { RemoteConnectionNavigationDot } from "@/remote-connection/RemoteConnectionNavigationDot.js";
+import { resolveRemoteConnectionNavigationPresentation } from "@/lib/remoteConnectionPresentation.js";
+/* oxlint-disable eslint(max-lines) */
+import { ArrowLeft, Rocket, type LucideIcon } from "lucide-react";
+import { useStore } from "zustand";
+import {
+  marketingNavigation,
+  finishMarketingNavigation,
+  marketingSettingsSections,
+} from "@/lib/marketingNavigation.js";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
+import type {
+  AppSettings,
+  DesktopCloseToTrayCapability,
+  IntegratedTerminalShellOption,
+  IntegratedTerminalShellSelection,
+  Locale,
+  UsageEntitlementSnapshot,
+  UserInfo,
+  CfInteractionBehavior,
+} from "@origin-ai/cf-shared";
+import { BUILTIN_MODEL_PROVIDER_IDS } from "@origin-ai/cf-shared";
+import {
+  TID_SETTINGS_BACK_BUTTON,
+  TID_SETTINGS_PAGE,
+  TID_SETTINGS_SECTION_NAV,
+  TID_SETTINGS_USAGE_TAB,
+  testId,
+} from "@origin-ai/cf-shared/test-ids";
+import { Button } from "@/components/ui/button.js";
+import { toast } from "@/components/ui/toast.js";
+import { DesktopWindowFrame } from "@/DesktopWindowFrame.js";
+import { useCfIntl } from "@/i18n/IntlProvider.js";
+import { usePlatform } from "@/hooks/usePlatform.js";
+import { logger } from "@/logger.js";
+import { getPathLeaf } from "@/lib/path.js";
+import { useProviderSettingsView } from "@/hooks/useProviderSettingsView.js";
+import { useUsageEntitlement } from "@/hooks/useUsageEntitlement.js";
+import {
+  addPendingSettingsSectionListener,
+  clearPendingSettingsPluginOrigin,
+  clearPendingSettingsPluginScopeKey,
+  consumeInitialSettingsSection,
+  consumePendingSettingsSourceServerId,
+  consumePendingSettingsSourceServerDetails,
+  consumePendingSettingsPluginOrigin,
+  consumePendingSettingsPluginScopeKey,
+  consumePendingSettingsPluginTab,
+  consumePendingSettingsModelProviderTarget,
+  consumePendingSettingsUsageTab,
+  resolveSettingsSection,
+  setPendingSettingsSectionIntent,
+  shouldFallbackSettingsUsageTabToApp,
+  writeLastSettingsSectionPreference,
+  type SettingsModelProviderTarget,
+} from "@/lib/settingsNavigation.js";
+import { readSidebarUsageCodingPlanSourcePreference } from "@/lib/sidebarUsageCodingPlanProviderPreference.js";
+import {
+  resolveEntitledAccountProviderAccess,
+  resolveEntitledAccountProviderAccessFingerprint,
+} from "@/lib/accountProviderAccess.js";
+import { buildUsageEntitlementCacheKey } from "@/lib/usageEntitlementCache.js";
+import { ArchiveManagement, useOptionalProjectDirectory } from "@/project-sidebar/index.js";
+import { resolveRecentRemoteProjectPreference } from "@/project-sidebar/remote-project-connection.js";
+import { ModelProviderSection } from "@/settings/ModelProviderSection.js";
+import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
+import { useEnterpriseCodingPlanProducts } from "@/settings/model-provider-section/useEnterpriseCodingPlanProducts.js";
+import { UsageStatsSection, type UsageStatsSectionTab } from "@/settings/UsageStatsSection.js";
+import {
+  buildCodingPlanUsageSources,
+  type CodingPlanUsageSource,
+} from "@/settings/usage-stats/CodingPlanUsagePanel.js";
+import { buildPersonalCodingPlanUsageSource } from "@/lib/codingPlanUsageSources.js";
+import { SubagentsSection } from "@/settings/SubagentsSection.js";
+import { AutomationsSection } from "@/settings/AutomationsSection.js";
+import { SegmentPill } from "@/settings/PluginStoreListView.js";
+import { PluginsSection } from "@/settings/PluginsSection.js";
+import { HooksSection } from "@/settings/HooksSection.js";
+import { WorkspaceFileSearchSection } from "@/settings/WorkspaceFileSearchSection.js";
+import { MemorySettingsSection } from "@/settings/MemorySettingsSection.js";
+import { BrowserSettingsSection } from "@/settings/BrowserSettingsSection.js";
+import { ComputerUseSection } from "@/settings/ComputerUseSection.js";
+import { ShortcutSettingsSection } from "@/settings/ShortcutSettingsSection.js";
+import { AboutSection } from "@/settings/about/AboutSection.js";
+import { MigrationSection } from "@/settings/MigrationSection.js";
+import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
+import {
+  SettingsBreadcrumbProvider,
+  SettingsHeaderBreadcrumb,
+  type SettingsBreadcrumbItem,
+} from "@/settings/SettingsHeaderBreadcrumb.js";
+import { useCfStore } from "@/store/StoreProvider.js";
+import { useTabStore } from "@/store/TabStoreProvider.js";
+import { isWorkspaceTab } from "@/store/tabStore.js";
+import type { Theme } from "@/useTheme.js";
+import { WindowsTopLeftLogo } from "@/WindowsTopLeftLogo.js";
+
+import { DesktopWindowControls } from "@/DesktopWindowControls.js";
+import { WorkspaceHelpMenuButton } from "@/WorkspaceHelpMenuButton.js";
+import { WorkspaceSidebarFooter } from "@/WorkspaceSidebarFooter.js";
+import { ControlHintTooltip } from "@/ControlHintTooltip.js";
+import { cn } from "@/components/lib/utils.js";
+import { useSelectDirectory } from "@/hooks/usePlatform.js";
+import { ServiceProvider, useServices } from "@/hooks/useServices.js";
+import type { AppToolSearchMode } from "@origin-ai/cf-shared";
+import { useSettings } from "@/hooks/useSettingService.js";
+import type { CreateTaskRequest, RemoteConnectionOpenPreference } from "@/app-shell/types.js";
+import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
+import { resolveModelProviderConnectivityWorkspacePath } from "@/lib/modelProviderConnectivityTarget.js";
+import {
+  createSettingsPageConfig,
+  GeneralSectionContent,
+  GeneralSectionHeader,
+  TaskAutoArchiveSettings,
+  isSettingsSectionAvailable,
+  resolveSettingsSectionForPlatform,
+} from "@/settingsPageHelpers.js";
+import { SourceServerManagementPanel } from "@/settings/SourceServerManagementPanel.js";
+import { useSourceServerManagementSnapshot } from "@/hooks/useSourceServerManagementSnapshot.js";
+import { useOptionalRemoteWorkspaceController } from "@/remote/useRemoteWorkspaceController.js";
+import { AppearanceSectionContent } from "./settingsCodePreview.js";
+import type { SettingsSectionId } from "@/lib/settingsNavigation.js";
+import { requestPluginStoreOpen } from "@/lib/pluginStoreNavigation.js";
+import {
+  runUserAction,
+  runUserActionAsync,
+  type UserActionResult,
+  type UserActionTrigger,
+} from "@/lib/userActionTelemetry.js";
+import type { SettingsUserActionFeatureId } from "@/lib/userActionTraceCatalog.js";
+
+function runSettingsActionAsync<T>(options: {
+  featureId: SettingsUserActionFeatureId;
+  action: string;
+  trigger: UserActionTrigger;
+  operation: () => Promise<T>;
+  completed: UserActionResult;
+  failureStage?: string;
+}): Promise<T> {
+  return runUserActionAsync({
+    input: {
+      featureId: options.featureId,
+      action: options.action,
+      trigger: options.trigger,
+    },
+    operation: options.operation,
+    completed: options.completed,
+    failureStage: options.failureStage ?? "settings_commit",
+  });
+}
+
+function SettingsUsageProviderTabs({
+  activeTab,
+  codingPlanSources,
+  onTabChange,
+}: {
+  activeTab: UsageStatsSectionTab;
+  codingPlanSources: CodingPlanUsageSource[];
+  onTabChange: (tab: UsageStatsSectionTab) => void;
+}) {
+  const { intl } = useCfIntl();
+  const tabItems = [
+    {
+      id: "app" as const,
+      label: intl.formatMessage({ id: "settings.usage.tab.appUsage" }),
+    },
+    ...codingPlanSources.map((source, index) => ({
+      id: createSettingsUsageCodingPlanTabId(source.id),
+      label: resolveSettingsUsageCodingPlanTabLabel({
+        defaultLabel: intl.formatMessage({
+          id: "settings.usage.tab.codingPlan",
+        }),
+        hasMultiplePersonalSources:
+          codingPlanSources.filter((item) => !isTeamCodingPlanUsageSource(item)).length > 1,
+        index,
+        source,
+      }),
+    })),
+  ];
+  const visibleActiveTab =
+    activeTab === "codingPlan" && codingPlanSources[0]
+      ? createSettingsUsageCodingPlanTabId(codingPlanSources[0].id)
+      : activeTab;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {tabItems.map((item) => (
+        <SegmentPill
+          key={item.id}
+          active={visibleActiveTab === item.id}
+          label={item.label}
+          testId={testId(TID_SETTINGS_USAGE_TAB, item.id)}
+          onClick={() => onTabChange(item.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function isTeamCodingPlanUsageSource(source: CodingPlanUsageSource): boolean {
+  return "planKind" in source.accountAccess && source.accountAccess.planKind === "team-coding-plan";
+}
+
+function createSettingsUsageCodingPlanTabId(sourceId: string): UsageStatsSectionTab {
+  return `codingPlan:${sourceId}`;
+}
+
+function resolveSettingsUsageCodingPlanSourceId(tab: UsageStatsSectionTab): string | null {
+  return tab.startsWith("codingPlan:") ? tab.slice("codingPlan:".length) : null;
+}
+
+function resolveSettingsUsageCodingPlanTabLabel({
+  defaultLabel,
+  hasMultiplePersonalSources,
+  source,
+}: {
+  defaultLabel: string;
+  hasMultiplePersonalSources: boolean;
+  index: number;
+  source: CodingPlanUsageSource;
+}): string {
+  if (isTeamCodingPlanUsageSource(source)) {
+    return source.label.replace(/^BigModel\s*-\s*/i, "").trim() || source.label;
+  }
+  if (hasMultiplePersonalSources) {
+    return source.label.replace(/\s*-\s*Coding Plan$/i, "").trim() || source.label;
+  }
+  return defaultLabel;
+}
+
+function hasActiveCodingPlanSnapshot(
+  snapshot: UsageEntitlementSnapshot | null,
+  providerId: string,
+): boolean {
+  return (
+    snapshot?.provider?.id === providerId &&
+    snapshot.unavailableReason !== "no_plan" &&
+    (Boolean(snapshot.subscription?.details.length) ||
+      snapshot.unavailableReason === "unavailable")
+  );
+}
+
+function SettingsSidebarButton({
+  icon: Icon,
+  label,
+  active,
+  children,
+  className,
+  ...buttonProps
+}: {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  children?: ReactNode;
+  className?: string;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <ControlHintTooltip title={label} side="right" align="center">
+      <button
+        {...buttonProps}
+        type={buttonProps.type ?? "button"}
+        aria-label={label}
+        className={cn(
+          "flex h-8 w-full items-center gap-2 rounded-xl px-2.5 text-left transition-colors",
+          "max-lg:mx-auto max-lg:size-10 max-lg:justify-center max-lg:px-0",
+          active
+            ? "bg-surface-hover text-foreground"
+            : "text-remote-foreground-muted hover:bg-surface-hover hover:text-foreground",
+          className,
+        )}
+      >
+        <span className="flex size-4 shrink-0 items-center justify-center text-current">
+          <Icon className="size-4 text-foreground" />
+        </span>
+        <span className="min-w-0 flex-1 max-lg:sr-only">
+          {children ?? <span className="truncate text-ui-base text-foreground">{label}</span>}
+        </span>
+      </button>
+    </ControlHintTooltip>
+  );
+}
+
+export function SettingsPage({
+  isDesktop,
+  isWindowsDesktop,
+  isMacDesktop,
+  isWebRemoteControl = false,
+  windowsWindowControlsRightPaddingPx: _windowsWindowControlsRightPaddingPx,
+  captionWorkspacePath,
+  onBack,
+  onCreateTask,
+  onOpenWorkspace,
+  onOpenRemoteWorkspace,
+  allowOpenWorkspace = true,
+  onLogin,
+  onLogout,
+  user,
+}: {
+  isDesktop?: boolean;
+  isWindowsDesktop?: boolean;
+  isMacDesktop?: boolean;
+  isWebRemoteControl?: boolean;
+  windowsWindowControlsRightPaddingPx?: number;
+  captionWorkspacePath?: string | null;
+  onBack?: () => void;
+  onCreateTask?: (request?: CreateTaskRequest) => void;
+  onOpenWorkspace?: () => void;
+  onOpenRemoteWorkspace?: (preference?: RemoteConnectionOpenPreference) => void;
+  
+  allowOpenWorkspace?: boolean;
+  onLogin?: () => void;
+  onLogout?: () => void;
+  user?: UserInfo | null;
+}) {
+  const { intl, localePreference, setLocalePreference } = useCfIntl();
+  const { settingsSectionGroups, settingsSections } = useMemo(
+    () =>
+      createSettingsPageConfig({
+        isDesktop: Boolean(isDesktop),
+        isMacDesktop: Boolean(isMacDesktop),
+        isWindowsDesktop: Boolean(isWindowsDesktop),
+      }),
+    [isDesktop, isMacDesktop, isWindowsDesktop],
+  );
+  const isLinuxDesktop = Boolean(isDesktop && !isMacDesktop && !isWindowsDesktop);
+  const usesInlineWindowControls = Boolean(isWindowsDesktop || isLinuxDesktop);
+  const platform = usePlatform();
+  const remoteWorkspaceController = useOptionalRemoteWorkspaceController();
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>(() => {
+    const initialSection = consumeInitialSettingsSection("general");
+    const visibleInitialSection = resolveSettingsSectionForPlatform(
+      initialSection,
+      settingsSections,
+    );
+    writeLastSettingsSectionPreference(visibleInitialSection);
+    return visibleInitialSection;
+  });
+  const [targetSourceServerId, setTargetSourceServerId] = useState(
+    consumePendingSettingsSourceServerId,
+  );
+  const [targetSourceServerDetails, setTargetSourceServerDetails] = useState(
+    consumePendingSettingsSourceServerDetails,
+  );
+  const [pluginTab, setPluginTab] = useState(() => consumePendingSettingsPluginTab());
+  const [linuxCloseToTrayCapability, setLinuxCloseToTrayCapability] =
+    useState<DesktopCloseToTrayCapability | null>(null);
+  useEffect(() => {
+    if (!isLinuxDesktop) {
+      return;
+    }
+    let cancelled = false;
+    platform
+      .getCloseToTrayCapability?.()
+      .then((capability) => {
+        if (!cancelled) {
+          setLinuxCloseToTrayCapability(capability);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isLinuxDesktop, platform]);
+  const linuxCloseToTray = isLinuxDesktop
+    ? {
+        disabled: linuxCloseToTrayCapability === null || !linuxCloseToTrayCapability.supported,
+        unavailable: linuxCloseToTrayCapability?.supported === false,
+        gnomeLikeHint:
+          linuxCloseToTrayCapability?.supported === false &&
+          linuxCloseToTrayCapability.gnomeLikeWithoutTray,
+      }
+    : undefined;
+  const marketingRequest = useStore(marketingNavigation, (state) => state.request);
+  useEffect(() => {
+    if (marketingRequest?.target.page !== "settings") return;
+    const target = marketingRequest.target;
+    const section = target.section ? marketingSettingsSections[target.section] : activeSection;
+    if (!settingsSections.some((item) => item.id === section)) {
+      finishMarketingNavigation(marketingRequest.id, new Error("marketing_navigation_unavailable"));
+    } else if (activeSection === section && !target.provider_id) {
+      finishMarketingNavigation(marketingRequest.id);
+    }
+  }, [activeSection, marketingRequest, settingsSections]);
+  const [pluginNavigationOrigin, setPluginNavigationOrigin] = useState(() =>
+    consumePendingSettingsPluginOrigin(),
+  );
+  const [pluginScopeKey, setPluginScopeKey] = useState(() =>
+    consumePendingSettingsPluginScopeKey(),
+  );
+  const [settingsSectionNavigationVersion, setSettingsSectionNavigationVersion] = useState(0);
+  useEffect(() => {
+    clearPendingSettingsPluginOrigin();
+    clearPendingSettingsPluginScopeKey();
+  }, []);
+  const [settingsBreadcrumbItems, setSettingsBreadcrumbItems] = useState<
+    readonly SettingsBreadcrumbItem[]
+  >([]);
+  const interfaceMode = useCfStore((state) => state.interfaceMode);
+  const setInterfaceMode = useCfStore((state) => state.setInterfaceMode);
+  const theme = useCfStore((state) => state.theme);
+  const setTheme = useCfStore((state) => state.setTheme);
+  const codePreviewSettings = useCfStore((state) => state.codePreviewSettings);
+  const setCodePreviewSettings = useCfStore((state) => state.setCodePreviewSettings);
+  const uiFontSizePx = useCfStore((state) => state.uiFontSizePx);
+  const setUiFontSizePx = useCfStore((state) => state.setUiFontSizePx);
+  const notificationEnabled = useCfStore((state) => state.notificationEnabled);
+  const setNotificationEnabled = useCfStore((state) => state.setNotificationEnabled);
+  const notificationSoundEnabled = useCfStore((state) => state.notificationSoundEnabled);
+  const setNotificationSoundEnabled = useCfStore((state) => state.setNotificationSoundEnabled);
+  const usageProviderSettingsRead = useProviderSettingsView();
+  const usageProviderSettingsView =
+    usageProviderSettingsRead.state.status === "ready"
+      ? usageProviderSettingsRead.state.view
+      : null;
+  const usageProviderSettingsLoading = usageProviderSettingsRead.state.status !== "ready";
+  const usageZaiProvider = usageProviderSettingsView?.providers.find(
+    (provider) => provider.providerId === BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+  );
+  const usageBigmodelProvider = usageProviderSettingsView?.providers.find(
+    (provider) => provider.providerId === BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+  );
+  const usageZaiProviderAccess = resolveEntitledAccountProviderAccess(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+  );
+  const usageBigmodelProviderAccess = resolveEntitledAccountProviderAccess(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+  );
+  const usageZaiProviderFingerprint = resolveEntitledAccountProviderAccessFingerprint(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+  );
+  const usageBigmodelProviderFingerprint = resolveEntitledAccountProviderAccessFingerprint(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+  );
+  const usageZaiTeamProviderFingerprint = resolveEntitledAccountProviderAccessFingerprint(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan,
+  );
+  const usageBigmodelTeamProviderFingerprint = resolveEntitledAccountProviderAccessFingerprint(
+    usageProviderSettingsView,
+    BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
+  );
+  const usageZaiEntitlement = useUsageEntitlement({
+    enabled:
+      activeSection === "usage" &&
+      !usageProviderSettingsLoading &&
+      Boolean(usageZaiProviderFingerprint),
+    includeSubscription: true,
+    preferredProviderId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+    accountAccess: usageZaiProviderAccess?.access,
+    allowDisabledPreferredProvider: true,
+    requirePreferredProvider: true,
+    allowEnvApiKey: false,
+    cacheKey: buildUsageEntitlementCacheKey({
+      providerId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+      providerFingerprint: usageZaiProviderFingerprint,
+    }),
+    refreshOnMount: true,
+  });
+  const usageBigmodelEntitlement = useUsageEntitlement({
+    enabled:
+      activeSection === "usage" &&
+      !usageProviderSettingsLoading &&
+      Boolean(usageBigmodelProviderFingerprint),
+    includeSubscription: true,
+    preferredProviderId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+    accountAccess: usageBigmodelProviderAccess?.access,
+    allowDisabledPreferredProvider: true,
+    requirePreferredProvider: true,
+    allowEnvApiKey: false,
+    cacheKey: buildUsageEntitlementCacheKey({
+      providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+      providerFingerprint: usageBigmodelProviderFingerprint,
+    }),
+    refreshOnMount: true,
+  });
+  const usageBigmodelEnterpriseProducts = useEnterpriseCodingPlanProducts({
+    enabled: !usageProviderSettingsLoading && Boolean(usageBigmodelTeamProviderFingerprint),
+    authenticated: true,
+    family: "bigmodel",
+  });
+  const usageZaiEnterpriseProducts = useEnterpriseCodingPlanProducts({
+    enabled: !usageProviderSettingsLoading && Boolean(usageZaiTeamProviderFingerprint),
+    authenticated: true,
+    family: "zai",
+  });
+  const usageSubscribedTeamProducts = useMemo(
+    () => [
+      ...(usageBigmodelEnterpriseProducts.snapshot?.productList.filter(
+        (product) => product.subscribed === true,
+      ) ?? []),
+      ...(usageZaiEnterpriseProducts.snapshot?.productList.filter(
+        (product) => product.subscribed === true,
+      ) ?? []),
+    ],
+    [
+      usageBigmodelEnterpriseProducts.snapshot?.productList,
+      usageZaiEnterpriseProducts.snapshot?.productList,
+    ],
+  );
+  const [usageActiveTab, setUsageActiveTab] = useState<UsageStatsSectionTab>(() => {
+    const pendingTab = consumePendingSettingsUsageTab();
+    return pendingTab === "codingPlan" ? "codingPlan" : (pendingTab ?? "app");
+  });
+  const usagePersonalCodingPlanSources = useMemo(() => {
+    const sources: CodingPlanUsageSource[] = [];
+    if (
+      usageZaiProviderAccess &&
+      hasActiveCodingPlanSnapshot(
+        usageZaiEntitlement.snapshot,
+        BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+      )
+    ) {
+      sources.push(
+        buildPersonalCodingPlanUsageSource({
+          providerId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+          accountAccess: usageZaiProviderAccess.access,
+          label: usageZaiProvider?.providerName,
+        }),
+      );
+    }
+    if (
+      usageBigmodelProviderAccess &&
+      hasActiveCodingPlanSnapshot(
+        usageBigmodelEntitlement.snapshot,
+        BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+      )
+    ) {
+      sources.push(
+        buildPersonalCodingPlanUsageSource({
+          providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+          accountAccess: usageBigmodelProviderAccess.access,
+          label: usageBigmodelProvider?.providerName,
+        }),
+      );
+    }
+    return sources;
+  }, [
+    usageBigmodelEntitlement.snapshot,
+    usageBigmodelProvider,
+    usageBigmodelProviderAccess,
+    usageZaiEntitlement.snapshot,
+    usageZaiProvider,
+    usageZaiProviderAccess,
+  ]);
+  const usageTeamCodingPlanSources = useMemo(
+    () =>
+      buildCodingPlanUsageSources({
+        accountAccesses: {
+          ...(resolveEntitledAccountProviderAccess(
+            usageProviderSettingsView,
+            BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan,
+          )?.access
+            ? {
+                zai: resolveEntitledAccountProviderAccess(
+                  usageProviderSettingsView,
+                  BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan,
+                )!.access,
+              }
+            : {}),
+          ...(resolveEntitledAccountProviderAccess(
+            usageProviderSettingsView,
+            BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
+          )?.access
+            ? {
+                bigmodel: resolveEntitledAccountProviderAccess(
+                  usageProviderSettingsView,
+                  BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
+                )!.access,
+              }
+            : {}),
+        },
+        subscribedTeamProducts: usageSubscribedTeamProducts,
+      }),
+    [usageProviderSettingsView, usageSubscribedTeamProducts],
+  );
+  const usageCodingPlanSources = useMemo(
+    () => [...usagePersonalCodingPlanSources, ...usageTeamCodingPlanSources],
+    [usagePersonalCodingPlanSources, usageTeamCodingPlanSources],
+  );
+  const selectedUsageCodingPlanSourceId =
+    usageActiveTab === "codingPlan"
+      ? (usageCodingPlanSources[0]?.id ?? null)
+      : resolveSettingsUsageCodingPlanSourceId(usageActiveTab);
+  const selectedUsageCodingPlanSource =
+    usageCodingPlanSources.find((source) => source.id === selectedUsageCodingPlanSourceId) ?? null;
+  const showUsageCodingPlanTab = usageCodingPlanSources.length > 0;
+  const checkingUsageZaiCodingPlanTab = Boolean(
+    usageZaiProviderFingerprint &&
+    (usageZaiEntitlement.loading || (!usageZaiEntitlement.snapshot && !usageZaiEntitlement.error)),
+  );
+  const checkingUsageBigmodelCodingPlanTab = Boolean(
+    usageBigmodelProviderFingerprint &&
+    (usageBigmodelEntitlement.loading ||
+      (!usageBigmodelEntitlement.snapshot && !usageBigmodelEntitlement.error)),
+  );
+  const checkingUsageCodingPlanTab =
+    usageProviderSettingsLoading ||
+    checkingUsageZaiCodingPlanTab ||
+    checkingUsageBigmodelCodingPlanTab ||
+    usageBigmodelEnterpriseProducts.loading ||
+    usageZaiEnterpriseProducts.loading;
+  const [initialModelProviderTarget] = useState(() => consumePendingSettingsModelProviderTarget());
+  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
+  const [pendingModelProviderTarget, setPendingModelProviderTarget] = useState<
+    SettingsModelProviderTarget | undefined
+  >(() => initialModelProviderTarget);
+  const handleUsageTabSelect = useCallback((tab: UsageStatsSectionTab) => {
+    setUsageActiveTab(tab);
+  }, []);
+  
+  useEffect(() => {
+    if (usageActiveTab !== "codingPlan" || !usageCodingPlanSources[0]) {
+      return;
+    }
+    const preferredSourceId = readSidebarUsageCodingPlanSourcePreference();
+    const preferredSource = preferredSourceId
+      ? usageCodingPlanSources.find((source) => source.id === preferredSourceId)
+      : undefined;
+    setUsageActiveTab(
+      createSettingsUsageCodingPlanTabId((preferredSource ?? usageCodingPlanSources[0]).id),
+    );
+  }, [usageActiveTab, usageCodingPlanSources]);
+  useEffect(() => {
+    if (
+      usageActiveTab === "app" ||
+      usageActiveTab === "codingPlan" ||
+      selectedUsageCodingPlanSource
+    ) {
+      return;
+    }
+    setUsageActiveTab(
+      usageCodingPlanSources[0]
+        ? createSettingsUsageCodingPlanTabId(usageCodingPlanSources[0].id)
+        : "app",
+    );
+  }, [selectedUsageCodingPlanSource, usageActiveTab, usageCodingPlanSources]);
+  const setNewUserOnboardingOpen = useCfStore((state) => state.setNewUserOnboardingOpen);
+  const requestOnboardingDialog = () => setNewUserOnboardingOpen(true);
+  const setActiveSettingsSection = useCallback(
+    (section: SettingsSectionId, fallbackSection: SettingsSectionId = activeSection) => {
+      const resolvedSection = resolveSettingsSection(section, fallbackSection);
+      setActiveSection(resolvedSection);
+      writeLastSettingsSectionPreference(resolvedSection);
+    },
+    [activeSection],
+  );
+  useEffect(() => {
+    if (!isDesktop && activeSection === "remoteDevices") {
+      setActiveSettingsSection("general");
+    }
+  }, [activeSection, isDesktop, setActiveSettingsSection]);
+  const handleOpenCodingPlanUpgradeSettings = useCallback(
+    (
+      providerId: string,
+      funnelContext?: import("@/lib/codingPlanFunnelTelemetry.js").CodingPlanFunnelContext,
+    ) => {
+      openCodingPlanUpgrade({
+        providerId,
+        funnelContext,
+      });
+    },
+    [openCodingPlanUpgrade],
+  );
+  const handleOpenModelProviderSettings = useCallback(() => {
+    setActiveSettingsSection("modelProvider");
+  }, [setActiveSettingsSection]);
+  const handleOpenUsageSettings = useCallback(() => {
+    setActiveSettingsSection("usage");
+  }, [setActiveSettingsSection]);
+  const activeWorkspacePath = useTabStore((state) => state.activeWorkspacePath);
+  const activateTab = useTabStore((state) => state.activateTab);
+  const openSettingsTab = useTabStore((state) => state.openSettingsTab);
+  const tabs = useTabStore((state) => state.tabs);
+  const workspaceTabs = useMemo(() => tabs.filter(isWorkspaceTab), [tabs]);
+  const activeWorkspaceIdentity = useTabStore(
+    (state) => state.activeWorkspaceIdentity ?? undefined,
+  );
+  const activeWorkspaceTab = useTabStore((state) => {
+    const workspacePath = state.activeWorkspacePath;
+    if (!workspacePath) {
+      return null;
+    }
+    const workspaceIdentity = state.activeWorkspaceIdentity ?? undefined;
+    const matchingTabs = state.tabs
+      .filter(isWorkspaceTab)
+      .filter((tab) => tab.workspacePath === workspacePath);
+    return (
+      matchingTabs.find((tab) =>
+        workspaceIdentity ? tab.workspaceIdentity === workspaceIdentity : !tab.workspaceIdentity,
+      ) ??
+      matchingTabs[0] ??
+      null
+    );
+  });
+  const localModelProviderConnectivityWorkspacePath = useMemo(
+    () =>
+      resolveModelProviderConnectivityWorkspacePath({
+        activeWorkspacePath,
+        activeWorkspaceIdentity,
+        activeWorkspaceTab,
+        workspaceTabs,
+      }),
+    [activeWorkspaceIdentity, activeWorkspacePath, activeWorkspaceTab, workspaceTabs],
+  );
+  const isRemoteModelProviderWorkspace = Boolean(
+    activeWorkspaceIdentity?.trim() ||
+    activeWorkspaceTab?.remoteSessionId?.trim() ||
+    activeWorkspaceTab?.remoteTarget,
+  );
+  const selectDirectory = useSelectDirectory();
+  const services = useServices();
+  const onboardingRecordService = services.onboardingRecordService;
+  const localHostServices = useBaseWorkspaceServices();
+  const projectDirectory = useOptionalProjectDirectory();
+  const { settings: sharedSettings, update: updateSharedSettings } = useSettings({
+    services: localHostServices,
+  });
+  const sourceManagement = localHostServices.sourceServerManagementService;
+  const { snapshot: sourceManagementSnapshot } = useSourceServerManagementSnapshot(
+    sourceManagement,
+    {
+      onError: (error) =>
+        logger.warn("[SettingsPage] Failed to read Source state", {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+    },
+  );
+  const remoteDevicesPresentation = useMemo(
+    () => resolveRemoteConnectionNavigationPresentation(sourceManagementSnapshot),
+    [sourceManagementSnapshot],
+  );
+  const memoryWorkspaceDisplayNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const path of sharedSettings?.recentProjects ?? []) {
+      const name = getPathLeaf(path).trim();
+      if (name) names.add(name);
+    }
+    for (const tab of workspaceTabs) {
+      const name = tab.label.trim() || getPathLeaf(tab.workspacePath).trim();
+      if (name) names.add(name);
+    }
+    return [...names];
+  }, [sharedSettings?.recentProjects, workspaceTabs]);
+  const memoryEnabled = sharedSettings?.memoryEnabled === true;
+  const toolSearchMode = sharedSettings?.toolSearchMode ?? "off";
+  const nativeSearchEnhancementsEnabled = sharedSettings?.nativeSearchEnhancementsEnabled !== false;
+  const askUserQuestionAutoResolutionEnabled =
+    sharedSettings?.askUserQuestionAutoResolutionEnabled !== false;
+  const modelIoFullRetentionEnabled = sharedSettings?.modelIoFullRetentionEnabled === true;
+  const [dataBaseDir, setDataBaseDir] = useState("");
+  const [terminalInheritSystemProfile, setTerminalInheritSystemProfile] = useState(true);
+  const [terminalFontFamily, setTerminalFontFamily] = useState("");
+  const [integratedTerminalShell, setIntegratedTerminalShell] =
+    useState<IntegratedTerminalShellSelection>({ mode: "auto" });
+  const [integratedTerminalShellOptions, setIntegratedTerminalShellOptions] = useState<
+    IntegratedTerminalShellOption[]
+  >([]);
+  const [httpProxy, setHttpProxy] = useState("");
+  const [httpProxyNoProxy, setHttpProxyNoProxy] = useState("");
+  const [httpProxyCaCertPath, setHttpProxyCaCertPath] = useState("");
+  const [embeddedBrowserAllowInsecureCertificates, setEmbeddedBrowserAllowInsecureCertificates] =
+    useState(false);
+  const [taskAutoArchiveEnabled, setTaskAutoArchiveEnabled] = useState(false);
+  const [taskAutoArchiveOlderThanDays, setTaskAutoArchiveOlderThanDays] = useState(30);
+  const [closeToTrayOnWindows, setCloseToTrayOnWindows] = useState(Boolean(isWindowsDesktop));
+  const [
+    desktopChromiumHardwareAccelerationEnabled,
+    setDesktopChromiumHardwareAccelerationEnabled,
+  ] = useState(true);
+  const [receivePreviewUpdates, setReceivePreviewUpdates] = useState(false);
+  const [autoDownloadAndInstallUpdates, setAutoDownloadAndInstallUpdates] = useState(false);
+  const [messageStreamShowReasoning, setMessageStreamShowReasoning] = useState(true);
+  const [messageStreamShowTodos, setMessageStreamShowTodos] = useState(false);
+  const [toolGroupingExploreEnabled, setToolGroupingExploreEnabled] = useState(true);
+  const [toolGroupingTerminalEnabled, setToolGroupingTerminalEnabled] = useState(true);
+  const [toolGroupingChangesEnabled, setToolGroupingChangesEnabled] = useState(false);
+  const [cfInteractionBehavior, setCfInteractionBehavior] =
+    useState<CfInteractionBehavior>("queue");
+  const [defaultHomeDir, setDefaultHomeDir] = useState("");
+  const [hostPlatform, setHostPlatform] = useState("");
+
+  useEffect(() => {
+    if (
+      !shouldFallbackSettingsUsageTabToApp({
+        activeTab: usageActiveTab === "app" ? "app" : "codingPlan",
+        checkingCodingPlanTab: checkingUsageCodingPlanTab,
+        loadingModelProviders: usageProviderSettingsLoading,
+        showCodingPlanTab: showUsageCodingPlanTab,
+      })
+    ) {
+      return;
+    }
+
+    setUsageActiveTab("app");
+  }, [
+    checkingUsageCodingPlanTab,
+    showUsageCodingPlanTab,
+    usageSubscribedTeamProducts.length,
+    usageActiveTab,
+    usageProviderSettingsLoading,
+  ]);
+
+  useEffect(
+    () =>
+      addPendingSettingsSectionListener((section, detail) => {
+        setActiveSettingsSection(section, activeSection);
+        setSettingsSectionNavigationVersion((version) => version + 1);
+        setTargetSourceServerId(section === "remoteDevices" ? detail?.sourceServerId : undefined);
+        setTargetSourceServerDetails(
+          section === "remoteDevices" && detail?.sourceServerDetails === true,
+        );
+        if (section === "usage" && detail?.usageTab) {
+          setUsageActiveTab(detail.usageTab);
+        }
+        if (resolveSettingsSection(section) === "plugin" && detail?.pluginTab) {
+          setPluginTab(detail.pluginTab);
+          setPluginNavigationOrigin(detail.pluginOrigin);
+          setPluginScopeKey(detail.pluginScopeKey);
+        } else if (resolveSettingsSection(section) !== "plugin") {
+          setPluginNavigationOrigin(undefined);
+        }
+        if (section === "modelProvider" && detail?.modelProviderId) {
+          setPendingModelProviderTarget({
+            providerId: detail.modelProviderId,
+          });
+        }
+      }),
+    [activeSection, setActiveSettingsSection],
+  );
+
+  useEffect(() => {
+    let active = true;
+    localHostServices.settingService
+      .get()
+      .then((settings: AppSettings) => {
+        if (!active) return;
+        setDataBaseDir(settings.dataBaseDir ?? "");
+        setIntegratedTerminalShell(settings.integratedTerminalShell ?? { mode: "auto" });
+        setHttpProxy(settings.httpProxy ?? "");
+        setHttpProxyNoProxy(settings.httpProxyNoProxy ?? "");
+        setHttpProxyCaCertPath(settings.httpProxyCaCertPath ?? "");
+        setEmbeddedBrowserAllowInsecureCertificates(
+          settings.embeddedBrowserAllowInsecureCertificates ?? false,
+        );
+        setCloseToTrayOnWindows(settings.closeToTrayOnWindows ?? Boolean(isWindowsDesktop));
+        setDesktopChromiumHardwareAccelerationEnabled(
+          settings.desktopChromiumHardwareAccelerationEnabled ?? true,
+        );
+      })
+      .catch(() => {});
+    localHostServices.systemService
+      .info()
+      .then((info) => {
+        if (!active) return;
+        setDefaultHomeDir(info.homedir);
+        setHostPlatform(info.platform);
+        if (info.platform !== "win32") {
+          setIntegratedTerminalShellOptions([]);
+          return;
+        }
+        void localHostServices.systemService
+          .listIntegratedTerminalShells()
+          .then((options) => {
+            if (active) setIntegratedTerminalShellOptions(options);
+          })
+          .catch(() => {
+            if (active) setIntegratedTerminalShellOptions([]);
+          });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [localHostServices.systemService, localHostServices.settingService, isWindowsDesktop]);
+
+  useEffect(() => {
+    let active = true;
+    services.settingService
+      .get()
+      .then((settings: AppSettings) => {
+        if (!active) return;
+        setTerminalInheritSystemProfile(settings.terminalInheritSystemProfile ?? true);
+        setTerminalFontFamily(settings.terminalFontFamily ?? "");
+        setTaskAutoArchiveEnabled(settings.taskAutoArchiveEnabled ?? false);
+        setTaskAutoArchiveOlderThanDays(settings.taskAutoArchiveOlderThanDays ?? 30);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [services.settingService]);
+
+  useEffect(() => {
+    if (!sharedSettings) {
+      return;
+    }
+    setMessageStreamShowReasoning(sharedSettings.messageStreamShowReasoning ?? true);
+    setMessageStreamShowTodos(sharedSettings.messageStreamShowTodos ?? false);
+    setToolGroupingExploreEnabled(sharedSettings.toolGroupingExploreEnabled ?? true);
+    setToolGroupingTerminalEnabled(sharedSettings.toolGroupingTerminalEnabled ?? true);
+    setToolGroupingChangesEnabled(sharedSettings.toolGroupingChangesEnabled ?? false);
+    setCfInteractionBehavior(sharedSettings.cfInteractionBehavior ?? "queue");
+    setReceivePreviewUpdates(sharedSettings.receivePreviewUpdates ?? false);
+    setAutoDownloadAndInstallUpdates(sharedSettings.autoDownloadAndInstallUpdates ?? false);
+  }, [sharedSettings]);
+  const handleTerminalInheritSystemProfileChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.terminal",
+        action: "toggle_system_profile",
+        trigger: "switch",
+        operation: () => services.settingService.update({ terminalInheritSystemProfile: enabled }),
+        completed: {
+          resultSource: "setting_service",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setTerminalInheritSystemProfile(enabled);
+    },
+    [services.settingService],
+  );
+  const handleTerminalFontFamilyChange = useCallback(
+    async (fontFamily: string) => {
+      const normalizedFontFamily = fontFamily.trim();
+      await runSettingsActionAsync({
+        featureId: "settings.terminal",
+        action: "save_font_family",
+        trigger: "button",
+        operation: () =>
+          services.settingService.update({ terminalFontFamily: normalizedFontFamily }),
+        completed: { resultSource: "setting_service", configured: normalizedFontFamily.length > 0 },
+      });
+      setTerminalFontFamily(normalizedFontFamily);
+    },
+    [services.settingService],
+  );
+  const handleIntegratedTerminalShellChange = useCallback(
+    async (selection: IntegratedTerminalShellSelection) => {
+      await runSettingsActionAsync({
+        featureId: "settings.terminal",
+        action: "change_shell",
+        trigger: "select",
+        operation: () =>
+          localHostServices.settingService.update({ integratedTerminalShell: selection }),
+        completed: {
+          resultSource: "setting_service",
+          valueAfter: selection.mode === "auto" ? "auto" : "explicit",
+        },
+      });
+      setIntegratedTerminalShell(selection);
+    },
+    [localHostServices.settingService],
+  );
+  const handleToolSearchModeChange = useCallback(
+    async (mode: AppToolSearchMode) => {
+      await runSettingsActionAsync({
+        featureId: "settings.search",
+        action: "change_tool_search_mode",
+        trigger: "select",
+        operation: () => updateSharedSettings({ toolSearchMode: mode }),
+        completed: { resultSource: "shared_settings", valueAfter: mode },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleNativeSearchEnhancementsEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.search",
+        action: "toggle_native_search",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ nativeSearchEnhancementsEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleAskUserQuestionAutoResolutionEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.conversation",
+        action: "toggle_ask_user_auto_resolution",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ askUserQuestionAutoResolutionEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleModelIoFullRetentionEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.conversation",
+        action: "toggle_model_io_retention",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ modelIoFullRetentionEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleMemoryEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.memory",
+        action: "toggle_memory",
+        trigger: "switch",
+        operation: async () => {
+          await updateSharedSettings({ memoryEnabled: enabled });
+          await onboardingRecordService
+            ?.updateRecordPreferences({ memoryEnabled: enabled })
+            .catch((cause: unknown) => {
+              console.warn("[settings] Failed to write back onboarding record", String(cause));
+            });
+        },
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleHttpProxyChange = useCallback(
+    async (proxy: string) => {
+      const normalizedProxy = proxy.trim();
+      await runSettingsActionAsync({
+        featureId: "settings.network",
+        action: "save_http_proxy",
+        trigger: "button",
+        operation: () =>
+          localHostServices.settingService.update({
+            httpProxy: normalizedProxy,
+          }),
+        completed: {
+          resultSource: "setting_service",
+          configured: normalizedProxy.length > 0,
+          requiresRestart: true,
+        },
+      });
+      setHttpProxy(normalizedProxy);
+      toast(intl.formatMessage({ id: "settings.httpProxySavedHint" }));
+    },
+    [localHostServices.settingService, intl],
+  );
+  const handleHttpProxyNoProxyChange = useCallback(
+    async (noProxy: string) => {
+      const normalizedNoProxy = noProxy
+        .split(",")
+        .map((token) => token.trim())
+        .filter(Boolean)
+        .join(",");
+      await runSettingsActionAsync({
+        featureId: "settings.network",
+        action: "save_no_proxy",
+        trigger: "button",
+        operation: () =>
+          localHostServices.settingService.update({
+            httpProxyNoProxy: normalizedNoProxy,
+          }),
+        completed: { resultSource: "setting_service", configured: normalizedNoProxy.length > 0 },
+      });
+      setHttpProxyNoProxy(normalizedNoProxy);
+      toast(intl.formatMessage({ id: "settings.httpProxySavedHint" }));
+    },
+    [localHostServices.settingService, intl],
+  );
+  const handleHttpProxyCaCertPathChange = useCallback(
+    async (caCertPath: string) => {
+      const normalizedCaCertPath = caCertPath.trim();
+      await runSettingsActionAsync({
+        featureId: "settings.network",
+        action: "save_ca_certificate",
+        trigger: "button",
+        operation: () =>
+          localHostServices.settingService.update({
+            httpProxyCaCertPath: normalizedCaCertPath,
+          }),
+        completed: {
+          resultSource: "setting_service",
+          configured: normalizedCaCertPath.length > 0,
+          requiresRestart: true,
+        },
+      });
+      setHttpProxyCaCertPath(normalizedCaCertPath);
+      toast(intl.formatMessage({ id: "settings.httpProxySavedHint" }));
+    },
+    [localHostServices.settingService, intl],
+  );
+  const handleDataBaseDirChange = useCallback(
+    async (dir: string) => {
+      await runSettingsActionAsync({
+        featureId: "settings.storage",
+        action: "change_data_directory",
+        trigger: "button",
+        operation: () => localHostServices.settingService.updateDataBaseDir(dir || undefined),
+        completed: { resultSource: "setting_service", requiresRestart: true },
+        failureStage: "data_directory_update",
+      });
+      setDataBaseDir(dir);
+    },
+    [localHostServices.settingService],
+  );
+  const handleTaskAutoArchiveEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.task",
+        action: "toggle_auto_archive",
+        trigger: "switch",
+        operation: () => services.settingService.update({ taskAutoArchiveEnabled: enabled }),
+        completed: {
+          resultSource: "setting_service",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setTaskAutoArchiveEnabled(enabled);
+    },
+    [services.settingService],
+  );
+  const handleTaskAutoArchiveOlderThanDaysChange = useCallback(
+    async (days: number) => {
+      await runSettingsActionAsync({
+        featureId: "settings.task",
+        action: "change_auto_archive_days",
+        trigger: "select",
+        operation: () => services.settingService.update({ taskAutoArchiveOlderThanDays: days }),
+        completed: { resultSource: "setting_service", valueAfter: String(days) },
+      });
+      setTaskAutoArchiveOlderThanDays(days);
+    },
+    [services.settingService],
+  );
+  const handleCloseToTrayOnWindowsChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.desktop",
+        action: "toggle_close_to_tray",
+        trigger: "switch",
+        operation: () => localHostServices.settingService.update({ closeToTrayOnWindows: enabled }),
+        completed: {
+          resultSource: "setting_service",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      platform.syncAppSettings?.({ closeToTrayOnWindows: enabled });
+      setCloseToTrayOnWindows(enabled);
+    },
+    [localHostServices.settingService, platform],
+  );
+  const handleKeepAwakeWhileRunningChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.desktop",
+        action: "toggle_keep_awake",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ keepAwakeWhileRunning: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+    },
+    [updateSharedSettings],
+  );
+  const handleDesktopChromiumHardwareAccelerationChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.desktop",
+        action: "toggle_hardware_acceleration",
+        trigger: "switch",
+        operation: () =>
+          localHostServices.settingService.update({
+            desktopChromiumHardwareAccelerationEnabled: enabled,
+          }),
+        completed: {
+          resultSource: "setting_service",
+          stateAfter: enabled ? "enabled" : "disabled",
+          requiresRestart: true,
+        },
+      });
+      setDesktopChromiumHardwareAccelerationEnabled(enabled);
+      toast(
+        intl.formatMessage({
+          id: "settings.desktopChromiumHardwareAccelerationSavedHint",
+        }),
+      );
+    },
+    [localHostServices.settingService, intl],
+  );
+  const handleEmbeddedBrowserAllowInsecureCertificatesChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.browser",
+        action: "toggle_insecure_certificates",
+        trigger: "switch",
+        operation: () =>
+          localHostServices.settingService.update({
+            embeddedBrowserAllowInsecureCertificates: enabled,
+          }),
+        completed: {
+          resultSource: "setting_service",
+          stateAfter: enabled ? "enabled" : "disabled",
+          requiresRestart: true,
+        },
+      });
+      setEmbeddedBrowserAllowInsecureCertificates(enabled);
+      toast(
+        intl.formatMessage({
+          id: "settings.embeddedBrowserAllowInsecureCertificatesSavedHint",
+        }),
+      );
+    },
+    [localHostServices.settingService, intl],
+  );
+  const handleReceivePreviewUpdatesChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.update",
+        action: "toggle_preview_updates",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ receivePreviewUpdates: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setReceivePreviewUpdates(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleAutoDownloadAndInstallUpdatesChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.update",
+        action: "toggle_auto_update",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ autoDownloadAndInstallUpdates: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setAutoDownloadAndInstallUpdates(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleMessageStreamShowReasoningChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.conversation",
+        action: "toggle_show_reasoning",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ messageStreamShowReasoning: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setMessageStreamShowReasoning(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleMessageStreamShowTodosChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.conversation",
+        action: "toggle_show_todos",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ messageStreamShowTodos: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setMessageStreamShowTodos(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleToolGroupingExploreEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.tool_grouping",
+        action: "toggle_explore_grouping",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ toolGroupingExploreEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setToolGroupingExploreEnabled(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleToolGroupingTerminalEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.tool_grouping",
+        action: "toggle_terminal_grouping",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ toolGroupingTerminalEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setToolGroupingTerminalEnabled(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleToolGroupingChangesEnabledChange = useCallback(
+    async (enabled: boolean) => {
+      await runSettingsActionAsync({
+        featureId: "settings.tool_grouping",
+        action: "toggle_changes_grouping",
+        trigger: "switch",
+        operation: () => updateSharedSettings({ toolGroupingChangesEnabled: enabled }),
+        completed: {
+          resultSource: "shared_settings",
+          stateAfter: enabled ? "enabled" : "disabled",
+        },
+      });
+      setToolGroupingChangesEnabled(enabled);
+    },
+    [updateSharedSettings],
+  );
+  const handleCfInteractionBehaviorChange = useCallback(
+    async (behavior: CfInteractionBehavior) => {
+      await runSettingsActionAsync({
+        featureId: "settings.conversation",
+        action: "change_interaction_behavior",
+        trigger: "select",
+        operation: () => updateSharedSettings({ cfInteractionBehavior: behavior }),
+        completed: { resultSource: "shared_settings", valueAfter: behavior },
+      });
+      setCfInteractionBehavior(behavior);
+    },
+    [updateSharedSettings],
+  );
+  const handleFooterLocaleChange = useCallback(
+    (value: string) => {
+      if (value === "system") {
+        runUserAction({
+          input: { featureId: "settings.locale", action: "change_locale", trigger: "select" },
+          operation: () => setLocalePreference("system"),
+          completed: { resultSource: "local_commit", valueAfter: "system" },
+          failureStage: "local_commit",
+        });
+        return;
+      }
+      if (value === "zh-CN" || value === "en-US") {
+        runUserAction({
+          input: { featureId: "settings.locale", action: "change_locale", trigger: "select" },
+          operation: () => setLocalePreference(value as Locale),
+          completed: { resultSource: "local_commit", valueAfter: value },
+          failureStage: "local_commit",
+        });
+      }
+    },
+    [setLocalePreference],
+  );
+  const handleFooterThemeChange = useCallback(
+    (value: string) => {
+      if (
+        value === "light" ||
+        value === "dark" ||
+        value === "cf-light" ||
+        value === "cf-dark" ||
+        value === "system"
+      ) {
+        runUserAction({
+          input: { featureId: "settings.appearance", action: "change_theme", trigger: "select" },
+          operation: () => setTheme(value as Theme),
+          completed: { resultSource: "local_commit", valueAfter: value },
+          failureStage: "local_commit",
+        });
+      }
+    },
+    [setTheme],
+  );
+  const handleCodePreviewSettingsChange = useCallback(
+    (patch: Parameters<typeof setCodePreviewSettings>[0]) => {
+      const [key] = Object.keys(patch);
+      const action =
+        key === "lightTheme"
+          ? "change_code_light_theme"
+          : key === "darkTheme"
+            ? "change_code_dark_theme"
+            : key === "showLineNumbers"
+              ? "toggle_code_line_numbers"
+              : key === "wrapLongLines"
+                ? "toggle_code_line_wrap"
+                : "change_code_font_size";
+      const value = Object.values(patch)[0];
+      return runUserAction({
+        input: { featureId: "settings.appearance", action, trigger: "select" },
+        operation: () => setCodePreviewSettings(patch),
+        completed: {
+          resultSource: "local_commit",
+          ...(typeof value === "boolean"
+            ? { stateAfter: value ? ("enabled" as const) : ("disabled" as const) }
+            : { valueAfter: String(value) }),
+        },
+        failureStage: "local_commit",
+      });
+    },
+    [setCodePreviewSettings],
+  );
+  const activeSectionMeta = settingsSections.find((section) => section.id === activeSection);
+  useEffect(() => {
+    setActiveSection((current) => resolveSettingsSectionForPlatform(current, settingsSections));
+  }, [settingsSections]);
+  if (!activeSectionMeta) {
+    return null;
+  }
+
+  const activeSectionLabel = intl.formatMessage({
+    id: activeSectionMeta.contentTitleId ?? activeSectionMeta.titleId,
+  });
+  const settingsBreadcrumbSectionLabel =
+    activeSection === "plugin" && pluginNavigationOrigin === "plugin-store"
+      ? intl.formatMessage({ id: "workspace.openPluginsSettings" })
+      : activeSectionLabel;
+  const visibleSettingsBreadcrumbItems =
+    settingsBreadcrumbItems[0]?.label === settingsBreadcrumbSectionLabel
+      ? settingsBreadcrumbItems
+      : [];
+  const hasVisibleSettingsBreadcrumb = visibleSettingsBreadcrumbItems.length >= 2;
+  const showActiveSectionTitle =
+    !hasVisibleSettingsBreadcrumb ||
+    (activeSection === "plugin" && pluginNavigationOrigin === "plugin-store");
+
+  return (
+    <>
+      <DesktopWindowFrame
+        title={intl.formatMessage({ id: "settings.title" })}
+        isDesktop={isDesktop}
+        isMacDesktop={isMacDesktop}
+        isWindowsDesktop={isWindowsDesktop}
+      >
+        <div
+          data-testid={TID_SETTINGS_PAGE}
+          data-active-section={activeSection}
+          className="relative grid h-screen min-h-full w-full grid-cols-[68px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] lg:grid-cols-[268px_minmax(0,1fr)]"
+        >
+          {isWindowsDesktop ? <WindowsTopLeftLogo /> : null}
+
+          {usesInlineWindowControls ? (
+            <div
+              className={cn(
+                "absolute z-30 mt-px mr-px flex h-12 items-center gap-0.5 px-2 pointer-events-auto [app-region:no-drag]",
+                isWindowsDesktop ? "right-1.5 top-1.5" : "right-1 top-1",
+              )}
+            >
+              {}
+              <WorkspaceHelpMenuButton isDesktop={Boolean(isDesktop)} />
+              <DesktopWindowControls />
+            </div>
+          ) : null}
+          <aside className="min-w-0">
+            <div className="flex h-full flex-col">
+              <div className="h-12 [app-region:drag]"></div>
+              <div className="px-2 pb-3 pt-3">
+                {onBack ? (
+                  <ControlHintTooltip
+                    title={intl.formatMessage({
+                      id: "workspace.backToWorkspace",
+                    })}
+                    side="right"
+                    align="center"
+                  >
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="lg"
+                      data-testid={TID_SETTINGS_BACK_BUTTON}
+                      aria-label={intl.formatMessage({
+                        id: "workspace.backToWorkspace",
+                      })}
+                      className="m-1 w-[calc(100%-0.5rem)] justify-start gap-2 rounded-xl bg-surface px-1.5 text-remote-foreground-muted hover:bg-surface-hover hover:text-foreground max-lg:m-1 max-lg:size-10 max-lg:justify-center max-lg:px-0"
+                      onClick={() => {
+                        runUserAction({
+                          input: {
+                            featureId: "settings.navigation",
+                            action: "back_to_workspace",
+                            trigger: "button",
+                          },
+                          operation: () => {
+                            if (pluginNavigationOrigin === "plugin-store") {
+                              requestPluginStoreOpen("user");
+                            }
+                            onBack?.();
+                          },
+                          completed: { resultSource: "local_commit" },
+                          failureStage: "navigation_commit",
+                        });
+                      }}
+                    >
+                      <ArrowLeft className="size-4" />
+                      <span className="max-lg:sr-only">
+                        {intl.formatMessage({
+                          id: "workspace.backToWorkspace",
+                        })}
+                      </span>
+                    </Button>
+                  </ControlHintTooltip>
+                ) : null}
+              </div>
+
+              <nav
+                aria-label={intl.formatMessage({ id: "settings.navLabel" })}
+                className="flex-1 overflow-y-auto px-2 pb-3"
+              >
+                <div className="space-y-4">
+                  {settingsSectionGroups.map((group, groupIndex) => {
+                    const groupLabel = intl.formatMessage({
+                      id: group.titleId,
+                    });
+                    const groupLabelId = `settings-sidebar-group-${group.id}`;
+
+                    return (
+                      <div
+                        key={group.id}
+                        role="group"
+                        aria-labelledby={groupLabelId}
+                        className={cn(
+                          "space-y-1",
+                          groupIndex > 0 && "max-lg:border-t max-lg:border-border max-lg:pt-3",
+                        )}
+                      >
+                        <div
+                          id={groupLabelId}
+                          className="px-2.5 pb-1 text-ui-sm font-medium text-remote-foreground-muted max-lg:sr-only"
+                        >
+                          {groupLabel}
+                        </div>
+                        {group.sections
+                          .filter(({ id }) => isSettingsSectionAvailable(id, Boolean(isDesktop)))
+                          .map(({ id, icon: Icon, titleId }) => {
+                            const isActive = activeSection === id;
+                            const label = intl.formatMessage({ id: titleId });
+
+                            return (
+                              <SettingsSidebarButton
+                                key={id}
+                                icon={Icon}
+                                label={label}
+                                active={isActive}
+                                aria-current={isActive ? "page" : undefined}
+                                data-testid={testId(TID_SETTINGS_SECTION_NAV, id)}
+                                data-settings-section-nav={id}
+                                onClick={() => {
+                                  runUserAction({
+                                    input: {
+                                      featureId: "settings.navigation",
+                                      action: "open_section",
+                                      trigger: "button",
+                                    },
+                                    operation: () => {
+                                      setPluginNavigationOrigin(undefined);
+                                      setTargetSourceServerId(undefined);
+                                      setSettingsSectionNavigationVersion((version) => version + 1);
+                                      setActiveSettingsSection(id);
+                                    },
+                                    completed: { resultSource: "local_commit", sectionId: id },
+                                    failureStage: "navigation_commit",
+                                  });
+                                }}
+                              >
+                                <span className="flex min-w-0 flex-1 items-center gap-2">
+                                  <span className="truncate text-ui-base text-foreground">
+                                    {label}
+                                  </span>
+                                  {id === "remoteDevices" ? (
+                                    <RemoteConnectionNavigationDot
+                                      presentation={remoteDevicesPresentation}
+                                    />
+                                  ) : null}
+                                </span>
+                              </SettingsSidebarButton>
+                            );
+                          })}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <SettingsSidebarButton
+                  icon={Rocket}
+                  label={intl.formatMessage({ id: "settings.onboarding" })}
+                  className="mt-4 border border-dashed border-border hover:border-border-hover"
+                  onClick={() => {
+                    runUserAction({
+                      input: {
+                        featureId: "settings.navigation",
+                        action: "open_onboarding",
+                        trigger: "button",
+                      },
+                      operation: requestOnboardingDialog,
+                      completed: { resultSource: "local_commit" },
+                      failureStage: "dialog_open",
+                    });
+                  }}
+                >
+                  <span className="text-ui-base text-foreground">
+                    {intl.formatMessage({ id: "settings.onboarding" })}
+                  </span>
+                </SettingsSidebarButton>
+              </nav>
+
+              <div className="max-lg:hidden">
+                <WorkspaceSidebarFooter
+                  theme={theme}
+                  localeMenuValue={localePreference}
+                  onLocaleChange={handleFooterLocaleChange}
+                  onThemeChange={handleFooterThemeChange}
+                  onSettingsButtonClick={onBack}
+                  onUsageClick={handleOpenUsageSettings}
+                  onUpgradeClick={handleOpenCodingPlanUpgradeSettings}
+                  onLogin={onLogin}
+                  onLogout={onLogout}
+                  settingsButtonMode="back"
+                  user={user}
+                  isDesktop={isDesktop}
+                />
+              </div>
+            </div>
+          </aside>
+
+          <section
+            data-settings-content-frame="true"
+            className={cn(
+              "flex min-h-0 flex-col",
+              isDesktop ? (isWindowsDesktop ? "pr-1.5 pb-1.5" : "pr-1 pb-1") : "p-0",
+            )}
+          >
+            <div
+              data-settings-top-inset={isDesktop ? "true" : undefined}
+              className={cn(
+                "shrink-0 [app-region:drag]",
+                isDesktop && (isWindowsDesktop ? "h-1.5" : "h-1"),
+                isMacDesktop && "max-lg:h-16",
+              )}
+            />
+            <div
+              data-settings-panel-frame="true"
+              className={cn(
+                "relative flex flex-col min-h-0 h-full border border-border bg-background",
+                isWindowsDesktop ? "rounded-md" : "rounded-xl",
+              )}
+            >
+              {!usesInlineWindowControls ? (
+                <div
+                  className={cn(
+                    "absolute top-0 z-50 h-10 w-10 pointer-events-auto [app-region:no-drag]",
+                    "right-0",
+                  )}
+                >
+                  <div className="absolute right-2.5 top-2.5 pointer-events-auto [app-region:no-drag]">
+                    <WorkspaceHelpMenuButton
+                      className="relative z-50 [app-region:no-drag]"
+                      isDesktop={Boolean(isDesktop)}
+                    />
+                  </div>
+                </div>
+              ) : null}
+              <SettingsBreadcrumbProvider
+                onItemsChange={setSettingsBreadcrumbItems}
+                sectionLabel={settingsBreadcrumbSectionLabel}
+              >
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <div className="flex h-12 shrink-0">
+                    <div
+
+                      className={cn(
+                        "min-w-0 flex-1 [app-region:drag]",
+                        usesInlineWindowControls ? "mr-[134px]" : "mr-12",
+                      )}
+                    >
+                      <SettingsHeaderBreadcrumb
+                        ariaLabel={intl.formatMessage({
+                          id: "settings.breadcrumbLabel",
+                        })}
+                        items={visibleSettingsBreadcrumbItems}
+                      />
+                    </div>
+                  </div>
+                  <SettingsMachinesProvider servers={sourceManagementSnapshot?.servers ?? []}>
+                    <main className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+                      <div
+                        className={cn(
+                          SETTINGS_FRAME_CONTENT_CLASSNAME,
+                          "flex flex-col gap-8",
+                          isMacDesktop && "pt-0",
+                          // isWindowsDesktop && "pt-12",
+                        )}
+                      >
+                        {}
+                        <div>
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex min-w-0 flex-wrap items-center gap-3">
+                              {showActiveSectionTitle ? (
+                                <h2 className="text-ui-settings-title font-semibold tracking-tight text-foreground lg:text-ui-settings-title-lg">
+                                  {activeSectionLabel}
+                                </h2>
+                              ) : null}
+                              {!hasVisibleSettingsBreadcrumb && activeSectionMeta.titleBadgeId ? (
+                                <span className="inline-flex h-6 items-center rounded-md border border-border px-2 text-ui-xs font-semibold tracking-normal text-foreground">
+                                  {intl.formatMessage({
+                                    id: activeSectionMeta.titleBadgeId,
+                                  })}
+                                </span>
+                              ) : null}
+                              {activeSection === "usage" ? (
+                                <SettingsUsageProviderTabs
+                                  activeTab={usageActiveTab}
+                                  codingPlanSources={usageCodingPlanSources}
+                                  onTabChange={handleUsageTabSelect}
+                                />
+                              ) : null}
+                            </div>
+                          </div>
+                          {activeSection === "general" ? (
+                            <GeneralSectionHeader localePreference={localePreference} />
+                          ) : null}
+                        </div>
+                        <div className="space-y-8">
+                          {activeSection === "general" ? (
+                            <GeneralSectionContent
+                              localePreference={localePreference}
+                              interfaceMode={interfaceMode}
+                              setInterfaceMode={setInterfaceMode}
+                              isDesktop={isDesktop}
+                              isWindowsDesktop={isWindowsDesktop}
+                              isLinuxDesktop={isLinuxDesktop}
+                              linuxCloseToTray={linuxCloseToTray}
+                              platform={platform}
+                              notificationEnabled={notificationEnabled}
+                              notificationSoundEnabled={notificationSoundEnabled}
+                              closeToTrayOnWindows={closeToTrayOnWindows}
+                              keepAwakeWhileRunning={sharedSettings?.keepAwakeWhileRunning ?? false}
+                              desktopChromiumHardwareAccelerationEnabled={
+                                desktopChromiumHardwareAccelerationEnabled
+                              }
+                              receivePreviewUpdates={receivePreviewUpdates}
+                              autoDownloadAndInstallUpdates={autoDownloadAndInstallUpdates}
+                              dataBaseDir={dataBaseDir}
+                              terminalInheritSystemProfile={terminalInheritSystemProfile}
+                              terminalFontFamily={terminalFontFamily}
+                              integratedTerminalShell={integratedTerminalShell}
+                              integratedTerminalShellOptions={integratedTerminalShellOptions}
+                              toolSearchMode={toolSearchMode}
+                              onToolSearchModeChange={handleToolSearchModeChange}
+                              nativeSearchEnhancementsEnabled={nativeSearchEnhancementsEnabled}
+                              httpProxy={httpProxy}
+                              httpProxyNoProxy={httpProxyNoProxy}
+                              httpProxyCaCertPath={httpProxyCaCertPath}
+                              defaultHomeDir={defaultHomeDir}
+                              showIntegratedTerminalShell={hostPlatform === "win32"}
+                              setLocalePreference={handleFooterLocaleChange}
+                              setNotificationEnabled={(enabled) =>
+                                runUserAction({
+                                  input: {
+                                    featureId: "settings.notification",
+                                    action: "toggle_notification",
+                                    trigger: "switch",
+                                  },
+                                  operation: () => setNotificationEnabled(enabled),
+                                  completed: {
+                                    resultSource: "local_commit",
+                                    stateAfter: enabled ? "enabled" : "disabled",
+                                  },
+                                  failureStage: "local_commit",
+                                })
+                              }
+                              setNotificationSoundEnabled={(enabled) =>
+                                runUserAction({
+                                  input: {
+                                    featureId: "settings.notification",
+                                    action: "toggle_notification_sound",
+                                    trigger: "switch",
+                                  },
+                                  operation: () => setNotificationSoundEnabled(enabled),
+                                  completed: {
+                                    resultSource: "local_commit",
+                                    stateAfter: enabled ? "enabled" : "disabled",
+                                  },
+                                  failureStage: "local_commit",
+                                })
+                              }
+                              messageStreamShowReasoning={messageStreamShowReasoning}
+                              messageStreamShowTodos={messageStreamShowTodos}
+                              toolGroupingExploreEnabled={toolGroupingExploreEnabled}
+                              toolGroupingTerminalEnabled={toolGroupingTerminalEnabled}
+                              toolGroupingChangesEnabled={toolGroupingChangesEnabled}
+                              cfInteractionBehavior={cfInteractionBehavior}
+                              askUserQuestionAutoResolutionEnabled={
+                                askUserQuestionAutoResolutionEnabled
+                              }
+                              modelIoFullRetentionEnabled={modelIoFullRetentionEnabled}
+                              onDataBaseDirChange={handleDataBaseDirChange}
+                              onSelectDataBaseDir={selectDirectory}
+                              onTerminalInheritSystemProfileChange={
+                                handleTerminalInheritSystemProfileChange
+                              }
+                              onTerminalFontFamilyChange={handleTerminalFontFamilyChange}
+                              onIntegratedTerminalShellChange={handleIntegratedTerminalShellChange}
+                              onNativeSearchEnhancementsEnabledChange={
+                                handleNativeSearchEnhancementsEnabledChange
+                              }
+                              onModelIoFullRetentionEnabledChange={
+                                handleModelIoFullRetentionEnabledChange
+                              }
+                              onHttpProxyChange={handleHttpProxyChange}
+                              onHttpProxyNoProxyChange={handleHttpProxyNoProxyChange}
+                              onHttpProxyCaCertPathChange={handleHttpProxyCaCertPathChange}
+                              onCloseToTrayOnWindowsChange={handleCloseToTrayOnWindowsChange}
+                              onKeepAwakeWhileRunningChange={handleKeepAwakeWhileRunningChange}
+                              onDesktopChromiumHardwareAccelerationChange={
+                                handleDesktopChromiumHardwareAccelerationChange
+                              }
+                              onReceivePreviewUpdatesChange={handleReceivePreviewUpdatesChange}
+                              onAutoDownloadAndInstallUpdatesChange={
+                                handleAutoDownloadAndInstallUpdatesChange
+                              }
+                              onMessageStreamShowReasoningChange={
+                                handleMessageStreamShowReasoningChange
+                              }
+                              onMessageStreamShowTodosChange={handleMessageStreamShowTodosChange}
+                              onToolGroupingExploreEnabledChange={
+                                handleToolGroupingExploreEnabledChange
+                              }
+                              onToolGroupingTerminalEnabledChange={
+                                handleToolGroupingTerminalEnabledChange
+                              }
+                              onToolGroupingChangesEnabledChange={
+                                handleToolGroupingChangesEnabledChange
+                              }
+                              onCfInteractionBehaviorChange={
+                                handleCfInteractionBehaviorChange
+                              }
+                              onAskUserQuestionAutoResolutionEnabledChange={
+                                handleAskUserQuestionAutoResolutionEnabledChange
+                              }
+                              onOpenOnboardingDialog={() =>
+                                runUserAction({
+                                  input: {
+                                    featureId: "settings.navigation",
+                                    action: "open_onboarding",
+                                    trigger: "button",
+                                  },
+                                  operation: requestOnboardingDialog,
+                                  completed: { resultSource: "local_commit" },
+                                  failureStage: "dialog_open",
+                                })
+                              }
+                            />
+                          ) : activeSection === "remoteDevices" ? (
+                            sharedSettings && isDesktop && sourceManagement ? (
+                              <SourceServerManagementPanel
+                                key={`remote:${settingsSectionNavigationVersion}`}
+                                targetSourceServerId={targetSourceServerId}
+                                targetSourceServerDetails={targetSourceServerDetails}
+                                onTargetSourceServerFocused={() => {
+                                  setTargetSourceServerId(undefined);
+                                  setTargetSourceServerDetails(false);
+                                }}
+                                management={sourceManagement}
+                                onCreateConnection={
+                                  onOpenRemoteWorkspace
+                                    ? () =>
+                                        onOpenRemoteWorkspace({ completion: "device-management" })
+                                    : undefined
+                                }
+                                onConnectProfile={
+                                  remoteWorkspaceController
+                                    ? (profileId) =>
+                                        remoteWorkspaceController.dispatch({
+                                          type: "connect-device",
+                                          profileId,
+                                          effect: "device-management",
+                                        })
+                                    : onOpenRemoteWorkspace
+                                      ? (profileId) =>
+                                          onOpenRemoteWorkspace({
+                                            preferredProfileId: profileId,
+                                            completion: "device-management",
+                                          })
+                                      : undefined
+                                }
+                                onDisconnectSource={
+                                  remoteWorkspaceController
+                                    ? (sourceServerId) =>
+                                        remoteWorkspaceController.dispatch({
+                                          type: "disconnect-device",
+                                          sourceServerId,
+                                        })
+                                    : undefined
+                                }
+                                onOpenProject={
+                                  onOpenRemoteWorkspace
+                                    ? async (sourceServerId, path, profileId) => {
+                                        const preference =
+                                          projectDirectory &&
+                                          resolveRecentRemoteProjectPreference(
+                                            projectDirectory.directory,
+                                            {
+                                              sourceServerId,
+                                              path,
+                                              profileId,
+                                            },
+                                          );
+                                        if (!preference) {
+                                          throw Object.assign(
+                                            new Error("remote-project.entry-not-found"),
+                                            {
+                                              code: "recent-project-unresolved",
+                                            },
+                                          );
+                                        }
+                                        onBack?.();
+                                        onOpenRemoteWorkspace(preference);
+                                      }
+                                    : undefined
+                                }
+                                onShowUpdateDetails={(sourceServerId) => {
+                                  setPendingSettingsSectionIntent("remoteDevices", {
+                                    sourceServerId,
+                                    sourceServerDetails: true,
+                                  });
+                                  openSettingsTab();
+                                }}
+                                workspaceTabs={workspaceTabs}
+                                onShowInSidebar={(sourceServerId) => {
+                                  const target = workspaceTabs.find(
+                                    (tab) =>
+                                      getWorkspaceSourceServerId(tab, {
+                                        workspaceHistory:
+                                          sourceManagementSnapshot?.workspaceHistory,
+                                      }) === sourceServerId,
+                                  );
+                                  onBack?.();
+                                  if (target) {
+                                    activateTab(target.id);
+                                    requestAnimationFrame(() => {
+                                      const row = Array.from(
+                                        document.querySelectorAll<HTMLElement>(
+                                          "[data-remote-project-identity]",
+                                        ),
+                                      ).find(
+                                        (element) =>
+                                          element.dataset.remoteProjectIdentity ===
+                                          target.workspaceIdentity,
+                                      );
+                                      row?.scrollIntoView({ block: "center" });
+                                      row
+                                        ?.querySelector<HTMLElement>('[role="button"]')
+                                        ?.focus({ preventScroll: true });
+                                    });
+                                  }
+                                }}
+                                settings={sharedSettings}
+                                onUpdateSettings={updateSharedSettings}
+                              />
+                            ) : (
+                              <p className="text-ui-sm text-remote-foreground-muted">
+                                {intl.formatMessage({
+                                  id: sharedSettings ? "settings.source.empty" : "common.loading",
+                                })}
+                              </p>
+                            )
+                          ) : activeSection === "appearance" ? (
+                            <AppearanceSectionContent
+                              codePreviewSettings={codePreviewSettings}
+                              setCodePreviewSettings={handleCodePreviewSettingsChange}
+                              theme={theme}
+                              setTheme={(nextTheme) => handleFooterThemeChange(nextTheme)}
+                              uiFontSizePx={uiFontSizePx}
+                              setUiFontSizePx={(fontSizePx) =>
+                                runUserAction({
+                                  input: {
+                                    featureId: "settings.appearance",
+                                    action: "change_ui_font_size",
+                                    trigger: "keyboard",
+                                  },
+                                  operation: () => setUiFontSizePx(fontSizePx),
+                                  completed: {
+                                    resultSource: "local_commit",
+                                    valueAfter: String(fontSizePx),
+                                  },
+                                  failureStage: "local_commit",
+                                })
+                              }
+                            />
+                          ) : activeSection === "shortcuts" ? (
+                            <ShortcutSettingsSection isDesktop={Boolean(isDesktop)} />
+                          ) : activeSection === "about" ? (
+                            <AboutSection />
+                          ) : activeSection === "modelProvider" ? (
+                            <ServiceProvider services={localHostServices}>
+                              {}
+                              <ModelProviderSection
+                                workspacePath={activeWorkspacePath ?? captionWorkspacePath ?? ""}
+                                connectivityWorkspacePath={
+                                  localModelProviderConnectivityWorkspacePath
+                                }
+                                connectivityWorkspaceRequired={isRemoteModelProviderWorkspace}
+                                pendingModelProviderTarget={pendingModelProviderTarget}
+                                onConsumePendingModelProviderTarget={() =>
+                                  setPendingModelProviderTarget(undefined)
+                                }
+                              />
+                            </ServiceProvider>
+                          ) : activeSection === "memory" ? (
+                            <ServiceProvider services={localHostServices}>
+                              {}
+                              <MemorySettingsSection
+                                memoryEnabled={memoryEnabled}
+                                memoryService={localHostServices.memoryService}
+                                onMemoryEnabledChange={handleMemoryEnabledChange}
+                                projectMemoryViewerAvailable={Boolean(isDesktop)}
+                                workspaceDisplayNames={memoryWorkspaceDisplayNames}
+                              />
+                            </ServiceProvider>
+                          ) : activeSection === "plugin" ? (
+                            <PluginsSection
+                              key={`plugin:${settingsSectionNavigationVersion}`}
+                              isDesktop={Boolean(isDesktop)}
+                              isMacDesktop={Boolean(isMacDesktop)}
+                              isWindowsDesktop={Boolean(isWindowsDesktop)}
+                              isWebRemoteControl={isWebRemoteControl}
+                              initialTab={pluginTab}
+                              initialScopeKey={pluginScopeKey}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              showMarketplaceBreadcrumb={pluginNavigationOrigin === "plugin-store"}
+                              onCreateTask={onCreateTask}
+                              onOpenPluginStore={(_returnScopeKey, intent) => {
+                                requestPluginStoreOpen({ returnScopeKey: "user", intent });
+                                onBack?.();
+                              }}
+                            />
+                          ) : activeSection === "mcp" ? (
+                            <PluginsSection
+                              key={`mcp:${settingsSectionNavigationVersion}`}
+                              mode="mcp"
+                              isWebRemoteControl={isWebRemoteControl}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              onCreateTask={onCreateTask}
+                              onOpenPluginStore={(_returnScopeKey, intent) => {
+                                requestPluginStoreOpen({ returnScopeKey: "user", intent });
+                                onBack?.();
+                              }}
+                            />
+                          ) : activeSection === "skill" ? (
+                            <PluginsSection
+                              key={`skill:${settingsSectionNavigationVersion}`}
+                              mode="skill"
+                              isWebRemoteControl={isWebRemoteControl}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              onCreateTask={onCreateTask}
+                              onOpenPluginStore={(_returnScopeKey, intent) => {
+                                requestPluginStoreOpen({ returnScopeKey: "user", intent });
+                                onBack?.();
+                              }}
+                            />
+                          ) : activeSection === "migration" ? (
+                            <MigrationSection
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              isDesktop={isDesktop}
+                            />
+                          ) : activeSection === "archives" ? (
+                            <div className="min-w-0 space-y-6">
+                              <TaskAutoArchiveSettings
+                                taskAutoArchiveEnabled={taskAutoArchiveEnabled}
+                                taskAutoArchiveOlderThanDays={taskAutoArchiveOlderThanDays}
+                                onTaskAutoArchiveEnabledChange={handleTaskAutoArchiveEnabledChange}
+                                onTaskAutoArchiveOlderThanDaysChange={
+                                  handleTaskAutoArchiveOlderThanDaysChange
+                                }
+                              />
+                              <ArchiveManagement />
+                            </div>
+                          ) : activeSection === "usage" ? (
+                            <UsageStatsSection
+                              activeTab={usageActiveTab}
+                              providerSourcesLoading={usageProviderSettingsLoading}
+                              selectedCodingPlanSource={selectedUsageCodingPlanSource}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              workspacePath={activeWorkspacePath ?? undefined}
+                            />
+                          ) : activeSection === "subagents" ? (
+                            <SubagentsSection
+                              onManageModels={handleOpenModelProviderSettings}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                            />
+                          ) : activeSection === "automations" ? (
+                            <AutomationsSection
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                            />
+                          ) : activeSection === "commands" ? (
+                            <PluginsSection
+                              mode="command"
+                              isWebRemoteControl={isWebRemoteControl}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              onCreateTask={onCreateTask}
+                              onOpenPluginStore={(_returnScopeKey, intent) => {
+                                requestPluginStoreOpen({ returnScopeKey: "user", intent });
+                                onBack?.();
+                              }}
+                            />
+                          ) : activeSection === "hooks" ? (
+                            <HooksSection
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                            />
+                          ) : activeSection === "workspaceFileSearch" ? (
+                            <WorkspaceFileSearchSection
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                            />
+                          ) : activeSection === "browser" ? (
+                            <BrowserSettingsSection
+                              isDesktop={Boolean(isDesktop)}
+                              isWindowsDesktop={isWindowsDesktop}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              embeddedBrowserAllowInsecureCertificates={
+                                embeddedBrowserAllowInsecureCertificates
+                              }
+                              onEmbeddedBrowserAllowInsecureCertificatesChange={
+                                handleEmbeddedBrowserAllowInsecureCertificatesChange
+                              }
+                            />
+                          ) : activeSection === "computerUse" ? (
+                            <ComputerUseSection
+                              isDesktop={Boolean(isDesktop)}
+                              isMacDesktop={Boolean(isMacDesktop)}
+                              isWindowsDesktop={Boolean(isWindowsDesktop)}
+                              workspacePath={activeWorkspacePath}
+                              workspaceIdentity={activeWorkspaceIdentity}
+                              remoteSessionId={activeWorkspaceTab?.remoteSessionId}
+                              remoteTarget={activeWorkspaceTab?.remoteTarget}
+                              localWorkspacePath={activeWorkspaceTab?.localWorkspacePath}
+                            />
+                          ) : null}
+                        </div>
+                      </div>
+                    </main>
+                  </SettingsMachinesProvider>
+                </div>
+              </SettingsBreadcrumbProvider>
+            </div>
+          </section>
+        </div>
+      </DesktopWindowFrame>
+    </>
+  );
+}

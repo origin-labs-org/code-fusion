@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-mixed-entries",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-mixed-entries.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-mixed-entries.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-mixed-reconnect-title",
+      "description": "Auxiliary title response for R3 mixed entries task.",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "标题不属于冷恢复断言。"
+    },
+    {
+      "id": "r3-mixed-reconnect-follow",
+      "description": "Original task continuation after cold resume returns an independent marker and must not hit the old initial launch response.",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Continuation proves post-resume actual routing via independent response and current request history, with no need for pinned stream latency."
+    },
+    {
+      "id": "r3-mixed-reconnect-main",
+      "description": "General response for R3 mixed entries initial launch and continuation.",
+      "kind": "main",
+      "timingPolicy": "slow-stream",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch and cold resume continuation only need stable completion; routing is asserted via task history."
+    }
+  ]
+}

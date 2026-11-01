@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-compact",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-compact.test.ts",
+  "fixtures": [
+    {
+      "id": "v4-compact-title",
+      "description": "Case-local title generation response for E2E_V4_COMPACT_SEED initial send.",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "E2E_V4_COMPACT_SEED initial send triggers the default title sidecar; fixed case-local title response prevents default replay from falling back to legacy provider-basic and uses this initial send marker to isolate cross-case matching."
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_V4_COMPACT_SEED"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-compact-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":"V4 Compact E2E"}"
+        }
+      }
+    },
+    {
+      "id": "v4-compact-seed",
+      "description": "M4 /compact gate: First-round fixed text reply, forming history to be compacted.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "compact requires completed history; the first round only needs to reliably produce compactible assistant text."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_V4_COMPACT_SEED"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "v4-compact-seed",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "V4_COMPACT_SEED_OK"
+        }
+      }
+    },
+    {
+      "id": "v4-compact-success",
+      "description": "M4 /compact gate: successful response for manual compact streaming summary.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Core assertion for manual compact is that v4 projection outputs [compact] · completed marker; summary text just needs to be pinned."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_V4_COMPACT_SEED",
+          "CRITICAL: Respond with TEXT ONLY",
+          "V4_COMPACT_SEED_OK",
+          "\"stream\":true"
+        ],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "statusMessage": "OK",
+        "delayMs": 300,
+        "text": {
+          "id": "v4-compact-success",
+          "inputTokens": 256,
+          "outputTokens": 64,
+          "text": "<analysis>V4 manual compact e2e summarized the existing session without tools.</analysis>\n\n<summary>Conversation so far: the user asked the assistant to reply with V4_COMPACT_SEED_OK for the initial verification turn, and the assistant did. No files or tools were required.</summary>"
+        }
+      }
+    }
+  ]
+}

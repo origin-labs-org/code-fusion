@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-v4-refresh-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-v4-refresh-permission.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-v4-refresh-permission.json"
+  ],
+  "fileFixtures": [
+    {
+      "path": ".cf-e2e/conversation-session-v4-refresh-permission/write-output.txt",
+      "source": "created-by-provider-tool",
+      "description": "Spec creates parent directory, approves fixture-driven Bash redirect after refresh and creates target file."
+    }
+  ],
+  "requests": [
+    {
+      "id": "v4-refresh-permission-title",
+      "description": "Case-local title generation response for E2E_V4_REFRESH_PERM initial launch.",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "E2E_V4_REFRESH_PERM initial launch triggers default title sidecar; pin case-local title response to avoid default replay falling back to legacy provider-basic, and use this launch marker to isolate cross-case matching."
+    },
+    {
+      "id": "v4-refresh-permission-write-call",
+      "description": "Refresh recovery × permission pending: Bash redirect exact tool_use, renderer refreshes after triggering permission popup.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Redirect forces exact suggestion to stably verify scope and response before and after refresh."
+    },
+    {
+      "id": "v4-refresh-permission-final",
+      "description": "Refresh recovery × permission pending: tool_result backfill upon approval → final text.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Approval after refresh can still route back to CLI broker deferred, tool executes and finishes."
+    },
+    {
+      "id": "v4-refresh-permission-repeat-call",
+      "description": "刷新后重复完全相同 Bash exact command。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Verify allowAlways updates are persisted and v4 optionId mapping is not lost."
+    },
+    {
+      "id": "v4-refresh-permission-repeat-final",
+      "description": "Final state after repeat exact command is automatically allowed.",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Stably completes without secondary permission popup."
+    }
+  ]
+}

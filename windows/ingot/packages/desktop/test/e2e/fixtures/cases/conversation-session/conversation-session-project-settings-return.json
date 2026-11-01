@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-project-settings-return",
+  "spec": "./test/e2e/conversation-session/conversation-session-project-settings-return.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-project-settings-return.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "Project draft round-trip settings and real SSH connection, sends no model requests.",
+  "requests": []
+}

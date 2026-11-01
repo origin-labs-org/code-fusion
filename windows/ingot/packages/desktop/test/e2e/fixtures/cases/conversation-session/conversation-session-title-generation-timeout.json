@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-title-generation-timeout",
+  "spec": "./test/e2e/conversation-session/conversation-session-title-generation-timeout.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-title-generation-timeout.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "title-generation-timeout-delayed-title",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "controlled-stream",
+      "syntheticReason": "Real provider title latency is uncontrollable; this case needs to reliably produce a title response returning after 15s and before 60s."
+    },
+    {
+      "id": "title-generation-timeout-main-response",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "The core assertion is on the title sidecar timeout boundary; main reply only needs to complete reliably and expose marker."
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-plan-approval-feedback-user-message",
+  "spec": "./test/e2e/conversation-session/conversation-session-plan-approval-feedback-user-message.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-conversation-plan-approval-enter-plan-call",
+      "description": "First-round request reliably returns EnterPlanMode tool call, creating plan mode approval prerequisite state.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to stably induce plan mode state to avoid relying on whether the real model chooses EnterPlanMode."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_APPROVAL_FEEDBACK_USER_MESSAGE"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_APPROVAL_FEEDBACK_USER_MESSAGE",
+          "E2E_PLAN_APPROVAL_ENTER_PLAN",
+          "E2E_PLAN_APPROVAL_EXIT_PLAN"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_approval_enter_plan_mode",
+          "name": "EnterPlanMode",
+          "input": {}
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-plan-approval-exit-plan-call",
+      "description": "进入 plan mode 后返回 ExitPlanMode 工具调用，触发审批弹窗。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to reliably trigger ExitPlanMode approval dialog to prevent model from outputting text and skipping tools."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_PLAN_APPROVAL_EXIT_PLAN",
+          "toolu_e2e_plan_approval_enter_plan_mode"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_e2e_plan_approval_exit_plan_mode",
+          "name": "ExitPlanMode",
+          "input": {
+            "plan": "E2E_PLAN_APPROVAL_PLAN_BODY: 1. Add runtime bridge. 2. Add UI regression coverage."
+          }
+        }
+      }
+    },
+    {
+      "id": "upstream-conversation-plan-approval-feedback-final",
+      "description": "Returns final text after approved custom feedback is continued as a user message.",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "Need to assert custom feedback appears in the next round of user messages rather than being stuffed into ExitPlanMode tool_result."
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_PLAN_APPROVAL_FEEDBACK"
+        ],
+        "bodyIncludes": [
+          "E2E_PLAN_APPROVAL_FEEDBACK",
+          "E2E_PLAN_APPROVAL_EXIT_PLAN",
+          "toolu_e2e_plan_approval_exit_plan_mode",
+          "The plan was not approved by the user."
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      }
+    }
+  ]
+}

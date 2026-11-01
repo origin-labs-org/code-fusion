@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-r3-mobile-permission",
+  "spec": "./test/e2e/conversation-session/conversation-session-r3-mobile-permission.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-r3-mobile-permission.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "r3-mobp-title",
+      "description": "标题",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Titles are not part of assertions"
+    },
+    {
+      "id": "r3-mobp-permission-write",
+      "description": "Write 工具触发远端权限请求",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "权限阻塞必须由真实 blocking request 承载"
+    },
+    {
+      "id": "r3-mobp-permission-final",
+      "description": "Terminal text following tool result",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Terminal state"
+    },
+    {
+      "id": "r3-mobp-main",
+      "description": "其它",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "Initial launch/fork/edit"
+    }
+  ]
+}
