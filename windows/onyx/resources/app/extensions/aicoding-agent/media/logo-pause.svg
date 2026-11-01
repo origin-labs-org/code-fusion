@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>stop_grey</title>
+    <g id="IDE-端插件优化" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="JB" transform="translate(-839, -582)" fill="#6E6E6E" fill-rule="nonzero">
+            <g id="stop_grey" transform="translate(839, 582)">
+                <rect id="Rectangle" opacity="0" x="0" y="0" width="16" height="16"></rect>
+                <path d="M13.125,2.25 C13.4701875,2.25 13.75,2.5298125 13.75,2.875 L13.75,13.125 C13.75,13.4701875 13.4701875,13.75 13.125,13.75 L2.875,13.75 C2.5298125,13.75 2.25,13.4701875 2.25,13.125 L2.25,2.875 C2.25,2.5298125 2.5298125,2.25 2.875,2.25 L13.125,2.25 Z M11.75,3.75 L4.25,3.75 C3.97385763,3.75 3.75,3.97385763 3.75,4.25 L3.75,11.75 C3.75,12.0261424 3.97385763,12.25 4.25,12.25 L11.75,12.25 C12.0261424,12.25 12.25,12.0261424 12.25,11.75 L12.25,4.25 C12.25,3.97385763 12.0261424,3.75 11.75,3.75 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

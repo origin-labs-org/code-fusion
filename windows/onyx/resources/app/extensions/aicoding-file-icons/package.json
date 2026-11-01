@@ -1,0 +1,1 @@
+{"name":"aicoding-file-icons","private":true,"version":"1.0.0","displayName":"%displayName%","description":"%description%","publisher":"aicoding","license":"MIT","engines":{"vscode":"*"},"categories":["Themes"],"contributes":{"iconThemes":[{"id":"aicoding-seti","label":"%aicodingSetiIconThemeLabel%","path":"./icons/aicoding-seti-icon-theme.json"}]}}

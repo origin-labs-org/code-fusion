@@ -1,0 +1,1 @@
+{"extends":"../tsconfig.base.json","compilerOptions":{"outDir":"./out","rootDir":"./src","types":["node"]},"include":["src/**/*","vscode.aicoding.d.ts","../../src/vscode-dts/vscode.d.ts"]}

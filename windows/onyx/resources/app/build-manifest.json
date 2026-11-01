@@ -1,0 +1,12 @@
+{
+	"product": "Qoder",
+	"productVersion": "1.18.0",
+	"commit": "263293a8a4d0a5e4e58b513019a929c54991263f",
+	"electronVersion": "42.2.0",
+	"platform": "win32",
+	"arch": "x64",
+	"buildTime": "2026-07-23T12:38:40.405Z",
+	"buildNumber": "55083838",
+	"releaseType": "release",
+	"symbolSetId": "Qoder-win32-x64-1.18.0-263293a8a4d0a5e4e58b513019a929c54991263f-55083838"
+}

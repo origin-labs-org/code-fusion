@@ -1,0 +1,469 @@
+{
+	"nameShort": "CodeFusion",
+	"nameLong": "CodeFusion",
+	"applicationName": "codefusion",
+	"dataFolderName": ".qoder",
+	"win32MutexName": "CodeFusion",
+	"licenseName": "Proprietary",
+	"licenseUrl": "https://qoder.com/product-service",
+	"serverLicenseUrl": "https://qoder.com/product-service",
+	"serverGreeting": [],
+	"serverLicense": [],
+	"serverLicensePrompt": "",
+	"serverApplicationName": "codefusion-server",
+	"serverDataFolderName": ".codefusion-server",
+	"tunnelApplicationName": "codefusion-tunnel",
+	"win32DirName": "CodeFusion",
+	"win32NameVersion": "CodeFusion",
+	"win32RegValueName": "CodeFusion",
+	"win32x64AppId": "{{1E3C56D8-2ED2-406D-ABCF-423258E2D1AB}",
+	"win32arm64AppId": "{{7C97A78A-A305-4065-A6CF-AF6EEFFB65A3}",
+	"win32x64UserAppId": "{{943D6004-554E-4B49-A1D5-52F999A1B3C9}",
+	"win32arm64UserAppId": "{{B8942D22-F89D-400B-988B-D350A9C3F6EA}",
+	"win32AppUserModelId": "CodeFusion.IDE",
+	"win32ShellNameShort": "CodeFusion",
+	"win32TunnelServiceMutex": "CodeFusion-tunnelservice",
+	"win32TunnelMutex": "CodeFusion-tunnel",
+	"darwinBundleIdentifier": "com.codefusion.ide",
+	"darwinProfileUUID": "87F30917-6BED-4D64-840B-7C3B8157C9A4",
+	"darwinProfilePayloadUUID": "799F6F77-8223-4528-BEC0-BAD07A763F9F",
+	"linuxIconName": "CodeFusion",
+	"licenseFileName": "LICENSE.txt",
+	"reportIssueUrl": "",
+	"nodejsRepository": "https://nodejs.org",
+	"urlProtocol": "codefusion",
+	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/",
+	"trustedExtensionProtocolHandlers": [
+		"aicoding.aicoding-agent",
+		"aicoding.aicoding-deeplink",
+		"aicoding.aicoding-integration"
+	],
+	"builtInExtensions": [
+		{
+			"name": "ms-vscode.js-debug-companion",
+			"version": "1.1.3",
+			"vsix": ".build\\builtInExtensions\\ms-vscode.js-debug-companion.vsix",
+			"sha256": "7380a890787452f14b2db7835dfa94de538caf358ebc263f9d46dd68ac52de93",
+			"extractPath": ".build\\builtInExtensions\\ms-vscode.js-debug-companion"
+		},
+		{
+			"name": "ms-vscode.js-debug",
+			"version": "1.105.0",
+			"vsix": ".build\\builtInExtensions\\ms-vscode.js-debug.vsix",
+			"sha256": "0c45b90342e8aafd4ff2963b4006de64208ca58c2fd01fea7a710fe61dcfd12a",
+			"extractPath": ".build\\builtInExtensions\\ms-vscode.js-debug"
+		},
+		{
+			"name": "ms-vscode.vscode-js-profile-table",
+			"version": "1.0.10",
+			"vsix": ".build\\builtInExtensions\\ms-vscode.vscode-js-profile-table.vsix",
+			"sha256": "7361748ddf9fd09d8a2ed1f2a2d7376a2cf9aae708692820b799708385c38e08",
+			"extractPath": ".build\\builtInExtensions\\ms-vscode.vscode-js-profile-table"
+		},
+		{
+			"name": "MS-CEINTL.vscode-language-pack-zh-hans",
+			"version": "1.106.2025111209",
+			"vsix": ".build\\builtInExtensions\\MS-CEINTL.vscode-language-pack-zh-hans.vsix",
+			"sha256": "d496f1bdec403dc8cdee459f19c235e3a42b8221175ce56e907190c3228fa844",
+			"extractPath": ".build\\builtInExtensions\\MS-CEINTL.vscode-language-pack-zh-hans"
+		}
+	],
+	"releaseNotesUrl": "https://qoder.com/changelog",
+	"globalReleaseNotesUrl": "https://qoder.com/changelog",
+	"documentationUrl": "https://docs.qoder.com",
+	"globalDocumentationUrl": "https://docs.qoder.com",
+	"serverDocumentationUrl": "https://docs.qoder.com",
+	"traceTelemetryEndpoint": "https://api2.qoder.sh/apm",
+	"aiConfig": {
+		"ariaKey": "btardsb9ml@8031b125dd8bfcf_btardsb9ml@53df7ad2afe8301"
+	},
+	"extensionAffinity": {
+		"aicoding.aicoding-agent": 9999,
+		"aicoding.aicoding-completion": 9999,
+		"aicoding.aicoding-deeplink": 9999,
+		"aicoding.aicoding-integration": 9999
+	},
+	"globalLicenseUrl": "https://qoder.com/product-service",
+	"extensions.verifySignature": false,
+	"enableTelemetry": true,
+	"extensionEnabledApiProposals": {
+		"*": [
+			"*"
+		]
+	},
+	"trustedExtensionPublishers": [
+		"aicoding"
+	],
+	"extensionUntrustedWorkspaceSupport": {
+		"aicoding.aicoding-agent": {
+			"default": true
+		}
+	},
+	"linkProtectionTrustedDomains": [
+		"*.aliyun.com",
+		"*.qoder.ai",
+		"*.qoder.com",
+		"*.qoder.sh",
+		"*.alibabacloud.com"
+	],
+	"extensionRecommendations": {
+		"llvm-vs-code-extensions.vscode-clangd": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.c,**/*.cpp,**/*.cppm,**/*.cc,**/*.ccm,**/*.cxx,**/*.cxxm,**/*.c++,**/*.c++m,**/*.hh,**/*.hpp,**/*.hxx,**/*.h++,**/*.h}",
+					"important": true,
+					"whenNotInstalled": [
+						"ms-vscode.cpptools",
+						"ccls-project.ccls",
+						"cquery-project.cquery"
+					]
+				},
+				{
+					"languages": [
+						"c",
+						"cpp"
+					],
+					"important": true,
+					"whenNotInstalled": [
+						"ms-vscode.cpptools",
+						"ccls-project.ccls",
+						"cquery-project.cquery"
+					]
+				}
+			]
+		},
+		"golang.Go": {
+			"onFileOpen": [
+				{
+					"pathGlob": "**/*.go",
+					"important": true
+				},
+				{
+					"languages": [
+						"go"
+					],
+					"important": true
+				}
+			]
+		},
+		"detachhead.basedpyright": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.py}",
+					"important": true,
+					"whenNotInstalled": [
+						"ms-pyright.pyright"
+					]
+				},
+				{
+					"languages": [
+						"python"
+					],
+					"important": true,
+					"whenNotInstalled": [
+						"ms-pyright.pyright"
+					]
+				}
+			]
+		},
+		"ms-python.python": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.py}",
+					"important": true
+				},
+				{
+					"languages": [
+						"python"
+					],
+					"important": true
+				},
+				{
+					"pathGlob": "{**/*.ipynb}"
+				}
+			]
+		},
+		"muhammad-sammy.csharp": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.cs,**/*.csx,**/*.cake,**/global.json,**/*.csproj,**/*.cshtml,**/*.sln}",
+					"important": true,
+					"whenNotInstalled": [
+						"ms-dotnettools.csdevkit"
+					]
+				},
+				{
+					"languages": [
+						"csharp"
+					],
+					"important": true,
+					"whenNotInstalled": [
+						"ms-dotnettools.csdevkit"
+					]
+				}
+			]
+		},
+		"Ionide.Ionide-fsharp": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.fs,**/*.fsx,**/*.fsi,**/*.fsscript}",
+					"important": true
+				},
+				{
+					"languages": [
+						"fsharp"
+					],
+					"important": true
+				}
+			]
+		},
+		"vscjava.vscode-java-pack": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.java,**/*.jav}",
+					"important": true,
+					"whenNotInstalled": [
+						"ASF.apache-netbeans-java",
+						"Oracle.oracle-java"
+					]
+				},
+				{
+					"languages": [
+						"java"
+					],
+					"important": true,
+					"whenNotInstalled": [
+						"ASF.apache-netbeans-java",
+						"Oracle.oracle-java"
+					]
+				}
+			]
+		},
+		"fwcd.kotlin": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.kt,**/*.kts}",
+					"important": true,
+					"whenNotInstalled": [
+						"jetbrains.kotlin"
+					]
+				},
+				{
+					"languages": [
+						"kotlin"
+					],
+					"important": true,
+					"whenNotInstalled": [
+						"jetbrains.kotlin"
+					]
+				}
+			]
+		},
+		"bmewburn.vscode-intelephense-client": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.php,**/*.php4,**/*.php5,**/*.phtml,**/*.ctp,**/php.ini}",
+					"important": true
+				}
+			]
+		},
+		"xdebug.php-debug": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.php,**/*.php4,**/*.php5,**/*.phtml,**/*.ctp,**/php.ini}",
+					"important": true
+				}
+			]
+		},
+		"rust-lang.rust-analyzer": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.rs,**/*.rslib,**/Cargo.toml}",
+					"important": true
+				},
+				{
+					"languages": [
+						"rust"
+					],
+					"important": true
+				}
+			]
+		},
+		"Shopify.ruby-lsp": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.rb,**/*.erb,**/*.reek,**/.fasterer.yml,**/ruby-lint.yml,**/.rubocop.yml}",
+					"important": true
+				}
+			]
+		},
+		"sumneko.lua": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.lua}",
+					"important": true
+				},
+				{
+					"languages": [
+						"lua"
+					],
+					"important": true
+				}
+			]
+		},
+		"sas.sas-lsp": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.sas,**/*.sas7bdat,**/*.sas7bvew,**/*.sasxpt,**/*.lst,**/*.lstm}",
+					"important": true
+				},
+				{
+					"languages": [
+						"sas"
+					],
+					"important": true
+				}
+			]
+		},
+		"richterger.perl": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.pl,**/*.pm}",
+					"important": true
+				},
+				{
+					"languages": [
+						"perl"
+					],
+					"important": true
+				}
+			]
+		},
+		"REditorSupport.r": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.r}",
+					"important": true
+				},
+				{
+					"languages": [
+						"r"
+					],
+					"important": true
+				}
+			]
+		},
+		"mechatroner.rainbow-csv": {
+			"onFileOpen": [
+				{
+					"pathGlob": "**/*.csv",
+					"important": true
+				}
+			]
+		},
+		"tomoki1207.pdf": {
+			"onFileOpen": [
+				{
+					"pathGlob": "**/*.pdf",
+					"important": true
+				}
+			]
+		},
+		"dart-code.dart-code": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.dart}",
+					"important": true
+				},
+				{
+					"languages": [
+						"dart"
+					],
+					"important": true
+				}
+			]
+		},
+		"julialang.language-julia": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.jl}",
+					"contentPattern": "^#!\\s*/.*\\bjulia[0-9.-]*\\b",
+					"important": true
+				},
+				{
+					"pathGlob": "{**/*.jmd}",
+					"important": true
+				}
+			]
+		},
+		"svelte.svelte-vscode": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.svelte}",
+					"important": true
+				}
+			]
+		},
+		"ms-azuretools.vscode-docker": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/dockerfile,**/Dockerfile,**/docker-compose.yml,**/docker-compose.*.yml}",
+					"important": true
+				},
+				{
+					"languages": [
+						"dockerfile"
+					],
+					"important": true
+				}
+			]
+		},
+		"vue.volar": {
+			"onFileOpen": [
+				{
+					"pathGlob": "{**/*.vue}",
+					"important": true
+				},
+				{
+					"languages": [
+						"vue"
+					],
+					"important": true
+				}
+			]
+		}
+	},
+	"extensionsGallery": {
+		"serviceUrl": "https://marketplace.qoder.sh/_apis/public/gallery",
+		"controlUrl": "https://download.qoder.com/marketplace/controlUrl.json",
+		"searchUrl": "https://marketplace.qoder.sh/_apis/public/gallery/extensionquery",
+		"itemUrl": "https://marketplace.qoder.sh/items"
+	},
+	"privacyStatementUrl": "https://qoder.com/privacy-policy",
+	"keyboardShortcutsUrlMac": "https://go.microsoft.com/fwlink/?linkid=832143",
+	"keyboardShortcutsUrlLinux": "https://go.microsoft.com/fwlink/?linkid=832144",
+	"keyboardShortcutsUrlWin": "https://go.microsoft.com/fwlink/?linkid=832145",
+	"downloadUrl": "https://qoder.com/download",
+	"productVersion": "1.18.0",
+	"target": "user",
+	"quality": "stable",
+	"updateUrl": "https://center.qoder.sh/algo",
+	"releaseType": "release",
+	"commit": "263293a8a4d0a5e4e58b513019a929c54991263f",
+	"date": "2026-07-23T12:39:17.283Z",
+	"skipReleaseNotes": false,
+	"expirationDate": "null",
+	"checksums": {
+		"vs/base/parts/sandbox/electron-browser/preload.js": "nFQWfpjdAJ2IqmAqDXIKzssfB4ZtIJXCBmA37g1f6V4",
+		"vs/workbench/workbench.desktop.main.js": "8yIxyx9PA9e3aeJcoxBmdxWeZikKnyRwOnNveONmhUw",
+		"vs/workbench/workbench.desktop.main.css": "KGJV+fibMl0fOQDBXxwj2+LRvNL9W5GQ8Zmu3QPECFM",
+		"lingma/agents-window/agents-window.desktop.main.js": "NtVGhMdpzSXZ3hNAFsYaiJFMEDnTbi/yjS01Zl2h9X0",
+		"lingma/agents-window/agents-window.desktop.main.css": "2sIf1bfhdrtGPagxcDb03H3dullfw4oD04AzF4BinyQ",
+		"lingma/agents-window/electron-browser/agents-window.html": "YH0jW1++h1Iy5fVaV1c9J4FwzAfQwXvgPh7zVVxZMIs",
+		"lingma/agents-window/electron-browser/agents-window.js": "hZb01M6jqkr7CSvb2iBBFgaQ/hBTKtc9AZdMxt1Lu5k",
+		"vs/workbench/api/node/extensionHostProcess.js": "uzGvVNm3GIeT2E/LslbJBpbihPzhRKv3oOsDJbuv7L8",
+		"vs/code/electron-browser/workbench/workbench.html": "HMczP8qp+nYZtPp3lyGGy5FYfpcizEPW92k5BTc2BGk",
+		"vs/code/electron-browser/workbench/workbench.js": "Cue62WAwXSB6n9tVfYeUjbsQlwFCEj9z+zAAz8VfhZ4"
+	},
+	"version": "1.106.3"
+}

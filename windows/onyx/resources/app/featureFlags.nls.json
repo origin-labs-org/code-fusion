@@ -1,0 +1,33 @@
+{
+	"welcome.slogan": {
+		"zh-cn": "不止于 IDE，链接人与 AI",
+		"en": "Not only an Al IDE, it combines human and Al."
+	},
+	"welcome.agreement": {
+		"zh-cn": "产品服务协议",
+		"en": "Product Service Agreement"
+	},
+	"welcome.login": {
+		"zh-cn": "登录 Qoder 解锁 AI 编程的未来",
+		"en": "Sign in to Qoder and unlock the future of AI coding."
+	},
+	"login.default": {
+		"zh-cn": "立即登录",
+		"en": "Sign in"
+	},
+	"commit": "263293a8a4d0a5e4e58b513019a929c54991263f",
+	"date": "2026-07-23T12:39:17.283Z",
+	"checksums": {
+		"vs/base/parts/sandbox/electron-browser/preload.js": "nFQWfpjdAJ2IqmAqDXIKzssfB4ZtIJXCBmA37g1f6V4",
+		"vs/workbench/workbench.desktop.main.js": "8yIxyx9PA9e3aeJcoxBmdxWeZikKnyRwOnNveONmhUw",
+		"vs/workbench/workbench.desktop.main.css": "KGJV+fibMl0fOQDBXxwj2+LRvNL9W5GQ8Zmu3QPECFM",
+		"lingma/agents-window/agents-window.desktop.main.js": "NtVGhMdpzSXZ3hNAFsYaiJFMEDnTbi/yjS01Zl2h9X0",
+		"lingma/agents-window/agents-window.desktop.main.css": "2sIf1bfhdrtGPagxcDb03H3dullfw4oD04AzF4BinyQ",
+		"lingma/agents-window/electron-browser/agents-window.html": "YH0jW1++h1Iy5fVaV1c9J4FwzAfQwXvgPh7zVVxZMIs",
+		"lingma/agents-window/electron-browser/agents-window.js": "hZb01M6jqkr7CSvb2iBBFgaQ/hBTKtc9AZdMxt1Lu5k",
+		"vs/workbench/api/node/extensionHostProcess.js": "uzGvVNm3GIeT2E/LslbJBpbihPzhRKv3oOsDJbuv7L8",
+		"vs/code/electron-browser/workbench/workbench.html": "HMczP8qp+nYZtPp3lyGGy5FYfpcizEPW92k5BTc2BGk",
+		"vs/code/electron-browser/workbench/workbench.js": "Cue62WAwXSB6n9tVfYeUjbsQlwFCEj9z+zAAz8VfhZ4"
+	},
+	"version": "1.18.0"
+}

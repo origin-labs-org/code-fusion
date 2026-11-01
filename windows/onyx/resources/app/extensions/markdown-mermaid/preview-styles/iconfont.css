@@ -1,0 +1,23 @@
+@font-face {
+	font-family: "iconfont";
+	src: url("./iconfont.woff") format('woff');
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+
+.iconfont {
+	font-family: "iconfont" !important;
+	font-size: 16px;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Mermaid 相关图标 */
+.iconfont-preview-mermaid:before { content: "\e60c"; }
+.iconfont-code-line:before { content: "\e756"; }
+.iconfont-copy-line:before { content: "\e722"; }
+.iconfont-withdraw-line:before { content: "\e60f"; }
+.iconfont-zoomout-line:before { content: "\e6f2"; }
+.iconfont-zoomin-line:before { content: "\e6f3"; }

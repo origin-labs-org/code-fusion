@@ -1,0 +1,259 @@
+/* Mermaid 预览样式 */
+
+/* Mermaid fence wrapper - 重置样式以确保 mermaid 图表不受默认代码块样式影响 */
+/* 使用 !important 来对抗第三方插件的 all:unset 影响 */
+pre.mermaid-fence-wrapper {
+    all: initial !important;
+    display: block !important;
+    margin: 16px 0 !important;
+    padding: 12px !important;
+    background-color: var(--vscode-textCodeBlock-background) !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--vscode-panel-border, transparent) !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+    font-family: var(--vscode-font-family) !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+}
+
+/* 如果外层还有 pre 标签（受第三方插件影响），也进行保护 */
+pre:has(> .mermaid-fence-wrapper) {
+    all: initial !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+}
+
+.mermaid {
+    display: block;
+    margin: 16px 0;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
+/* Mermaid 包装器 */
+.mermaid-wrapper {
+    position: relative !important;
+    border-radius: 4px !important;
+    display: block !important;
+    margin: 16px 0 !important;
+    padding: 12px !important;
+    background-color: var(--vscode-textCodeBlock-background) !important;
+    border: 1px solid var(--vscode-panel-border, transparent) !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* 如果 mermaid-wrapper 被 pre 标签包裹,重置 pre 的样式 */
+pre:has(.mermaid-wrapper) {
+    all: initial !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    overflow: auto !important;
+}
+
+/* 控制按钮栏 - 对齐 repo-wiki 样式 */
+.mermaid-control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    min-width: 0; /* 允许 flex 子项收缩 */
+}
+
+/* 控制按钮栏左侧 */
+.mermaid-control-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0; /* 左侧固定不收缩 */
+}
+
+/* 控制按钮栏右侧 - 自适应滚动 */
+.mermaid-control-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    flex: 1;
+    min-width: 0;
+    /* 隐藏滚动条但保持滚动功能 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* 右侧按钮容器 - 用于实现靠右对齐和滚动的兼容 */
+.mermaid-control-bar-right::before {
+    content: '';
+    flex: 1;
+    min-width: 0;
+}
+
+/* 隐藏 Webkit 滚动条 */
+.mermaid-control-bar-right::-webkit-scrollbar {
+    display: none;
+}
+
+/* 控制按钮 */
+.mermaid-control-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--vscode-icon-foreground);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* 防止按钮被压缩 */
+}
+
+.mermaid-control-button:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.mermaid-control-button:active {
+    background-color: var(--vscode-toolbar-activeBackground);
+}
+
+.mermaid-control-button i {
+    font-size: 16px;
+}
+
+/* SVG 容器 - 对齐 repo-wiki 样式 */
+.mermaid-svg-container {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    padding: 16px;
+    min-height: 100px;
+}
+
+.mermaid-svg-container svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.1s ease-out;
+}
+
+/* 代码容器 */
+.mermaid-code-container {
+    font-family: var(--vscode-editor-font-family);
+    font-size: var(--vscode-editor-font-size);
+    line-height: 1.5;
+    color: var(--vscode-editor-foreground);
+    background-color: var(--vscode-textCodeBlock-background);
+    border-radius: 4px;
+    padding: 12px;
+    max-height: 300px;
+    overflow: auto;
+    margin: 0;
+}
+
+/* Mermaid 错误样式 */
+.mermaid-error {
+    background: var(--vscode-inputValidation-errorBackground);
+    color: var(--vscode-errorForeground);
+    border: 1px solid var(--vscode-inputValidation-errorBorder);
+    border-radius: 4px;
+    padding: 12px;
+    margin: 16px 0;
+    font-family: var(--vscode-font-family);
+    text-align: left;
+}
+
+.mermaid-error-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.mermaid-error-message {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    font-size: 12px;
+    font-family: var(--vscode-editor-font-family, monospace);
+}
+
+/* Toast 样式 - 对齐 repo-wiki */
+.mermaid-toast {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 13px;
+    line-height: 1.5;
+    min-width: 270px;
+    border: 1px solid var(--vscode-notifications-border);
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    z-index: 10001;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+}
+
+.mermaid-toast-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.mermaid-toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+}
+
+.mermaid-toast-content {
+    flex: 1;
+    word-break: break-word;
+    color: var(--vscode-notifications-foreground);
+}
+
+/* 成功样式 */
+.mermaid-toast-success {
+    background-color: var(--vscode-notifications-background);
+}
+
+.mermaid-toast-success .mermaid-toast-icon {
+    color: var(--vscode-charts-green, #22c55e);
+}
+
+/* 错误样式 */
+.mermaid-toast-error {
+    background-color: var(--vscode-inputValidation-errorBackground);
+}
+
+.mermaid-toast-error .mermaid-toast-icon {
+    color: var(--vscode-charts-red, #ef4444);
+}
+
+/* 高对比度主题适配 */
+.vscode-high-contrast .mermaid-toast {
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
