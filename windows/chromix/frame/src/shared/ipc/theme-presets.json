@@ -1,0 +1,236 @@
+[
+  {
+    "dark": {
+      "accent": "#ededf0",
+      "bg": "#1a1a1d",
+      "fg": "#f4f4f6"
+    },
+    "ground": {
+      "dark": "#1f1f22",
+      "light": "#e6e6e9"
+    },
+    "id": "zephium",
+    "light": {
+      "accent": "#222226",
+      "bg": "#f1f1f3",
+      "fg": "#1c1c1f"
+    },
+    "name": "Zephium"
+  },
+  {
+    "dark": {
+      "accent": "#8fa8f2",
+      "bg": "#1c1b19",
+      "fg": "#eeebe4"
+    },
+    "ground": {
+      "dark": "#21201e",
+      "light": "#ebe9e4"
+    },
+    "id": "paper",
+    "light": {
+      "accent": "#3a62d9",
+      "bg": "#f6f4ef",
+      "fg": "#23211d"
+    },
+    "name": "Paper"
+  },
+  {
+    "dark": {
+      "accent": "#7ea3ff",
+      "bg": "#0f1322",
+      "fg": "#e5e9f4"
+    },
+    "ground": {
+      "dark": "#141827",
+      "light": "#e3e6ed"
+    },
+    "id": "midnight",
+    "light": {
+      "accent": "#3460de",
+      "bg": "#eef1f7",
+      "fg": "#141a2c"
+    },
+    "name": "Midnight"
+  },
+  {
+    "dark": {
+      "accent": "#df9862",
+      "bg": "#221e1a",
+      "fg": "#ece3d5"
+    },
+    "ground": {
+      "dark": "#27231e",
+      "light": "#e5dfd4"
+    },
+    "id": "sand",
+    "light": {
+      "accent": "#a95b2a",
+      "bg": "#efe9de",
+      "fg": "#2d2720"
+    },
+    "name": "Sand"
+  },
+  {
+    "dark": {
+      "accent": "#88c0d0",
+      "bg": "#2e3440",
+      "fg": "#eceff4"
+    },
+    "ground": {
+      "dark": "#333945",
+      "light": "#e2e6eb"
+    },
+    "id": "nord",
+    "light": {
+      "accent": "#5e81ac",
+      "bg": "#eceff4",
+      "fg": "#2e3440"
+    },
+    "name": "Nord"
+  },
+  {
+    "dark": {
+      "accent": "#cba6f7",
+      "bg": "#1e1e2e",
+      "fg": "#cdd6f4"
+    },
+    "ground": {
+      "dark": "#222233",
+      "light": "#e7e9ee"
+    },
+    "id": "catppuccin",
+    "light": {
+      "accent": "#8839ef",
+      "bg": "#eff1f5",
+      "fg": "#4c4f69"
+    },
+    "name": "Catppuccin"
+  },
+  {
+    "dark": {
+      "accent": "#bd93f9",
+      "bg": "#282a36",
+      "fg": "#f8f8f2"
+    },
+    "ground": {
+      "dark": "#2d2f3b",
+      "light": "#f4f0e1"
+    },
+    "id": "dracula",
+    "light": {
+      "accent": "#644ac9",
+      "bg": "#fffbeb",
+      "fg": "#1f1f1f"
+    },
+    "name": "Dracula"
+  },
+  {
+    "dark": {
+      "accent": "#fe8019",
+      "bg": "#282828",
+      "fg": "#ebdbb2"
+    },
+    "ground": {
+      "dark": "#2d2c2c",
+      "light": "#f1e8c0"
+    },
+    "id": "gruvbox",
+    "light": {
+      "accent": "#af3a03",
+      "bg": "#fbf1c7",
+      "fg": "#3c3836"
+    },
+    "name": "Gruvbox"
+  },
+  {
+    "dark": {
+      "accent": "#ebbcba",
+      "bg": "#191724",
+      "fg": "#e0def4"
+    },
+    "ground": {
+      "dark": "#1e1c29",
+      "light": "#f2ece8"
+    },
+    "id": "rose-pine",
+    "light": {
+      "accent": "#d7827e",
+      "bg": "#faf4ed",
+      "fg": "#575279"
+    },
+    "name": "Rosé Pine"
+  },
+  {
+    "dark": {
+      "accent": "#268bd2",
+      "bg": "#002b36",
+      "fg": "#93a1a1"
+    },
+    "ground": {
+      "dark": "#042e39",
+      "light": "#f5f0de"
+    },
+    "id": "solarized",
+    "light": {
+      "accent": "#268bd2",
+      "bg": "#fdf6e3",
+      "fg": "#586e75"
+    },
+    "name": "Solarized"
+  },
+  {
+    "dark": {
+      "accent": "#7aa2f7",
+      "bg": "#1a1b26",
+      "fg": "#c0caf5"
+    },
+    "ground": {
+      "dark": "#1e1f2b",
+      "light": "#d8dae0"
+    },
+    "id": "tokyo-night",
+    "light": {
+      "accent": "#2e7de9",
+      "bg": "#e1e2e7",
+      "fg": "#343b58"
+    },
+    "name": "Tokyo Night"
+  },
+  {
+    "dark": {
+      "accent": "#a7c080",
+      "bg": "#2d353b",
+      "fg": "#d3c6aa"
+    },
+    "ground": {
+      "dark": "#31393e",
+      "light": "#f5efde"
+    },
+    "id": "everforest",
+    "light": {
+      "accent": "#8da101",
+      "bg": "#fdf6e3",
+      "fg": "#5c6a72"
+    },
+    "name": "Everforest"
+  },
+  {
+    "dark": {
+      "accent": "#4493f8",
+      "bg": "#0d1117",
+      "fg": "#e6edf3"
+    },
+    "ground": {
+      "dark": "#12161c",
+      "light": "#ebedef"
+    },
+    "id": "github",
+    "light": {
+      "accent": "#0969da",
+      "bg": "#f6f8fa",
+      "fg": "#1f2328"
+    },
+    "name": "GitHub"
+  }
+]

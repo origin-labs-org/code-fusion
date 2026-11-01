@@ -1,0 +1,14 @@
+{
+  "name": "zephium",
+  "private": true,
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "scripts": {
+    "dev": "pnpm -C desktop dev",
+    "build": "pnpm -C desktop build",
+    "frame:dev": "pnpm -C frame dev",
+    "frame:build": "pnpm -C frame build"
+  },
+  "packageManager": "pnpm@11.17.0"
+}

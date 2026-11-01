@@ -1,0 +1,638 @@
+//! Split tree: the content region subdivides into panes, each bound to a tab.
+//! Pure geometry; the engine shows one content webview per resulting rect.
+
+use crate::geometry::Rect;
+use crate::ids::ItemId;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum Axis {
+    Row,
+    Col,
+}
+
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum Pane {
+    Leaf(ItemId),
+    Branch {
+        axis: Axis,
+        ratio: f64,
+        a: Box<Pane>,
+        b: Box<Pane>,
+    },
+}
+
+impl Pane {
+    pub fn leaf(id: ItemId) -> Self {
+        Pane::Leaf(id)
+    }
+
+    pub fn tabs(&self) -> Vec<ItemId> {
+        let mut out = Vec::new();
+        self.collect(&mut out);
+        out
+    }
+
+    pub fn contains(&self, tab: ItemId) -> bool {
+        match self {
+            Pane::Leaf(id) => *id == tab,
+            Pane::Branch { a, b, .. } => a.contains(tab) || b.contains(tab),
+        }
+    }
+
+    /// Exact branch/leaf identity while deliberately ignoring mutable ratios.
+    /// A divider path remains authoritative across resize and ratio changes,
+    /// but not after a close/split/drop collapses or replaces its branch.
+    pub fn same_topology(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Pane::Leaf(left), Pane::Leaf(right)) => left == right,
+            (
+                Pane::Branch {
+                    axis: left_axis,
+                    a: left_a,
+                    b: left_b,
+                    ..
+                },
+                Pane::Branch {
+                    axis: right_axis,
+                    a: right_a,
+                    b: right_b,
+                    ..
+                },
+            ) => {
+                left_axis == right_axis
+                    && left_a.same_topology(right_a)
+                    && left_b.same_topology(right_b)
+            }
+            _ => false,
+        }
+    }
+
+    pub fn split(&mut self, target: ItemId, new: ItemId, axis: Axis, before: bool) -> bool {
+        match self {
+            Pane::Leaf(id) if *id == target => {
+                let kept = Pane::Leaf(*id);
+                let added = Pane::Leaf(new);
+                let (a, b) = if before { (added, kept) } else { (kept, added) };
+                *self = Pane::Branch {
+                    axis,
+                    ratio: 0.5,
+                    a: Box::new(a),
+                    b: Box::new(b),
+                };
+                true
+            }
+            Pane::Leaf(_) => false,
+            Pane::Branch { a, b, .. } => {
+                a.split(target, new, axis, before) || b.split(target, new, axis, before)
+            }
+        }
+    }
+
+    pub fn set_ratio(&mut self, path: &[usize], ratio: f64) {
+        if !ratio.is_finite() {
+            return;
+        }
+        let mut node = self;
+        for &step in path {
+            match node {
+                Pane::Branch { a, b, .. } => {
+                    node = match step {
+                        0 => a,
+                        1 => b,
+                        // Paths are an exact binary-tree address. Treating an
+                        // arbitrary value as `1` aliases malformed input onto
+                        // a different live branch.
+                        _ => return,
+                    };
+                }
+                Pane::Leaf(_) => return,
+            }
+        }
+        if let Pane::Branch { ratio: r, .. } = node {
+            *r = ratio.clamp(0.05, 0.95);
+        }
+    }
+
+    pub fn remove(self, tab: ItemId) -> Option<Pane> {
+        match self {
+            Pane::Leaf(id) if id == tab => None,
+            leaf @ Pane::Leaf(_) => Some(leaf),
+            Pane::Branch { axis, ratio, a, b } => match (a.remove(tab), b.remove(tab)) {
+                (Some(a), Some(b)) => Some(Pane::Branch {
+                    axis,
+                    ratio,
+                    a: Box::new(a),
+                    b: Box::new(b),
+                }),
+                (Some(only), None) | (None, Some(only)) => Some(only),
+                (None, None) => None,
+            },
+        }
+    }
+
+    fn collect(&self, out: &mut Vec<ItemId>) {
+        match self {
+            Pane::Leaf(id) => out.push(*id),
+            Pane::Branch { a, b, .. } => {
+                a.collect(out);
+                b.collect(out);
+            }
+        }
+    }
+}
+
+pub fn layout(root: &Pane, region: Rect, gap: f64) -> Vec<(ItemId, Rect)> {
+    let mut out = Vec::new();
+    place(root, region, gap, &mut out);
+    out
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Divider {
+    pub path: Vec<usize>,
+    pub axis: Axis,
+    /// Rect of the branch the divider belongs to; ratio math runs against it.
+    pub rect: Rect,
+    /// The gap strip between the two children; the grabbable area.
+    pub strip: Rect,
+}
+
+pub fn dividers(tree: &Pane, region: Rect, gap: f64) -> Vec<Divider> {
+    fn walk(pane: &Pane, rect: Rect, gap: f64, path: &mut Vec<usize>, out: &mut Vec<Divider>) {
+        let Pane::Branch { axis, ratio, a, b } = pane else {
+            return;
+        };
+        let (ra, rb) = divide(rect, *axis, *ratio, gap);
+        let strip = match axis {
+            Axis::Row => Rect::new(ra.x + ra.width, rect.y, rb.x - ra.x - ra.width, rect.height),
+            Axis::Col => Rect::new(
+                rect.x,
+                ra.y + ra.height,
+                rect.width,
+                rb.y - ra.y - ra.height,
+            ),
+        };
+        out.push(Divider {
+            path: path.clone(),
+            axis: *axis,
+            rect,
+            strip,
+        });
+        path.push(0);
+        walk(a, ra, gap, path, out);
+        path.pop();
+        path.push(1);
+        walk(b, rb, gap, path, out);
+        path.pop();
+    }
+    let mut out = Vec::new();
+    walk(tree, region, gap, &mut Vec::new(), &mut out);
+    out
+}
+
+pub fn divider_at(tree: &Pane, region: Rect, gap: f64, px: f64, py: f64) -> Option<Divider> {
+    dividers(tree, region, gap).into_iter().find(|d| {
+        px >= d.strip.x
+            && px <= d.strip.x + d.strip.width
+            && py >= d.strip.y
+            && py <= d.strip.y + d.strip.height
+    })
+}
+
+/// Resolves a previously grabbed divider against the current tree geometry.
+/// Window resize and ancestor-ratio changes can invalidate the rectangle that
+/// was captured on pointer-down; the binary path remains the stable identity.
+pub fn divider_at_path(tree: &Pane, region: Rect, gap: f64, path: &[usize]) -> Option<Divider> {
+    dividers(tree, region, gap)
+        .into_iter()
+        .find(|divider| divider.path == path)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Edge {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
+impl Edge {
+    pub fn axis(self) -> Axis {
+        match self {
+            Edge::Left | Edge::Right => Axis::Row,
+            Edge::Top | Edge::Bottom => Axis::Col,
+        }
+    }
+
+    pub fn before(self) -> bool {
+        matches!(self, Edge::Left | Edge::Top)
+    }
+}
+
+/// What dropping a tab on a pane's edge would do, before it does. Every rect
+/// is in the same space as the region the tree was laid into.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Drop {
+    pub tab: ItemId,
+    pub edge: Edge,
+    /// Where the new pane will stand.
+    pub zone: Rect,
+    /// How far the pane's page slides to make room: toward its own side of the
+    /// seam, by the space the new pane takes.
+    pub shift: (f64, f64),
+}
+
+pub fn drop_target(tree: &Pane, region: Rect, gap: f64, x: f64, y: f64) -> Option<Drop> {
+    let (tab, r) = layout(tree, region, gap)
+        .into_iter()
+        .find(|(_, r)| x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height)?;
+    if r.width <= 0.0 || r.height <= 0.0 {
+        return None;
+    }
+    let candidates = [
+        ((x - r.x) / r.width, Edge::Left),
+        ((r.x + r.width - x) / r.width, Edge::Right),
+        ((y - r.y) / r.height, Edge::Top),
+        ((r.y + r.height - y) / r.height, Edge::Bottom),
+    ];
+    let edge = candidates
+        .iter()
+        .min_by(|a, b| a.0.total_cmp(&b.0))
+        .map(|(_, e)| *e)?;
+    let (first, second) = divide(r, edge.axis(), 0.5, gap);
+    let zone = if edge.before() { first } else { second };
+    let shift = match edge.axis() {
+        Axis::Row => {
+            let distance = zone.width + gap;
+            (if edge.before() { distance } else { -distance }, 0.0)
+        }
+        Axis::Col => {
+            let distance = zone.height + gap;
+            (0.0, if edge.before() { distance } else { -distance })
+        }
+    };
+    Some(Drop {
+        tab,
+        edge,
+        zone,
+        shift,
+    })
+}
+
+pub fn ratio_for(axis: Axis, rect: Rect, gap: f64, px: f64, py: f64) -> f64 {
+    let (offset, available) = match axis {
+        Axis::Row => (px - rect.x, rect.width - gap),
+        Axis::Col => (py - rect.y, rect.height - gap),
+    };
+    if !offset.is_finite() || !available.is_finite() || available <= 0.0 {
+        return 0.5;
+    }
+    let raw = offset / available;
+    if raw.is_finite() {
+        raw.clamp(0.05, 0.95)
+    } else {
+        0.5
+    }
+}
+
+fn place(pane: &Pane, rect: Rect, gap: f64, out: &mut Vec<(ItemId, Rect)>) {
+    match pane {
+        Pane::Leaf(id) => out.push((*id, rect)),
+        Pane::Branch { axis, ratio, a, b } => {
+            let (ra, rb) = divide(rect, *axis, *ratio, gap);
+            place(a, ra, gap, out);
+            place(b, rb, gap, out);
+        }
+    }
+}
+
+fn divide(r: Rect, axis: Axis, ratio: f64, gap: f64) -> (Rect, Rect) {
+    let ratio = if ratio.is_finite() {
+        ratio.clamp(0.0, 1.0)
+    } else {
+        0.5
+    };
+    match axis {
+        Axis::Row => {
+            let avail = (r.width - gap).max(0.0);
+            let aw = avail * ratio;
+            (
+                Rect::new(r.x, r.y, aw, r.height),
+                Rect::new(r.x + aw + gap, r.y, avail - aw, r.height),
+            )
+        }
+        Axis::Col => {
+            let avail = (r.height - gap).max(0.0);
+            let ah = avail * ratio;
+            (
+                Rect::new(r.x, r.y, r.width, ah),
+                Rect::new(r.x, r.y + ah + gap, r.width, avail - ah),
+            )
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn id(n: u128) -> ItemId {
+        ItemId::from(n)
+    }
+
+    const REGION: Rect = Rect {
+        x: 100.0,
+        y: 0.0,
+        width: 1000.0,
+        height: 800.0,
+    };
+
+    #[test]
+    fn single_leaf_fills_region() {
+        let panes = layout(&Pane::leaf(id(7)), REGION, 8.0);
+        assert_eq!(panes, vec![(id(7), REGION)]);
+    }
+
+    #[test]
+    fn row_split_halves_width_with_gap() {
+        let tree = Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        let panes = layout(&tree, REGION, 8.0);
+        // (1000 - 8) / 2 = 496 each, second starts at 100 + 496 + 8.
+        assert_eq!(panes[0], (id(1), Rect::new(100.0, 0.0, 496.0, 800.0)));
+        assert_eq!(panes[1], (id(2), Rect::new(604.0, 0.0, 496.0, 800.0)));
+        // no overlap: a.right + gap == b.left
+        assert_eq!(panes[0].1.x + panes[0].1.width + 8.0, panes[1].1.x);
+    }
+
+    #[test]
+    fn col_split_divides_height() {
+        let tree = Pane::Branch {
+            axis: Axis::Col,
+            ratio: 0.25,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        let panes = layout(&tree, REGION, 8.0);
+        // (800 - 8) * 0.25 = 198
+        assert_eq!(panes[0].1.height, 198.0);
+        assert_eq!(panes[1].1.y, 206.0);
+        assert_eq!(panes[1].1.height, 594.0);
+    }
+
+    #[test]
+    fn nested_split_collects_all_tabs_without_overlap() {
+        let tree = Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::Branch {
+                axis: Axis::Col,
+                ratio: 0.5,
+                a: Box::new(Pane::leaf(id(2))),
+                b: Box::new(Pane::leaf(id(3))),
+            }),
+        };
+        assert_eq!(tree.tabs(), vec![id(1), id(2), id(3)]);
+        let panes = layout(&tree, REGION, 8.0);
+        assert_eq!(panes.len(), 3);
+        let right = &panes[1].1;
+        let bottom = &panes[2].1;
+        // right column's two panes share x/width, stacked with the gap.
+        assert_eq!(right.x, bottom.x);
+        assert_eq!(right.width, bottom.width);
+        assert_eq!(right.y + right.height + 8.0, bottom.y);
+    }
+
+    #[test]
+    fn split_replaces_target_leaf_with_branch() {
+        let mut tree = Pane::leaf(id(1));
+        assert!(tree.split(id(1), id(2), Axis::Row, false));
+        assert_eq!(tree.tabs(), vec![id(1), id(2)]);
+
+        // split pane 2 vertically, new tab above it
+        assert!(tree.split(id(2), id(3), Axis::Col, true));
+        assert_eq!(tree.tabs(), vec![id(1), id(3), id(2)]);
+
+        // unknown target leaves the tree untouched
+        let before = tree.clone();
+        assert!(!tree.split(id(99), id(4), Axis::Row, false));
+        assert_eq!(tree, before);
+    }
+
+    #[test]
+    fn topology_identity_ignores_ratios_but_not_axes_or_leaf_ownership() {
+        let original = nested();
+        let mut ratio_changed = original.clone();
+        ratio_changed.set_ratio(&[], 0.7);
+        ratio_changed.set_ratio(&[1], 0.25);
+        assert!(original.same_topology(&ratio_changed));
+
+        let mut axis_changed = ratio_changed.clone();
+        let Pane::Branch { axis, .. } = &mut axis_changed else {
+            unreachable!()
+        };
+        *axis = match *axis {
+            Axis::Row => Axis::Col,
+            Axis::Col => Axis::Row,
+        };
+        assert!(!original.same_topology(&axis_changed));
+
+        let replaced = Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(99))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        assert!(!original.same_topology(&replaced));
+    }
+
+    #[test]
+    fn remove_collapses_branch_into_sibling() {
+        let mut tree = Pane::leaf(id(1));
+        tree.split(id(1), id(2), Axis::Row, false);
+        tree.split(id(2), id(3), Axis::Col, false);
+        assert_eq!(tree.tabs(), vec![id(1), id(2), id(3)]);
+
+        let tree = tree.remove(id(2)).unwrap();
+        assert_eq!(tree.tabs(), vec![id(1), id(3)]);
+        let tree = tree.remove(id(1)).unwrap();
+        assert_eq!(tree, Pane::leaf(id(3)));
+        assert!(tree.remove(id(3)).is_none());
+    }
+
+    fn nested() -> Pane {
+        Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::Branch {
+                axis: Axis::Col,
+                ratio: 0.5,
+                a: Box::new(Pane::leaf(id(2))),
+                b: Box::new(Pane::leaf(id(3))),
+            }),
+        }
+    }
+
+    #[test]
+    fn dividers_enumerate_strips() {
+        let region = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        let divs = dividers(&nested(), region, 8.0);
+        assert_eq!(divs.len(), 2);
+        // outer row divider: left pane is (1000-8)/2 = 496 wide
+        assert_eq!(divs[0].strip, Rect::new(496.0, 0.0, 8.0, 800.0));
+        assert_eq!(divs[0].axis, Axis::Row);
+        // inner col divider spans the right pane, at half its (800-8) height
+        assert_eq!(divs[1].strip, Rect::new(504.0, 396.0, 496.0, 8.0));
+        assert_eq!(divs[1].path, vec![1]);
+    }
+
+    #[test]
+    fn divider_at_finds_row_split_and_descends() {
+        let region = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        let outer = divider_at(&nested(), region, 8.0, 500.0, 400.0).unwrap();
+        assert_eq!(outer.path, Vec::<usize>::new());
+        assert_eq!(outer.axis, Axis::Row);
+
+        let inner = divider_at(&nested(), region, 8.0, 700.0, 400.0).unwrap();
+        assert_eq!(inner.path, vec![1]);
+        assert_eq!(inner.axis, Axis::Col);
+
+        assert!(divider_at(&nested(), region, 8.0, 100.0, 400.0).is_none());
+    }
+
+    #[test]
+    fn divider_path_recomputes_geometry_after_resize() {
+        let tree = nested();
+        let before = divider_at_path(&tree, Rect::new(0.0, 0.0, 1000.0, 800.0), 8.0, &[1]).unwrap();
+        let after = divider_at_path(&tree, Rect::new(0.0, 0.0, 1400.0, 900.0), 8.0, &[1]).unwrap();
+        assert_eq!(before.path, after.path);
+        assert_ne!(before.rect, after.rect);
+        assert_ne!(before.strip, after.strip);
+        assert!(divider_at_path(&tree, before.rect, 8.0, &[2]).is_none());
+    }
+
+    #[test]
+    fn drop_target_picks_nearest_edge_with_zone() {
+        let region = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        let leaf = Pane::leaf(id(5));
+        let left = drop_target(&leaf, region, 8.0, 50.0, 400.0).unwrap();
+        assert_eq!(left.tab, id(5));
+        assert_eq!(left.edge, Edge::Left);
+        // (1000 - 8) / 2 each, the new pane first.
+        assert_eq!(left.zone, Rect::new(0.0, 0.0, 496.0, 800.0));
+        assert_eq!(
+            drop_target(&leaf, region, 8.0, 950.0, 400.0).unwrap().edge,
+            Edge::Right
+        );
+        assert_eq!(
+            drop_target(&leaf, region, 8.0, 500.0, 40.0).unwrap().edge,
+            Edge::Top
+        );
+        assert_eq!(
+            drop_target(&leaf, region, 8.0, 500.0, 760.0).unwrap().edge,
+            Edge::Bottom
+        );
+    }
+
+    #[test]
+    fn a_drop_slides_the_page_away_by_the_room_the_new_pane_takes() {
+        let region = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        let leaf = Pane::leaf(id(5));
+        let left = drop_target(&leaf, region, 8.0, 50.0, 400.0).unwrap();
+        assert_eq!(left.shift, (504.0, 0.0));
+        let right = drop_target(&leaf, region, 8.0, 950.0, 400.0).unwrap();
+        assert_eq!(right.zone, Rect::new(504.0, 0.0, 496.0, 800.0));
+        assert_eq!(right.shift, (-504.0, 0.0));
+        let top = drop_target(&leaf, region, 8.0, 500.0, 40.0).unwrap();
+        assert_eq!(top.shift, (0.0, 404.0));
+        assert_eq!(top.zone, Rect::new(0.0, 0.0, 1000.0, 396.0));
+        let bottom = drop_target(&leaf, region, 8.0, 500.0, 760.0).unwrap();
+        assert_eq!(bottom.shift, (0.0, -404.0));
+    }
+
+    #[test]
+    fn drop_target_resolves_pane_in_split() {
+        let tree = Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        let region = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        let d = drop_target(&tree, region, 8.0, 980.0, 400.0).unwrap();
+        assert_eq!(d.tab, id(2));
+        assert_eq!(d.edge, Edge::Right);
+        assert!(!d.edge.before());
+    }
+
+    #[test]
+    fn ratio_for_maps_position_and_clamps() {
+        let rect = Rect::new(0.0, 0.0, 1000.0, 800.0);
+        assert!((ratio_for(Axis::Row, rect, 8.0, 300.0, 0.0) - 300.0 / 992.0).abs() < 1e-9);
+        assert_eq!(ratio_for(Axis::Row, rect, 8.0, -50.0, 0.0), 0.05);
+        assert_eq!(ratio_for(Axis::Row, rect, 8.0, 9999.0, 0.0), 0.95);
+    }
+
+    #[test]
+    fn set_ratio_updates_branch_at_path() {
+        let mut tree = nested();
+        tree.set_ratio(&[1], 0.3);
+        let Pane::Branch { b, .. } = &tree else {
+            panic!()
+        };
+        let Pane::Branch { ratio, .. } = b.as_ref() else {
+            panic!()
+        };
+        assert!((*ratio - 0.3).abs() < 1e-9);
+    }
+
+    #[test]
+    fn malformed_ratio_updates_do_not_alias_or_store_nan() {
+        let mut tree = nested();
+        let original = tree.clone();
+        tree.set_ratio(&[2], 0.3);
+        assert_eq!(tree, original);
+        tree.set_ratio(&[], f64::NAN);
+        assert_eq!(tree, original);
+
+        let degenerate = Rect::new(0.0, 0.0, 8.0, 8.0);
+        assert_eq!(ratio_for(Axis::Row, degenerate, 8.0, 4.0, 0.0), 0.5);
+        assert_eq!(ratio_for(Axis::Row, REGION, 8.0, f64::INFINITY, 0.0), 0.5);
+    }
+
+    #[test]
+    fn layout_contains_nonfinite_stored_ratios() {
+        let tree = Pane::Branch {
+            axis: Axis::Row,
+            ratio: f64::NAN,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        for (_, rect) in layout(&tree, REGION, 8.0) {
+            assert!(rect.x.is_finite());
+            assert!(rect.y.is_finite());
+            assert!(rect.width.is_finite());
+            assert!(rect.height.is_finite());
+        }
+    }
+
+    #[test]
+    fn degenerate_region_stays_nonnegative() {
+        let tree = Pane::Branch {
+            axis: Axis::Row,
+            ratio: 0.5,
+            a: Box::new(Pane::leaf(id(1))),
+            b: Box::new(Pane::leaf(id(2))),
+        };
+        let tiny = Rect::new(0.0, 0.0, 4.0, 4.0);
+        for (_, r) in layout(&tree, tiny, 8.0) {
+            assert!(r.width >= 0.0 && r.height >= 0.0);
+        }
+    }
+}

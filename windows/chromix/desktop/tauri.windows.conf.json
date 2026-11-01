@@ -1,0 +1,36 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "Zephium",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 680,
+        "minHeight": 480,
+        "decorations": false,
+        "shadow": true,
+        "transparent": true
+      }
+    ]
+  },
+  "bundle": {
+    "windows": {
+      "allowDowngrades": false,
+      "nsis": {
+        "installerHooks": "windows/installer-hooks.nsh",
+        "installMode": "currentUser",
+        "headerImage": "installer/nsis-header.bmp",
+        "sidebarImage": "installer/nsis-sidebar.bmp"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

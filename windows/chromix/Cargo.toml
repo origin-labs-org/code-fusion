@@ -1,0 +1,94 @@
+[workspace]
+resolver = "2"
+members = ["crates/*", "desktop", "xtask"]
+exclude = [
+    "vendor/adblock",
+    "vendor/tao",
+    "vendor/tauri",
+    "vendor/tauri-runtime-wry",
+    "vendor/tauri-plugin-updater",
+    "vendor/wry",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+authors = ["crynta"]
+repository = "https://github.com/zephium/zephium"
+
+[workspace.dependencies]
+zephium-agentic = { path = "crates/zephium-agentic", version = "=0.1.0" }
+zephium-decision = { path = "crates/zephium-decision", version = "=0.1.0" }
+zephium-agent-model-catalog = { path = "crates/zephium-agent-model-catalog", version = "=0.1.0" }
+zephium-agent-runtime = { path = "crates/zephium-agent-runtime", version = "=0.1.0" }
+zephium-agent-provider-transport = { path = "crates/zephium-agent-provider-transport", version = "=0.1.0" }
+zephium-agent-controller = { path = "crates/zephium-agent-controller", version = "=0.1.0" }
+zephium-blocker = { path = "crates/zephium-blocker", version = "=0.1.0", default-features = false }
+zephium-blocker-service = { path = "crates/zephium-blocker-service", version = "=0.1.0", default-features = false }
+zephium-blocker-update = { path = "crates/zephium-blocker-update", version = "=0.1.0", default-features = false }
+zephium-account = { path = "crates/zephium-account", version = "=0.1.0" }
+zephium-core = { path = "crates/zephium-core", version = "=0.1.0" }
+zephium-credentials = { path = "crates/zephium-credentials", version = "=0.1.0" }
+zephium-ipc = { path = "crates/zephium-ipc", version = "=0.1.0" }
+zephium-engine = { path = "crates/zephium-engine", version = "=0.1.0" }
+zephium-notes = { path = "crates/zephium-notes", version = "=0.1.0" }
+zephium-import = { path = "crates/zephium-import", version = "=0.1.0" }
+zephium-private-fs = { path = "crates/zephium-private-fs", version = "=0.1.0" }
+zephium-store = { path = "crates/zephium-store", version = "=0.1.0" }
+zephium-voice = { path = "crates/zephium-voice", version = "=0.1.0" }
+zephium-update-transport = { path = "crates/zephium-update-transport", version = "=0.1.0", default-features = false }
+zephium-app = { path = "crates/zephium-app", version = "=0.1.0" }
+zephium-work-composition = { path = "crates/zephium-work-composition", version = "=0.1.0" }
+zephium-page-assist = { path = "crates/zephium-page-assist", version = "=0.1.0" }
+
+tauri = { version = "=2.11.3", features = ["macos-private-api"] }
+tauri-build = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+wry = "=0.55.1"
+raw-window-handle = "0.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+crc32fast = "=1.5.0"
+ring = "=0.17.14"
+thiserror = "2"
+ulid = "1"
+url = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "macros"] }
+crossbeam-queue = "=0.3.12"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+specta = { version = "=2.0.0-rc.25", features = ["derive"] }
+specta-typescript = "0.0.12"
+tauri-specta = { version = "=2.0.0-rc.25", features = ["derive", "typescript"] }
+proptest = "1"
+tempfile = "3"
+tough = { version = "=0.24.0", default-features = false }
+
+# These native-boundary crates start from the exact upstream revisions recorded
+# alongside their source. Keeping the surgical adapters in-tree makes Tauri
+# construction policy and Wry's callback, prompt, teardown, profile, and Linux
+# process-isolation policy reproducible without relying on mutable forks.
+[patch.crates-io]
+tauri-plugin-updater = { path = "vendor/tauri-plugin-updater" }
+adblock = { path = "vendor/adblock" }
+tao = { path = "vendor/tao" }
+tauri = { path = "vendor/tauri" }
+tauri-runtime-wry = { path = "vendor/tauri-runtime-wry" }
+wry = { path = "vendor/wry" }
+
+[profile.release]
+# Browser chrome should fail terminally on an invariant violation instead of
+# attempting to unwind through native WebView/Objective-C/COM callbacks.
+panic = "abort"
+# Keep the native shell small without giving up whole-program optimization.
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+# Bounds checks remain enabled independently; retain integer overflow checks
+# as well so release builds do not silently wrap security/resource counters.
+overflow-checks = true

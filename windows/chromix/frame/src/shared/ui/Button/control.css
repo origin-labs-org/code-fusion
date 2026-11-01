@@ -1,0 +1,46 @@
+/* The one control: every button and dropdown trigger in the product shares
+   this height, padding, corner and type. The size is the About page's Copy
+   Details and Show Logs. What differs between controls is their fill, never
+   their size.
+
+   ui-control        the metrics, for a Button, a select trigger or any
+                     native button that is a control rather than a row.
+   ui-control-icon   the same height, square, for a glyph alone.
+
+   Pair it with ui-shine ui-shine-press for the secondary plate (shine.css). */
+.ui-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: var(--control-height);
+  padding: 0 var(--control-inset);
+  border: 0;
+  border-radius: var(--radius-shine);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  cursor: default;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.ui-control.ui-shine {
+  --shine-radius: var(--radius-shine);
+}
+
+.ui-control-icon {
+  inline-size: var(--control-height);
+  padding: 0;
+}
+
+@media (forced-colors: active) {
+  .ui-control {
+    border: 1px solid ButtonText;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "codename": "Codeix",
+  "alias": "Pro",
+  "windowTitle": "Codeix",
+  "folder": "windows/codeix",
+  "contents": "Two OpenAI Codex MSIX packages (ui-old, ui-new) and a toggle; 2 files (1.6 GB).",
+  "status": "present"
+}

@@ -1,0 +1,224 @@
+[package]
+name = "zephium-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+# Builds native, main-thread probe executables used only by platform CI. These
+# binaries are excluded from ordinary desktop builds unless explicitly enabled.
+native-isolation-probes = []
+# Builds the local-origin WKWebView page-permission denial/deferral probe. It
+# never resolves native Allow or grants device authority.
+native-page-permission-probes = []
+# Compiles the intentionally non-product Windows CDP feasibility harness. The
+# default product must not contain this path until Phase 0a's live gates pass.
+windows-cdp-spike = []
+# Builds the non-shipping macOS native-input/isTrusted risk probe. Its fixture
+# dependency independently refuses optimized builds, and the engine repeats
+# that refusal at its own boundary below.
+native-agentic-input-probe = [
+    "dep:serde",
+    "dep:tempfile",
+    "dep:windows-probe-sys",
+    "dep:zephium-agentic",
+    "zephium-agentic/probe-harness",
+]
+# Builds the non-shipping platform production semantic-runtime qualifiers.
+# They reuse the production agent-context adapters but add only fixed loopback
+# fixtures and content-free pass/fail runners. The raw Windows bindings remain
+# target-specific and support only the Windows resource evidence path.
+native-agentic-semantic-probe = [
+    "agentic-browser",
+    "dep:tempfile",
+    "dep:windows-probe-sys",
+    "zephium-agentic/probe-harness",
+]
+# Actual desktop-lifecycle evidence only; never a product rendering capability.
+native-agentic-foreground-probe = ["native-agentic-semantic-probe"]
+# Two execution leases over one page in that same actual-app qualification shell.
+native-agentic-work-resource-probe = ["native-agentic-foreground-probe"]
+native-agentic-public-resource-probe = ["native-agentic-work-resource-probe"]
+# Content-free first lifetime-failure cause; no witness or rendering authority.
+native-agentic-work-lifetime-diagnostic = ["agentic-browser"]
+# Compiles the production, zero-idle agent-browser native port. The feature is
+# intentionally separate from the release-excluded probe vocabulary.
+agentic-browser = ["dep:zephium-agentic", "dep:image"]
+agentic-browser-qa = ["agentic-browser", "objc2-web-kit/WKHTTPCookieStore"]
+# Builds the headless loopback qualification of the Ask panel's Browse
+# reader and its measurements. Never part of a shipped binary.
+page-reader-probe = ["agentic-browser"]
+
+[[bin]]
+name = "macos-agentic-liveness-probe"
+path = "src/bin/macos_agentic_liveness_probe.rs"
+required-features = ["agentic-browser-qa"]
+
+[[bin]]
+name = "macos-principal-isolation-probe"
+path = "src/bin/macos_principal_isolation_probe.rs"
+required-features = ["native-isolation-probes"]
+
+[[bin]]
+name = "macos-page-permission-probe"
+path = "src/bin/macos_page_permission_probe.rs"
+required-features = ["native-page-permission-probes"]
+
+[[bin]]
+name = "macos-page-reader-probe"
+path = "src/bin/macos_page_reader_probe.rs"
+required-features = ["page-reader-probe"]
+
+[[bin]]
+name = "macos-agentic-input-probe"
+path = "src/bin/macos_agentic_input_probe.rs"
+required-features = ["native-agentic-input-probe"]
+
+[[bin]]
+name = "windows-agentic-input-probe"
+path = "src/bin/windows_agentic_input_probe.rs"
+required-features = ["native-agentic-input-probe"]
+
+[[bin]]
+name = "macos-agentic-semantic-probe"
+path = "src/bin/macos_agentic_semantic_probe.rs"
+required-features = ["native-agentic-semantic-probe"]
+
+[[bin]]
+name = "windows-agentic-semantic-probe"
+path = "src/bin/windows_agentic_semantic_probe.rs"
+required-features = ["native-agentic-semantic-probe"]
+
+[[bin]]
+name = "windows-cookie-persistence-control"
+path = "src/bin/windows_cookie_persistence_control.rs"
+required-features = ["native-agentic-semantic-probe"]
+
+[dependencies]
+zephium-agentic = { workspace = true, optional = true }
+zephium-core.workspace = true
+wry = { workspace = true, features = ["devtools"] }
+dirs = "6"
+serde_json.workspace = true
+base64 = "0.22"
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp", "gif"], optional = true }
+sha2 = "=0.10.9"
+serde = { workspace = true, optional = true }
+tempfile = { workspace = true, optional = true }
+url.workspace = true
+zeroize = "=1.9.0"
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[target.'cfg(target_os = "windows")'.dev-dependencies]
+wry = { workspace = true, features = ["windows-cleanup-qualification"] }
+windows = { version = "0.61", features = ["Win32_Graphics_DirectComposition", "Win32_Graphics_Direct2D_Common", "Win32_Graphics_Dxgi_Common"] }
+base64 = "0.22"
+zephium-blocker = { workspace = true, features = ["runtime"] }
+flate2 = "=1.1.9"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+base64 = "0.22"
+zephium-webext = { path = "../zephium-webext", version = "=0.1.0" }
+raw-window-handle.workspace = true
+webview2-com = "0.38"
+windows = { version = "0.61", features = [
+    "Foundation_Collections",
+    "Foundation_Numerics",
+    "System",
+    "UI_Composition_Desktop",
+    "Wdk_System_SystemServices",
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Dwm",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_Storage_FileSystem",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+    "Win32_System_Com",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_LibraryLoader",
+    "Win32_System_ProcessStatus",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_System_WinRT_Composition",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+windows-probe-sys = { package = "windows-sys", version = "=0.61.2", optional = true, features = [
+    "Win32_Foundation",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+] }
+windows-core = "0.61"
+windows-numerics = "0.2"
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+gtk = "0.18"
+webkit2gtk = { version = "=2.0.2", features = ["v2_40"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+dispatch2 = { version = "0.3.1", default-features = false, features = ["block2", "std"] }
+libc = "0.2"
+objc2 = "0.6"
+objc2-authentication-services = { version = "=0.3.2", default-features = false, features = [
+    "ASAuthorizationWebBrowserPublicKeyCredentialManager",
+    "block2",
+] }
+objc2-app-kit = "0.3"
+objc2-core-foundation = { version = "0.3", features = ["CFNumber", "CFString", "CFURL"] }
+objc2-core-graphics = "0.3"
+objc2-core-location = { version = "0.3", default-features = false, features = [
+    "std",
+    "CLError",
+    "CLErrorDomain",
+    "CLLocation",
+    "CLLocationManager",
+    "CLLocationManagerDelegate",
+] }
+objc2-foundation = "0.3"
+objc2-security = { version = "0.3", default-features = false, features = [
+    "CSCommon",
+    "SecRequirement",
+    "SecStaticCode",
+    "SecTask",
+] }
+objc2-web-kit = { version = "0.3", default-features = false, features = [
+    "block2",
+    "objc2-app-kit",
+    "WKBackForwardList",
+    "WKBackForwardListItem",
+    "WKDownload",
+    "WKDownloadDelegate",
+    "WKContentWorld",
+    "WKContentRuleList",
+    "WKContentRuleListStore",
+    "WKError",
+    "WKNavigationAction",
+    "WKNavigation",
+    "WKNavigationDelegate",
+    "WKSecurityOrigin",
+    "WKUIDelegate",
+    "WKWindowFeatures",
+    "WKPreferences",
+    "WKFrameInfo",
+    "WKScriptMessage",
+    "WKScriptMessageHandlerWithReply",
+    "WKSnapshotConfiguration",
+    "WKUserContentController",
+    "WKUserScript",
+    "WKWebExtensionAction",
+    "WKWebExtensionController",
+    "WKWebView",
+    "WKWebViewConfiguration",
+    "WKWebsiteDataRecord",
+    "WKWebsiteDataStore",
+] }
+objc2-quartz-core = "0.3"
+raw-window-handle.workspace = true
+zephium-webext = { path = "../zephium-webext", version = "=0.1.0" }
+zephium-webext-macos = { path = "../zephium-webext-macos", version = "=0.1.0" }

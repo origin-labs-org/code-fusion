@@ -1,0 +1,678 @@
+import { describe, expect, spyOn } from "bun:test"
+import { Cause, Effect, Exit, Fiber, Layer, Scope } from "effect"
+import { Glob } from "@mimo-ai/shared/util/glob"
+import { Instance } from "../../src/project/instance"
+import { Skill } from "../../src/skill"
+import * as CrossSpawnSpawner from "../../src/effect/cross-spawn-spawner"
+import { provideInstance, provideTmpdirInstance, tmpdir } from "../fixture/fixture"
+import { testEffect } from "../lib/effect"
+import { withEnv } from "../lib/env"
+import path from "path"
+import fs from "fs/promises"
+
+// Compose/builtin off for a tiny skill universe. Brand roots opt-in so the
+// existing .claude/.codex discovery cases stay meaningful; default-surface and
+// dotted-dir negatives live in skill-external-roots.test.ts.
+withEnv({
+  MIMOCODE_DISABLE_BUILTIN_SKILLS: "true",
+  MIMOCODE_ENABLE_CLAUDE_CODE_SKILLS: "true",
+  MIMOCODE_ENABLE_CODEX_SKILLS: "true",
+  MIMOCODE_ENABLE_OPENCODE_SKILLS: "true",
+})
+
+const node = CrossSpawnSpawner.defaultLayer
+
+const it = testEffect(Layer.mergeAll(Skill.defaultLayer, node))
+
+async function createGlobalSkill(homeDir: string) {
+  const skillDir = path.join(homeDir, ".claude", "skills", "global-test-skill")
+  await fs.mkdir(skillDir, { recursive: true })
+  await Bun.write(
+    path.join(skillDir, "SKILL.md"),
+    `---
+name: global-test-skill
+description: A global skill from ~/.claude/skills for testing.
+---
+
+# Global Test Skill
+
+This skill is loaded from the global home directory.
+`,
+  )
+}
+
+async function createSkill(root: string, source: ".claude" | ".agents" | ".codex", name: string, description: string) {
+  await Bun.write(
+    path.join(root, source, "skills", name, "SKILL.md"),
+    `---
+name: ${name}
+description: ${description}
+---
+
+# ${name}
+`,
+  )
+}
+
+const withHome = <A, E, R>(home: string, self: Effect.Effect<A, E, R>) =>
+  Effect.acquireUseRelease(
+    Effect.sync(() => {
+      const prev = process.env.HOME
+      const prevUserProfile = process.env.USERPROFILE
+      process.env.HOME = home
+      process.env.USERPROFILE = home
+      return { prev, prevUserProfile }
+    }),
+    () => self,
+    ({ prev, prevUserProfile }) =>
+      Effect.sync(() => {
+        process.env.HOME = prev
+        process.env.USERPROFILE = prevUserProfile
+      }),
+  )
+
+describe("skill", () => {
+  it.live("discovers skills from .mimocode/skill/ directory", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".mimocode", "skill", "test-skill", "SKILL.md"),
+              `---
+name: test-skill
+description: A test skill for verification.
+---
+
+# Test Skill
+
+Instructions here.
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(1)
+          const item = list.find((x) => x.name === "test-skill")
+          expect(item).toBeDefined()
+          expect(item!.description).toBe("A test skill for verification.")
+          expect(item!.location).toContain(path.join("skill", "test-skill", "SKILL.md"))
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers repository skills without marking them as bundled", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".mimocode", "skills", "repository-skill", "SKILL.md"),
+              `---
+name: repository-skill
+description: A repository-level skill for verification.
+---
+
+# Repository Skill
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          const item = (yield* skill.all())[0]
+          expect(item?.name).toBe("repository-skill")
+          expect(item?.bundled).toBeUndefined()
+          expect(item?.location).toContain(path.join(".mimocode", "skills", "repository-skill", "SKILL.md"))
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("returns skill directories from Skill.dirs", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        withHome(
+          dir,
+          Effect.gen(function* () {
+            yield* Effect.promise(() =>
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "dir-skill", "SKILL.md"),
+                `---
+name: dir-skill
+description: Skill for dirs test.
+---
+
+# Dir Skill
+`,
+              ),
+            )
+
+            const skill = yield* Skill.Service
+            const dirs = yield* skill.dirs()
+            expect(dirs).toContain(path.join(dir, ".mimocode", "skill", "dir-skill"))
+            expect(dirs.length).toBe(1)
+          }),
+        ),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers multiple skills from .mimocode/skill/ directory", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Promise.all([
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "skill-one", "SKILL.md"),
+                `---
+name: skill-one
+description: First test skill.
+---
+
+# Skill One
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "skill-two", "SKILL.md"),
+                `---
+name: skill-two
+description: Second test skill.
+---
+
+# Skill Two
+`,
+              ),
+            ]),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(2)
+          expect(list.find((x) => x.name === "skill-one")).toBeDefined()
+          expect(list.find((x) => x.name === "skill-two")).toBeDefined()
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("skips skills with missing frontmatter", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".mimocode", "skill", "no-frontmatter", "SKILL.md"),
+              `# No Frontmatter
+
+Just some content without YAML frontmatter.
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          expect(yield* skill.all()).toEqual([])
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers skills from .claude/skills/ directory", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".claude", "skills", "claude-skill", "SKILL.md"),
+              `---
+name: claude-skill
+description: A skill in the .claude/skills directory.
+---
+
+# Claude Skill
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(1)
+          const item = list.find((x) => x.name === "claude-skill")
+          expect(item).toBeDefined()
+          expect(item!.location).toContain(path.join(".claude", "skills", "claude-skill", "SKILL.md"))
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers global skills from ~/.claude/skills/ directory", () =>
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      yield* withHome(
+        tmp.path,
+        Effect.gen(function* () {
+          yield* Effect.promise(() => createGlobalSkill(tmp.path))
+          yield* Effect.gen(function* () {
+            const skill = yield* Skill.Service
+            const list = yield* skill.all()
+            expect(list.length).toBe(1)
+            expect(list[0].name).toBe("global-test-skill")
+            expect(list[0].description).toBe("A global skill from ~/.claude/skills for testing.")
+            expect(list[0].location).toContain(path.join(".claude", "skills", "global-test-skill", "SKILL.md"))
+          }).pipe(provideInstance(tmp.path))
+        }),
+      )
+    }),
+  )
+
+  it.live("keeps one global snapshot across project instances until reload", () =>
+    Effect.gen(function* () {
+      const home = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+      const firstProject = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+      const secondProject = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      yield* withHome(
+        home.path,
+        Effect.gen(function* () {
+          yield* Effect.promise(() => createSkill(home.path, ".claude", "first-global", "First snapshot"))
+          const skill = yield* Skill.Service
+          expect((yield* skill.all().pipe(provideInstance(firstProject.path))).map((item) => item.name)).toEqual([
+            "first-global",
+          ])
+
+          yield* Effect.promise(() => createSkill(home.path, ".agents", "second-global", "Added later"))
+          expect((yield* skill.all().pipe(provideInstance(secondProject.path))).map((item) => item.name)).toEqual([
+            "first-global",
+          ])
+
+          yield* skill.reload().pipe(provideInstance(secondProject.path))
+          expect((yield* skill.all().pipe(provideInstance(secondProject.path))).map((item) => item.name).toSorted()).toEqual([
+            "first-global",
+            "second-global",
+          ])
+        }),
+      )
+    }),
+    30_000,
+  )
+
+  it.live("interrupted global discovery does not poison later project instances", () =>
+    Effect.gen(function* () {
+      const temp = () => Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+      const home = yield* temp()
+      const firstProject = yield* temp()
+      const secondProject = yield* temp()
+      yield* withHome(home.path, Effect.gen(function* () {
+        yield* Effect.promise(() => createSkill(home.path, ".claude", "after-interrupt", "Recovered discovery"))
+        const entered = Promise.withResolvers<void>()
+        const release = Promise.withResolvers<void>()
+        const original = Glob.scan
+        let scans = 0
+        yield* Effect.acquireRelease(
+          Effect.sync(() => spyOn(Glob, "scan").mockImplementation(async (...args) => {
+            if (args[0] === "skills/**/SKILL.md" && args[1]?.cwd === path.join(home.path, ".claude")) {
+              scans++
+              if (scans === 1) {
+                entered.resolve()
+                await release.promise
+              }
+            }
+            return original(...args)
+          })),
+          (spy) => Effect.sync(() => { release.resolve(); spy.mockRestore() }),
+        )
+        const skill = yield* Skill.Service
+        const scope = yield* Scope.Scope
+        const first = yield* skill.all().pipe(Effect.forkIn(scope), provideInstance(firstProject.path))
+        yield* Effect.promise(() => entered.promise).pipe(Effect.timeout("5 seconds"))
+        yield* Fiber.interrupt(first)
+        const interrupted = yield* Fiber.await(first)
+        expect(Exit.isFailure(interrupted) && Cause.hasInterruptsOnly(interrupted.cause)).toBe(true)
+        release.resolve()
+        yield* Effect.promise(() => Instance.provide({ directory: firstProject.path, fn: () => Instance.dispose() }))
+        const recovered = yield* skill.all().pipe(provideInstance(secondProject.path))
+        expect(recovered.map((item) => item.name)).toEqual(["after-interrupt"])
+        expect(scans).toBe(2)
+        expect((yield* skill.all().pipe(provideInstance(secondProject.path))).map((item) => item.name))
+          .toEqual(["after-interrupt"])
+        expect(scans).toBe(2)
+      }))
+    }),
+    30_000,
+  )
+
+  it.live("uses deterministic source order when global skills share a name", () =>
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      yield* withHome(
+        tmp.path,
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Promise.all([
+              createSkill(tmp.path, ".claude", "duplicate-global", "Claude copy"),
+              createSkill(tmp.path, ".agents", "duplicate-global", "Agents copy"),
+              createSkill(tmp.path, ".codex", "duplicate-global", "Codex copy"),
+            ]),
+          )
+          const skill = yield* Skill.Service
+          const item = (yield* skill.all().pipe(provideInstance(tmp.path))).find(
+            (item) => item.name === "duplicate-global",
+          )
+          expect(item?.description).toBe("Agents copy")
+          expect(item?.location).toContain(path.join(".agents", "skills", "duplicate-global", "SKILL.md"))
+        }),
+      )
+    }),
+    30_000,
+  )
+
+  it.live("returns empty array when no skills exist", () =>
+    provideTmpdirInstance(
+      () =>
+        Effect.gen(function* () {
+          const skill = yield* Skill.Service
+          expect(yield* skill.all()).toEqual([])
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers skills from .agents/skills/ directory", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".agents", "skills", "agent-skill", "SKILL.md"),
+              `---
+name: agent-skill
+description: A skill in the .agents/skills directory.
+---
+
+# Agent Skill
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(1)
+          const item = list.find((x) => x.name === "agent-skill")
+          expect(item).toBeDefined()
+          expect(item!.location).toContain(path.join(".agents", "skills", "agent-skill", "SKILL.md"))
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers global skills from ~/.agents/skills/ directory", () =>
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      yield* withHome(
+        tmp.path,
+        Effect.gen(function* () {
+          const skillDir = path.join(tmp.path, ".agents", "skills", "global-agent-skill")
+          yield* Effect.promise(() => fs.mkdir(skillDir, { recursive: true }))
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(skillDir, "SKILL.md"),
+              `---
+name: global-agent-skill
+description: A global skill from ~/.agents/skills for testing.
+---
+
+# Global Agent Skill
+
+This skill is loaded from the global home directory.
+`,
+            ),
+          )
+
+          yield* Effect.gen(function* () {
+            const skill = yield* Skill.Service
+            const list = yield* skill.all()
+            expect(list.length).toBe(1)
+            expect(list[0].name).toBe("global-agent-skill")
+            expect(list[0].description).toBe("A global skill from ~/.agents/skills for testing.")
+            expect(list[0].location).toContain(path.join(".agents", "skills", "global-agent-skill", "SKILL.md"))
+          }).pipe(provideInstance(tmp.path))
+        }),
+      )
+    }),
+  )
+
+  it.live("discovers skills from .codex/skills/ directory", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(dir, ".codex", "skills", "codex-skill", "SKILL.md"),
+              `---
+name: codex-skill
+description: A skill in the .codex/skills directory.
+---
+
+# Codex Skill
+`,
+            ),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(1)
+          const item = list.find((x) => x.name === "codex-skill")
+          expect(item).toBeDefined()
+          expect(item!.description).toBe("A skill in the .codex/skills directory.")
+          expect(item!.location).toContain(path.join(".codex", "skills", "codex-skill", "SKILL.md"))
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("discovers global skills from ~/.codex/skills/ directory", () =>
+    Effect.gen(function* () {
+      const tmp = yield* Effect.acquireRelease(
+        Effect.promise(() => tmpdir({ git: true })),
+        (tmp) => Effect.promise(() => tmp[Symbol.asyncDispose]()),
+      )
+
+      yield* withHome(
+        tmp.path,
+        Effect.gen(function* () {
+          const skillDir = path.join(tmp.path, ".codex", "skills", "global-codex-skill")
+          yield* Effect.promise(() => fs.mkdir(skillDir, { recursive: true }))
+          yield* Effect.promise(() =>
+            Bun.write(
+              path.join(skillDir, "SKILL.md"),
+              `---
+name: global-codex-skill
+description: A global skill from ~/.codex/skills for testing.
+---
+
+# Global Codex Skill
+
+This skill is loaded from the global home directory.
+`,
+            ),
+          )
+
+          yield* Effect.gen(function* () {
+            const skill = yield* Skill.Service
+            const list = yield* skill.all()
+            expect(list.length).toBe(1)
+            expect(list[0].name).toBe("global-codex-skill")
+            expect(list[0].description).toBe("A global skill from ~/.codex/skills for testing.")
+            expect(list[0].location).toContain(path.join(".codex", "skills", "global-codex-skill", "SKILL.md"))
+          }).pipe(provideInstance(tmp.path))
+        }),
+      )
+    }),
+  )
+
+  it.live("discovers skills from both .claude/skills/ and .agents/skills/", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Promise.all([
+              Bun.write(
+                path.join(dir, ".claude", "skills", "claude-skill", "SKILL.md"),
+                `---
+name: claude-skill
+description: A skill in the .claude/skills directory.
+---
+
+# Claude Skill
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".agents", "skills", "agent-skill", "SKILL.md"),
+                `---
+name: agent-skill
+description: A skill in the .agents/skills directory.
+---
+
+# Agent Skill
+`,
+              ),
+            ]),
+          )
+
+          const skill = yield* Skill.Service
+          const list = yield* skill.all()
+          expect(list.length).toBe(2)
+          expect(list.find((x) => x.name === "claude-skill")).toBeDefined()
+          expect(list.find((x) => x.name === "agent-skill")).toBeDefined()
+        }),
+      { git: true },
+    ),
+  )
+
+  it.live("properly resolves directories that skills live in", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Promise.all([
+              Bun.write(
+                path.join(dir, ".claude", "skills", "claude-skill", "SKILL.md"),
+                `---
+name: claude-skill
+description: A skill in the .claude/skills directory.
+---
+
+# Claude Skill
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".agents", "skills", "agent-skill", "SKILL.md"),
+                `---
+name: agent-skill
+description: A skill in the .agents/skills directory.
+---
+
+# Agent Skill
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "agent-skill", "SKILL.md"),
+                `---
+name: opencode-skill
+description: A skill in the .mimocode/skill directory.
+---
+
+# OpenCode Skill
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".mimocode", "skills", "agent-skill", "SKILL.md"),
+                `---
+name: opencode-skill
+description: A skill in the .mimocode/skills directory.
+---
+
+# OpenCode Skill
+`,
+              ),
+            ]),
+          )
+
+          const skill = yield* Skill.Service
+          expect((yield* skill.dirs()).length).toBe(4)
+        }),
+      { git: true },
+    ),
+  )
+
+  // Model reachability is carried by the SKILL.md field, not by permission:
+  // all() and available() keep such a skill so the command registry and the
+  // user's slash invocation still resolve it, while modelInvocable() drops it.
+  it.live("separates model reachability from the user-facing skill sets", () =>
+    provideTmpdirInstance(
+      (dir) =>
+        Effect.gen(function* () {
+          yield* Effect.promise(() =>
+            Promise.all([
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "gated-skill", "SKILL.md"),
+                `---
+name: gated-skill
+description: Only the user may start this one.
+disable-model-invocation: true
+---
+
+# Gated Skill
+`,
+              ),
+              Bun.write(
+                path.join(dir, ".mimocode", "skill", "open-skill", "SKILL.md"),
+                `---
+name: open-skill
+description: Anyone may start this one.
+---
+
+# Open Skill
+`,
+              ),
+            ]),
+          )
+
+          const skill = yield* Skill.Service
+          expect((yield* skill.get("gated-skill"))?.disable_model_invocation).toBe(true)
+          expect((yield* skill.get("open-skill"))?.disable_model_invocation).toBeUndefined()
+
+          expect((yield* skill.all()).map((item) => item.name).toSorted()).toEqual(["gated-skill", "open-skill"])
+          expect((yield* skill.available()).map((item) => item.name)).toEqual(["gated-skill", "open-skill"])
+          expect((yield* skill.modelInvocable()).map((item) => item.name)).toEqual(["open-skill"])
+        }),
+      { git: true },
+    ),
+  )
+})

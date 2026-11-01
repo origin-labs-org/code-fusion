@@ -1,0 +1,94 @@
+/* Zephium's pressable material: a lit plate with light caught along its top
+   edge. It is the style of the model chip, the add-a-key card and the + of the
+   bar, and of the panels that open from them. It is built only from the rows'
+   own tokens, so light and dark follow the theme and nothing here is a colour.
+
+   ui-shine        the plate: fill and top light; --shine-radius sets its shape.
+   ui-shine-press  what a pressable plate does: warms on hover, deepens when
+                   open, selected or pressed, sinks a little under a finger.
+   ui-shine-sheet  a panel that floats over the canvas, with the same top light.
+   ui-shine-field  an input on the same material, sunk a step rather than raised. */
+.ui-shine {
+  --shine-radius: var(--radius-control);
+
+  border-radius: var(--shine-radius);
+  background: var(--row-active);
+  box-shadow: var(--shine-top);
+}
+
+.ui-shine-press {
+  cursor: default;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    scale var(--motion-base) var(--ease-spring);
+}
+
+.ui-shine-press:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.ui-shine-press:disabled {
+  opacity: 0.5;
+}
+
+.ui-shine-press:is([data-state="open"], [aria-expanded="true"], [aria-pressed="true"]) {
+  background: var(--row-pressed);
+}
+
+.ui-shine-press:hover:not(:disabled, [aria-disabled="true"]) {
+  background: var(--row-pressed);
+}
+
+.ui-shine-press:active:not(:disabled, [aria-disabled="true"]) {
+  background: var(--row-pressed);
+  scale: 0.97;
+  transition-duration: var(--motion-instant);
+}
+
+.ui-shine-sheet {
+  box-shadow: var(--shadow-menu), var(--shine-top);
+}
+
+.ui-shine-field {
+  --shine-radius: var(--radius-control);
+
+  border-radius: var(--shine-radius);
+  background: var(--color-field);
+  box-shadow: var(--shine-top);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.ui-shine-field:hover {
+  background: var(--color-field-hover);
+}
+
+.ui-shine-field:focus-within {
+  background: var(--color-field-hover);
+  box-shadow: var(--shine-top), var(--shadow-field-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-shine-press,
+  .ui-shine-field {
+    transition: none;
+  }
+
+  .ui-shine-press:active:not(:disabled, [aria-disabled="true"]) {
+    scale: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  .ui-shine,
+  .ui-shine-field {
+    border: 1px solid ButtonText;
+  }
+
+  .ui-shine-press:is([data-state="open"], [aria-expanded="true"], [aria-pressed="true"]) {
+    border-color: Highlight;
+  }
+}

@@ -1,0 +1,74 @@
+/* The interface face and size, and the face code is set in. Every face is
+   one the system already has: SF Pro Rounded, New York and SF Mono on a Mac,
+   which a WebView reaches only through the ui-* families. WebView2 does not
+   know those, so Windows falls through to its own faces. */
+:root[data-font="rounded"] {
+  --font-sans:
+    ui-rounded, "SF Pro Rounded", -apple-system, "BlinkMacSystemFont", "Segoe UI Variable Text",
+    "Segoe UI", sans-serif;
+}
+
+:root[data-font="serif"] {
+  --font-sans: ui-serif, "New York", "Iowan Old Style", "Sitka Text", "Georgia", serif;
+}
+
+:root[data-font="mono"] {
+  --font-sans: ui-monospace, "SF Mono", "Cascadia Mono", "Menlo", "Consolas", monospace;
+}
+
+/* The chrome's reading sizes step with the body; titles, display type and
+   row heights stay where they are, so a larger size never reflows a row. */
+:root[data-font-size="14"] {
+  --text-caption: 11.5px;
+  --text-label: 12.5px;
+  --text-body: 14px;
+  --text-page-body: 14px;
+  --text-page-title: 15px;
+  --sidebar-row-text: 14px;
+}
+
+:root[data-font-size="15"] {
+  --text-caption: 12px;
+  --text-label: 13px;
+  --text-body: 15px;
+  --text-page-body: 15px;
+  --text-page-title: 16px;
+  --sidebar-row-text: 14.5px;
+}
+
+:root[data-code-font="menlo"] {
+  --font-mono: "Menlo", ui-monospace, monospace;
+}
+
+:root[data-code-font="jetbrains-mono"] {
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root[data-code-font="fira-code"] {
+  --font-mono: "Fira Code", ui-monospace, monospace;
+}
+
+:root[data-code-font="ibm-plex-mono"] {
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+:root[data-code-font="cascadia-code"] {
+  --font-mono: "Cascadia Code", ui-monospace, monospace;
+}
+
+:root[data-code-font="source-code-pro"] {
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+}
+
+:root[data-code-font="consolas"] {
+  --font-mono: "Consolas", ui-monospace, monospace;
+}
+
+/* Settings sets its own label size; it steps with the rest. */
+:root[data-font-size="14"] .settings-page {
+  --text-label: 12.5px;
+}
+
+:root[data-font-size="15"] .settings-page {
+  --text-label: 13px;
+}

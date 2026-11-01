@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "references": [
+    { "path": "./script" },
+    { "path": "./packages/cli" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/plugin" },
+    { "path": "./packages/sdk" }
+  ]
+}

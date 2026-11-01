@@ -1,0 +1,26 @@
+Zephium bundled blocker seed v1
+
+This directory contains unmodified EasyList and EasyPrivacy subscription text.
+Zephium changes only the storage representation by applying deterministic gzip
+compression; the decompressed source bytes are unchanged.
+
+Attribution: The EasyList authors (https://easylist.to/)
+Selected license: CC BY-SA 3.0 Unported (CC-BY-SA-3.0)
+License text: LICENSE-CC-BY-SA-3.0.txt
+Upstream terms: https://easylist.to/pages/licence.html
+
+EasyList
+Source: https://easylist.to/easylist/easylist.txt
+Version: 202610281352
+Commit: 7f43c18d0023f4590e731c9aa8367d2a229ad2eb
+Raw SHA-256: c0241bb9bcca8f82aaff6b1571f039c2e507a0db8b760c97a7df72197514f4cd
+
+EasyPrivacy
+Source: https://easylist.to/easylist/easyprivacy.txt
+Version: 202610281345
+Commit: ad903d7529f40e9fb4aff4d4c6070a812c6b0f73
+Raw SHA-256: 54bfdef988fe9af20df6916456d88b268700da7b2a5cee462687f9536de5ae38
+
+The upstream authors do not endorse Zephium. Release engineering must regenerate
+and verify this record with `cargo xtask update-blocker-seed` whenever either
+subscription changes.

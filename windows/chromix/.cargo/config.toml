@@ -1,0 +1,19 @@
+[alias]
+xtask = "run --quiet --package xtask --"
+
+# Rust does not enable Windows Control Flow Guard by default. Apply it to
+# every crate linked into production MSVC binaries, including native callback
+# shims around WebView2.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "control-flow-guard=yes"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "control-flow-guard=yes"]
+
+# Debug executables keep one signature across rebuilds, so the Keychain stops
+# asking for the login password after every build (see the script).
+[target.aarch64-apple-darwin]
+runner = "scripts/dev-sign-run.sh"
+
+[target.x86_64-apple-darwin]
+runner = "scripts/dev-sign-run.sh"

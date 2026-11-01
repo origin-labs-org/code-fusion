@@ -1,0 +1,201 @@
+[package]
+name = "zephium-desktop"
+default-run = "zephium-desktop"
+version = "1.0.4"
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["work-product", "macos-page-permission-prompts"]
+# Dormant until an explicit Work intent. Native adapters are target-specific;
+# durable contracts and orchestration also compile on Windows.
+work-product = [
+    "zephium-app/work-runtime",
+    "dep:zephium-agentic",
+    "zephium-agentic/provider-transport",
+    "dep:zephium-agent-model-catalog",
+    "dep:zephium-agent-controller",
+    "dep:zephium-agent-runtime",
+    "dep:zephium-work-composition",
+    "zephium-work-composition/durable-runtime",
+]
+# Explicit inspectable public development runs through the ordinary Work UI.
+# The dependency feature rejects optimized builds.
+work-integration-qa = ["work-development-traces", "tauri/custom-protocol", "zephium-engine/agentic-browser-qa"]
+work-development-traces = ["work-product", "zephium-work-composition/public-qualification", "zephium-work-composition/retained-lifetime-diagnostic", "zephium-agentic/probe-harness"]
+# Frozen one-hop witness through ordinary trusted Work admission, never retained.
+macos-work-navigation-probe = ["macos-work", "zephium-work-composition/navigation-qualification", "tauri/custom-protocol"]
+# Release-excluded normal Browse session under the exact isolated qualification
+# identity. It creates the durable profile state used by an authenticated Work
+# witness but deliberately installs no automatic qualification observer.
+macos-work-profile-enrollment = ["macos-work-navigation-probe"]
+# Same actual-application owners, public inspectable unknown-route objective.
+macos-work-discovery-probe = ["macos-work-navigation-probe", "zephium-work-composition/discovery-qualification"]
+# Same isolated launcher, but only the shipping retained product entry/handle.
+macos-work-retained-product-probe = ["macos-work-navigation-probe", "zephium-work-composition/retained-product-qualification"]
+# Same retained owners, rendering and limits; selects the open commerce objective.
+macos-work-retained-commerce-probe = ["macos-work-retained-product-probe", "zephium-work-composition/retained-commerce-qualification"]
+macos-work-retained-action-probe = ["macos-work-retained-product-probe", "zephium-work-composition/retained-action-qualification"]
+# Controlled open-objective native Back witness through the retained product path.
+macos-work-retained-back-probe = [
+    "macos-work-retained-product-probe",
+    "zephium-work-composition/retained-back-qualification",
+]
+# Same deliberately enrolled isolated profile, one authenticated synthetic
+# Notion page, and the shipping retained read-only Work entry.
+macos-work-retained-notion-probe = [
+    "macos-work-retained-product-probe",
+    "zephium-work-composition/retained-notion-qualification",
+]
+# Same enrolled profile and exact page, but two reversible authenticated title
+# transitions followed by source-bound cleanup evidence.
+macos-work-retained-notion-write-probe = [
+    "macos-work-retained-product-probe",
+    "zephium-work-composition/retained-notion-write-qualification",
+]
+# Isolated actual-product protection QA; never a shipping application.
+adblock-qa = ["tauri/custom-protocol"]
+# Isolated actual-product file workflow verification, never a shipping app.
+file-workflows-qa = ["tauri/custom-protocol"]
+# Isolated user-resource UI verification; never a shipping application.
+resource-ui-qa = ["tauri/custom-protocol"]
+# The extension runtime in an isolated, bundled QA application.
+webext-qa = ["tauri/custom-protocol"]
+# Same release-excluded retained path, one closed real-public product-brief task.
+macos-work-retained-public-probe = [
+    "macos-work-retained-controller-probe",
+    "zephium-work-composition/retained-public-qualification",
+]
+# One explicit paid public-fixture controller witness in the isolated debug app.
+macos-work-retained-controller-probe = [
+    "macos-work-rendering-probe",
+    "dep:zephium-work-composition",
+    "zephium-work-composition/retained-qualification",
+]
+# Same isolated actual-application bundle, selected only at compile time.
+macos-work-resource-probe = [
+    "macos-work-rendering-probe",
+    "zephium-engine/native-agentic-work-resource-probe",
+]
+# Provider-free actual-application rendering witness; never optimized or ordinary Browse.
+macos-work-rendering-probe = [
+    "zephium-engine/native-agentic-foreground-probe",
+    "tauri/custom-protocol",
+]
+# Explicit, non-UI Work composition. Default desktop remains unchanged.
+macos-work = ["dep:zephium-work-composition", "zephium-work-composition/macos-work"]
+# Development-only dynamic input/output adapter on the ordinary objective entry.
+# No task runs without an explicit request file; no profile enrollment or fixed
+# route is included. Composition rejects optimized builds. Retention is opt-in.
+macos-work-public-inspection = [
+    "macos-work",
+    "zephium-work-composition/public-qualification",
+    "dep:zephium-agentic",
+    "dep:zephium-agent-controller",
+    "dep:zephium-agent-runtime",
+    "dep:zephium-agent-provider-transport",
+]
+# Optional content-free first native failure for the dynamic development runner.
+# Includes its debug-only qualification guard, without selecting a fixed task.
+macos-work-lifetime-diagnostic = [
+    "macos-work-public-inspection",
+    "zephium-work-composition/retained-lifetime-diagnostic",
+]
+# Browser-owned camera/microphone prompts for foreground macOS tabs.
+macos-page-permission-prompts = ["zephium-app/macos-page-permission-prompts"]
+
+[lib]
+name = "zephium_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build.workspace = true
+tauri-utils = "2"
+serde_json.workspace = true
+json-patch = "3"
+
+[dependencies]
+reqwest = { version = "=0.13.4", default-features = false, features = ["rustls", "stream", "system-proxy"] }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "webp", "gif", "ico", "bmp"] }
+tokio = { workspace = true, features = ["time", "fs", "io-util"] }
+getrandom = "=0.4.3"
+tauri.workspace = true
+zephium-core.workspace = true
+zephium-ipc.workspace = true
+zephium-app.workspace = true
+zephium-account.workspace = true
+zephium-agent-model-catalog = { workspace = true, optional = true }
+zephium-agentic = { workspace = true, optional = true }
+zephium-agent-controller = { workspace = true, optional = true }
+zephium-agent-runtime = { workspace = true, optional = true }
+zephium-agent-provider-transport = { workspace = true, optional = true }
+zephium-engine.workspace = true
+zephium-store.workspace = true
+zephium-notes.workspace = true
+zephium-import.workspace = true
+zephium-blocker-service = { workspace = true, features = ["official-https"] }
+tauri-plugin-single-instance.workspace = true
+window-vibrancy = "=0.8.0"
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+specta-typescript.workspace = true
+tauri-specta.workspace = true
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = { version = "=2.10.1", default-features = false, features = ["rustls-tls", "zip"] }
+base64.workspace = true
+minisign-verify = "=0.3.0"
+tempfile.workspace = true
+zephium-webext = { path = "../crates/zephium-webext", version = "=0.1.0" }
+zephium-voice.workspace = true
+
+[dev-dependencies]
+async-io = "=2.6.0"
+futures-lite = "=2.6.1"
+x11rb = { version = "=0.13.2", features = ["xkb"] }
+xkeysym = "=0.2.1"
+zbus = { version = "=5.17.0", default-features = false, features = ["async-io"] }
+
+[target.'cfg(target_os = "windows")'.dev-dependencies]
+# Exercise native parent paint without creating a WebView or user profile.
+tauri = { workspace = true, features = ["unstable"] }
+windows = { version = "0.61", features = ["Win32_Graphics_Gdi"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+zephium-work-composition = { workspace = true, optional = true }
+zephium-blocker = { workspace = true, features = ["runtime"] }
+raw-window-handle.workspace = true
+webview2-com = "0.38"
+windows = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Accessibility", "Win32_System_LibraryLoader", "Win32_Media_Audio", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Console", "Win32_System_Pipes", "Win32_System_Com", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging", "Win32_System_Power", "Win32_System_Memory", "Win32_System_Threading", "Win32_System_Registry", "Win32_System_RemoteDesktop", "Win32_System_SystemServices", "Win32_Globalization"] }
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+zephium-blocker = { workspace = true, features = ["webkit"] }
+gtk = "0.18"
+webkit2gtk = { version = "=2.0.2", features = ["v2_40"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+async-io = "=2.6.0"
+futures-lite = "=2.6.1"
+x11rb = { version = "=0.13.2", features = ["xkb"] }
+xkeysym = "=0.2.1"
+zbus = { version = "=5.17.0", default-features = false, features = ["async-io"] }
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tauri-plugin-global-shortcut.workspace = true
+rfd = { version = "=0.16.0", default-features = false, features = ["common-controls-v6"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+zephium-work-composition = { workspace = true, optional = true }
+zephium-webext-macos = { path = "../crates/zephium-webext-macos", version = "=0.1.0" }
+zephium-blocker = { workspace = true, features = ["webkit"] }
+block2 = "0.6"
+dispatch2 = { version = "0.3.1", default-features = false, features = ["block2", "std"] }
+libc = "0.2"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+objc2-foundation = "0.3"
+objc2-quartz-core = "0.3"
+objc2-web-kit = "0.3"
+objc2-user-notifications = "0.3"
+objc2-service-management = { version = "0.3", default-features = false, features = ["std", "SMAppService", "objc2", "objc2-foundation"] }
+raw-window-handle.workspace = true

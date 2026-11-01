@@ -1,0 +1,38 @@
+/* Profile avatar fills: ten hues lit from above, the way a person's picture
+   sits in Contacts. Each pair is one hue a step apart in lightness, so
+   white initials and glyphs hold their contrast on either theme. Graphite
+   leads, as the quiet default. Index order is stored per profile by Rust. */
+:root {
+  --avatar-ink: oklch(100% 0 0deg);
+  --avatar-rim: oklch(0% 0 0deg / 14%);
+  --avatar-0-top: oklch(70% 0.012 265deg);
+  --avatar-0-bottom: oklch(53% 0.012 265deg);
+  --avatar-1-top: oklch(72% 0.12 245deg);
+  --avatar-1-bottom: oklch(56% 0.15 252deg);
+  --avatar-2-top: oklch(68% 0.13 280deg);
+  --avatar-2-bottom: oklch(52% 0.16 282deg);
+  --avatar-3-top: oklch(70% 0.13 310deg);
+  --avatar-3-bottom: oklch(54% 0.15 312deg);
+  --avatar-4-top: oklch(74% 0.13 355deg);
+  --avatar-4-bottom: oklch(60% 0.16 0deg);
+  --avatar-5-top: oklch(70% 0.15 25deg);
+  --avatar-5-bottom: oklch(56% 0.17 27deg);
+  --avatar-6-top: oklch(78% 0.13 60deg);
+  --avatar-6-bottom: oklch(64% 0.15 50deg);
+  --avatar-7-top: oklch(80% 0.12 88deg);
+  --avatar-7-bottom: oklch(66% 0.13 78deg);
+  --avatar-8-top: oklch(74% 0.12 150deg);
+  --avatar-8-bottom: oklch(58% 0.12 152deg);
+  --avatar-9-top: oklch(74% 0.09 200deg);
+  --avatar-9-bottom: oklch(58% 0.1 210deg);
+
+  /* Over a picture rather than a theme: the same on either. The lens says a
+     picture can be changed; the veil dims what a crop leaves out. */
+  --avatar-lens: oklch(0% 0 0deg / 42%);
+  --avatar-veil: oklch(0% 0 0deg / 62%);
+  --avatar-crop-edge: oklch(100% 0 0deg / 40%);
+}
+
+[data-theme="dark"] {
+  --avatar-rim: oklch(100% 0 0deg / 10%);
+}

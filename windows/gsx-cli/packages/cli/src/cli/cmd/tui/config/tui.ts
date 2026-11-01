@@ -1,0 +1,193 @@
+export * as TuiConfig from "./tui"
+
+import z from "zod"
+import { mergeDeep, unique } from "remeda"
+import { applyEdits, modify } from "jsonc-parser"
+import { Context, Effect, Layer } from "effect"
+import { ConfigParse } from "@/config/parse"
+import * as ConfigPaths from "@/config/paths"
+import { migrateTuiConfig } from "./tui-migrate"
+import { TuiInfo } from "./tui-schema"
+import { Flag } from "@/flag/flag"
+import { isRecord } from "@/util/record"
+import { Global } from "@/global"
+import { AppFileSystem } from "@mimo-ai/shared/filesystem"
+import { CurrentWorkingDirectory } from "./cwd"
+import { ConfigPlugin } from "@/config/plugin"
+import { ConfigKeybinds } from "@/config/keybinds"
+import { makeRuntime } from "@/effect/runtime"
+import { Filesystem, Log } from "@/util"
+import { ConfigVariable } from "@/config/variable"
+
+const log = Log.create({ service: "tui.config" })
+
+export const Info = TuiInfo
+
+type Acc = {
+  result: Info
+}
+
+export type Info = z.output<typeof Info> & {
+  // Internal resolved plugin list used by runtime loading.
+  plugin_origins?: ConfigPlugin.Origin[]
+}
+
+export interface Interface {
+  readonly get: () => Effect.Effect<Info>
+}
+
+export class Service extends Context.Service<Service, Interface>()("@opencode/TuiConfig") {}
+
+function pluginScope(file: string, ctx: { directory: string }): ConfigPlugin.Scope {
+  if (Filesystem.contains(ctx.directory, file)) return "local"
+  // if (ctx.worktree !== "/" && Filesystem.contains(ctx.worktree, file)) return "local"
+  return "global"
+}
+
+function normalize(raw: Record<string, unknown>) {
+  const data = { ...raw }
+  if (!("tui" in data)) return data
+  if (!isRecord(data.tui)) {
+    delete data.tui
+    return data
+  }
+
+  const tui = data.tui
+  delete data.tui
+  return {
+    ...tui,
+    ...data,
+  }
+}
+
+async function resolvePlugins(config: Info, configFilepath: string) {
+  if (!config.plugin) return config
+  for (let i = 0; i < config.plugin.length; i++) {
+    config.plugin[i] = await ConfigPlugin.resolvePluginSpec(config.plugin[i], configFilepath)
+  }
+  return config
+}
+
+async function mergeFile(acc: Acc, file: string, ctx: { directory: string }) {
+  const data = await loadFile(file)
+  acc.result = mergeDeep(acc.result, data)
+  if (!data.plugin?.length) return
+
+  const scope = pluginScope(file, ctx)
+  const plugins = ConfigPlugin.deduplicatePluginOrigins([
+    ...(acc.result.plugin_origins ?? []),
+    ...data.plugin.map((spec) => ({ spec, scope, source: file })),
+  ])
+  acc.result.plugin = plugins.map((item) => item.spec)
+  acc.result.plugin_origins = plugins
+}
+
+const loadState = Effect.fn("TuiConfig.loadState")(function* (ctx: { directory: string }) {
+  // Every config dir we may read from: global config dir, any `.mimocode`
+  // folders between cwd and home, and MIMOCODE_CONFIG_DIR.
+  const directories = yield* ConfigPaths.directories(ctx.directory)
+  yield* Effect.promise(() => migrateTuiConfig({ directories, cwd: ctx.directory }))
+
+  const projectFiles = Flag.MIMOCODE_DISABLE_PROJECT_CONFIG ? [] : yield* ConfigPaths.files("tui", ctx.directory)
+
+  const acc: Acc = {
+    result: {},
+  }
+
+  // 1. Global tui config (lowest precedence).
+  for (const file of ConfigPaths.fileInDirectory(Global.Path.config, "tui")) {
+    yield* Effect.promise(() => mergeFile(acc, file, ctx)).pipe(Effect.orDie)
+  }
+
+  // 2. Explicit MIMOCODE_TUI_CONFIG override, if set.
+  if (Flag.MIMOCODE_TUI_CONFIG) {
+    const configFile = Flag.MIMOCODE_TUI_CONFIG
+    yield* Effect.promise(() => mergeFile(acc, configFile, ctx)).pipe(Effect.orDie)
+    log.debug("loaded custom tui config", { path: configFile })
+  }
+
+  // 3. Project tui files, applied root-first so the closest file wins.
+  for (const file of projectFiles) {
+    yield* Effect.promise(() => mergeFile(acc, file, ctx)).pipe(Effect.orDie)
+  }
+
+  // 4. `.mimocode` directories (and MIMOCODE_CONFIG_DIR) discovered while
+  // walking up the tree.
+  const dirs = unique(directories).filter((dir) => dir.endsWith(".mimocode") || dir === Flag.MIMOCODE_CONFIG_DIR)
+
+  for (const dir of dirs) {
+    if (!dir.endsWith(".mimocode") && dir !== Flag.MIMOCODE_CONFIG_DIR) continue
+    for (const file of ConfigPaths.fileInDirectory(dir, "tui")) {
+      yield* Effect.promise(() => mergeFile(acc, file, ctx)).pipe(Effect.orDie)
+    }
+  }
+
+  const keybinds = { ...(acc.result.keybinds ?? {}) }
+  if (process.platform === "win32") {
+    // Native Windows terminals do not support POSIX suspend, so prefer prompt undo.
+    keybinds.terminal_suspend = "none"
+    keybinds.input_undo ??= unique([
+      "ctrl+z",
+      ...ConfigKeybinds.Keybinds.shape.input_undo.parse(undefined).split(","),
+    ]).join(",")
+  }
+  acc.result.keybinds = ConfigKeybinds.Keybinds.parse(keybinds)
+
+  return acc.result
+})
+
+export const layer = Layer.effect(
+  Service,
+  Effect.gen(function* () {
+    const directory = yield* CurrentWorkingDirectory
+    const config = yield* loadState({ directory })
+    const get = Effect.fn("TuiConfig.get")(() => Effect.succeed(config))
+    return Service.of({ get })
+  }).pipe(Effect.withSpan("TuiConfig.layer")),
+)
+
+export const defaultLayer = layer.pipe(Layer.provide(AppFileSystem.defaultLayer))
+
+const { runPromise } = makeRuntime(Service, defaultLayer)
+
+export async function get() {
+  return runPromise((svc) => svc.get())
+}
+
+const TUI_SCHEMA_URL = "https://mimo.xiaomi.com/mimocode/tui.json"
+
+async function loadFile(filepath: string): Promise<Info> {
+  const text = await ConfigPaths.readFile(filepath)
+  if (!text) return {}
+  let parsed = false
+  const data = await load(text, filepath).then((d) => { parsed = true; return d }).catch((error) => {
+    log.warn("failed to load tui config", { path: filepath, error })
+    return {} as Info
+  })
+  if (parsed && (!data.$schema || data.$schema === "https://opencode.ai/tui.json")) {
+    data.$schema = TUI_SCHEMA_URL
+    const edits = modify(text, ["$schema"], TUI_SCHEMA_URL, {
+      formattingOptions: { insertSpaces: true, tabSize: 2 },
+      isArrayInsertion: false,
+    })
+    if (edits.length) await Filesystem.write(filepath, applyEdits(text, edits)).catch(() => {})
+  }
+  return data
+}
+
+async function load(text: string, configFilepath: string): Promise<Info> {
+  return ConfigVariable.substitute({ text, type: "path", path: configFilepath, missing: "empty" })
+    .then((expanded) => ConfigParse.jsonc(expanded, configFilepath))
+    .then((data) => {
+      if (!isRecord(data)) return {}
+
+      // Flatten a nested "tui" key so users who wrote `{ "tui": { ... } }` inside tui.json
+      // (mirroring the old mimocode.json shape) still get their settings applied.
+      return ConfigParse.schema(Info, normalize(data), configFilepath)
+    })
+    .then((data) => resolvePlugins(data, configFilepath))
+    .catch((error) => {
+      log.warn("invalid tui config", { path: configFilepath, error })
+      return {}
+    })
+}

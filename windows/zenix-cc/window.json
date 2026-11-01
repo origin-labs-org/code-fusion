@@ -1,0 +1,8 @@
+{
+  "codename": "Zenix CC",
+  "alias": "Ultra",
+  "windowTitle": "Zenix CC",
+  "folder": "windows/zenix-cc",
+  "contents": "Empty - only window.json. Seat for native Claude Desktop.",
+  "status": "empty"
+}

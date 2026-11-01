@@ -1,0 +1,45 @@
+[package]
+name = "zephium-blocker-update"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+official-https = ["dep:rustix", "dep:tokio", "dep:windows", "dep:zephium-update-transport"]
+tuf = [
+    "dep:async-trait",
+    "dep:rustix",
+    "dep:tokio",
+    "dep:tough",
+    "dep:windows",
+    "dep:zephium-update-transport",
+    "zephium-update-transport/tough",
+]
+
+[dependencies]
+async-trait = { version = "=0.1.89", optional = true }
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "=0.10.9"
+thiserror.workspace = true
+tokio = { workspace = true, features = ["fs", "io-util", "rt", "time"], optional = true }
+tough = { workspace = true, optional = true }
+url.workspace = true
+zephium-update-transport = { workspace = true, optional = true }
+
+[dev-dependencies]
+aws-lc-rs = "=1.18.1"
+jiff = "0.2"
+tempfile.workspace = true
+zephium-core.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+zephium-blocker = { workspace = true, features = ["runtime"] }
+windows = { version = "=0.61.3", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_IO"], optional = true }
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "=1.1.4", features = ["fs", "process"], optional = true }
+
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+zephium-blocker = { workspace = true, features = ["webkit"] }

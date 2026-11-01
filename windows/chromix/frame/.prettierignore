@@ -1,0 +1,17 @@
+dist
+src/shared/ipc/bindings.ts
+src/vite-env.d.ts
+
+src/shared/i18n
+project.inlang/cache
+project.inlang/.meta.json
+project.inlang/README.md
+
+dist-work-preview/
+
+# Inlang compiler-generated project metadata.
+project.inlang/.meta.json
+project.inlang/README.md
+
+# Generated build measurements; enforced by the bundle guard.
+reports/

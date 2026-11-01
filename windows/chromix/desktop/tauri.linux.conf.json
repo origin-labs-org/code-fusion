@@ -1,0 +1,29 @@
+{
+  "productName": "app.zephium",
+  "app": {
+    "enableGTKAppId": true,
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "Zephium",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 680,
+        "minHeight": 480,
+        "decorations": false,
+        "transparent": true
+      }
+    ]
+  },
+  "bundle": {
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/zephium.desktop.hbs"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/zephium.desktop.hbs"
+      }
+    }
+  }
+}

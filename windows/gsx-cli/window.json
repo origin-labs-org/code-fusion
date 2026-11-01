@@ -1,0 +1,8 @@
+{
+  "codename": "GSX-CLI",
+  "alias": "#",
+  "windowTitle": "GSX-CLI",
+  "folder": "windows/gsx-cli",
+  "contents": "opencode workspace - package name 'opencode', packages/, bun.lock; 2,060 files. Holds MiMoCode source code from Xiaomi.",
+  "status": "present"
+}

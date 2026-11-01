@@ -1,0 +1,216 @@
+.shared-tool {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  color: var(--color-text);
+}
+
+.shared-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 12px;
+  flex: none;
+  user-select: none;
+}
+
+.shared-tool-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 550;
+  letter-spacing: -0.015em;
+}
+
+.shared-tool-controls {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 10px;
+}
+
+/* The field of the kit at the size of the column's rows: a search field as
+   the system draws one, short and rounded, so the list under it is the
+   thing to read. */
+.shared-tool-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--search-height);
+  padding-inline: 12px 6px;
+  border-radius: var(--radius-field);
+  background: var(--color-field);
+  color: var(--color-faint);
+  transition:
+    background-color var(--motion-instant) var(--ease-smooth),
+    box-shadow var(--motion-instant) var(--ease-smooth);
+}
+
+.shared-tool-search:hover {
+  background: var(--color-field-hover);
+}
+
+.shared-tool-search:focus-within {
+  background: var(--color-field-hover);
+  box-shadow: var(--shadow-field-focus);
+  color: var(--color-muted);
+}
+
+.shared-tool-search input {
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-body);
+}
+
+.shared-tool-search input::placeholder {
+  color: var(--color-faint);
+}
+
+.shared-tool-search input::-webkit-search-decoration,
+.shared-tool-search input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.shared-tool-clear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-fill-hover);
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.shared-tool-clear:hover {
+  color: var(--color-text);
+}
+
+.shared-tool-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+}
+
+/* The view owns the scroller. Give it the height instead of a second one. */
+.shared-tool-content-hosted {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.shared-tool-empty {
+  min-height: 200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.shared-tool-empty > span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-card);
+  background: var(--color-fill);
+  margin-bottom: 20px;
+  color: var(--color-label-secondary);
+}
+
+.shared-tool-empty h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+
+.shared-tool-empty p {
+  max-width: 330px;
+  margin: 0;
+  color: var(--color-label-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.shared-tool-caption {
+  flex: none;
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--color-label-secondary);
+}
+
+.shared-tool-editor {
+  display: grid;
+  gap: 18px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.tool-load-state {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  height: 100%;
+  width: 100%;
+  color: var(--color-label-secondary);
+  font-size: 13px;
+}
+
+.shared-tool-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--color-muted);
+}
+
+/* A tool's one header control: everything else it offers sits in this menu. */
+.tool-overflow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-row);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: default;
+  outline: none;
+  transition:
+    background-color var(--motion-instant) var(--ease-smooth),
+    color var(--motion-instant) var(--ease-smooth);
+}
+
+.tool-overflow:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: -2px;
+}
+
+.tool-overflow:hover,
+.tool-overflow[data-state="open"] {
+  background: var(--color-fill-hover);
+  color: var(--color-text);
+}

@@ -1,0 +1,171 @@
+/*
+ * The theme axis: three seeds per mode (ground, ink, accent) and one
+ * contrast, from which the whole ladder is mixed. The graphite default never
+ * matches here, so its literal values in tokens.css stay exactly as they are;
+ * a chosen theme sets `data-palette` and the seeds on the root
+ * (domain/appearance/palette.ts). A preview declares the same seeds on its
+ * own subtree with `data-theme-scope` and gets its own ladder.
+ *
+ * Each step is the graphite ladder's own distance from ground toward ink,
+ * so Zephium's seeds land on graphite. `--seed-k` scales every step: 0.5 at
+ * no contrast, 1 at the default and 1.5 at full. The chrome steps are
+ * mirrored in Rust (zephium_core::theme), which paints the window's ground.
+ *
+ * The @supports wrapper is for the build, not the browser: every engine we
+ * ship on mixes colours, and without it Tailwind adds a static fallback and
+ * a rule split for each of these declarations, doubling the stylesheet.
+ */
+@supports (color: color-mix(in oklab, red, red)) {
+  :root[data-palette],
+  [data-theme-scope] {
+    --seed-bg: var(--seed-dark-bg);
+    --seed-fg: var(--seed-dark-fg);
+    --seed-accent: var(--seed-dark-accent);
+    --seed-on-accent: var(--seed-dark-on-accent);
+    --seed-k: calc(0.5 + var(--seed-contrast, 50) / 100);
+    --color-canvas: var(--seed-bg);
+    --color-page: var(--seed-bg);
+    --color-chrome: color-mix(in oklab, var(--seed-fg) calc(2.9% * var(--seed-k)), var(--seed-bg));
+    --color-surface: color-mix(in oklab, var(--seed-fg) calc(6.8% * var(--seed-k)), var(--seed-bg));
+    --color-raised: color-mix(in oklab, var(--seed-fg) calc(10.1% * var(--seed-k)), var(--seed-bg));
+    --color-float: color-mix(in oklab, var(--seed-fg) calc(19.2% * var(--seed-k)), var(--seed-bg));
+    --color-menu: color-mix(in srgb, var(--color-float) var(--wash-raised), transparent);
+    --color-menu-separator: color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --color-fill: color-mix(in srgb, var(--seed-fg) 5%, transparent);
+    --color-fill-hover: color-mix(in srgb, var(--seed-fg) 8%, transparent);
+    --color-fill-active: color-mix(in srgb, var(--seed-fg) calc(12% * var(--seed-k)), transparent);
+    --color-fill-pressed: color-mix(in srgb, var(--seed-fg) 16%, transparent);
+    --color-fill-strong: color-mix(in srgb, var(--seed-fg) 22%, transparent);
+    --color-card: color-mix(in srgb, var(--seed-fg) calc(5% * var(--seed-k)), transparent);
+    --color-tile: color-mix(in srgb, var(--seed-fg) 6%, transparent);
+    --color-tile-hover: color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --color-address: color-mix(in srgb, var(--seed-fg) 6.5%, transparent);
+    --color-address-hover: color-mix(in srgb, var(--seed-fg) 9.5%, transparent);
+    --color-border: color-mix(in srgb, var(--seed-fg) calc(7% * var(--seed-k)), transparent);
+    --color-border-strong: color-mix(
+      in srgb,
+      var(--seed-fg) calc(13% * var(--seed-k)),
+      transparent
+    );
+    --row-hover: color-mix(in srgb, var(--seed-fg) 4%, transparent);
+    --row-active: color-mix(in srgb, var(--seed-fg) calc(7.5% * var(--seed-k)), transparent);
+    --row-pressed: color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --row-rim: inset 0 0 0 1px color-mix(in srgb, var(--seed-fg) 6%, transparent);
+    --segment-thumb: var(--row-active);
+    --shadow-segment-thumb: var(--row-rim);
+    --segment-thumb-card: var(--row-active);
+    --shadow-segment-thumb-card: var(--row-rim);
+    --scroll-thumb: color-mix(in srgb, var(--seed-fg) 16%, transparent);
+    --scroll-thumb-hover: color-mix(in srgb, var(--seed-fg) 28%, transparent);
+    --color-text: var(--seed-fg);
+    --color-label-secondary: color-mix(in oklab, var(--seed-fg) 88.7%, var(--seed-bg));
+    --color-muted: color-mix(in srgb, var(--seed-fg) calc(48% + 20% * var(--seed-k)), transparent);
+    --color-faint: color-mix(in srgb, var(--seed-fg) calc(20% + 24% * var(--seed-k)), transparent);
+    --color-control: color-mix(in srgb, var(--seed-fg) 9%, transparent);
+    --color-control-hover: color-mix(in srgb, var(--seed-fg) 13%, transparent);
+    --color-control-pressed: color-mix(in srgb, var(--seed-fg) 17%, transparent);
+    --color-on-control: var(--seed-fg);
+    --color-on-control-strong: var(--seed-fg);
+    --color-field: color-mix(in srgb, var(--seed-fg) 9%, transparent);
+    --color-field-hover: color-mix(in srgb, var(--seed-fg) 12%, transparent);
+    --color-field-ring: color-mix(in srgb, var(--seed-fg) 16%, transparent);
+    --color-raise: color-mix(in srgb, var(--seed-fg) 8%, transparent);
+    --color-raise-active: color-mix(in srgb, var(--seed-fg) 12%, transparent);
+    --color-thumb: color-mix(in oklab, var(--seed-fg) 94%, var(--seed-bg));
+    --color-track: color-mix(in srgb, var(--seed-fg) 14%, transparent);
+    --color-lit: color-mix(in oklab, var(--seed-fg) 97%, var(--seed-bg));
+    --color-lit-hover: color-mix(in oklab, var(--seed-fg) 60%, #fff);
+    --color-on-lit: color-mix(in oklab, var(--seed-bg) 85%, #000);
+    --color-lit-soft: color-mix(in srgb, var(--color-lit) 16%, transparent);
+    --color-ring: color-mix(in srgb, var(--seed-fg) 50%, transparent);
+
+    /* The theme's accent, which a quick tint (tint.css) still replaces. */
+    --color-accent: var(--seed-accent);
+    --color-accent-hover: color-mix(in oklab, var(--seed-accent) 84%, #fff);
+    --color-on-accent: var(--seed-on-accent);
+    --color-accent-soft: color-mix(in srgb, var(--color-accent) 16%, transparent);
+    --color-track-on: color-mix(in oklab, var(--seed-accent) 64%, var(--seed-bg));
+    --favicon-plate: color-mix(in srgb, var(--seed-fg) 88%, transparent);
+  }
+
+  :root[data-palette][data-theme="light"],
+  [data-theme-scope][data-theme="light"] {
+    --seed-bg: var(--seed-light-bg);
+    --seed-fg: var(--seed-light-fg);
+    --seed-accent: var(--seed-light-accent);
+    --seed-on-accent: var(--seed-light-on-accent);
+
+    /* Elevation goes to white in light, and the chrome steps toward the ink. */
+    --color-chrome: color-mix(in oklab, var(--seed-fg) calc(4.5% * var(--seed-k)), var(--seed-bg));
+    --color-surface: color-mix(in oklab, #fff calc(60% + 20% * var(--seed-k)), var(--seed-bg));
+    --color-raised: var(--color-surface);
+    --color-float: color-mix(in oklab, #fff calc(70% + 20% * var(--seed-k)), var(--seed-bg));
+    --color-menu-separator: color-mix(in srgb, var(--seed-fg) 9%, transparent);
+    --color-fill: color-mix(in srgb, var(--seed-fg) 5%, transparent);
+    --color-fill-hover: color-mix(in srgb, var(--seed-fg) 8%, transparent);
+    --color-fill-active: color-mix(in srgb, var(--seed-fg) calc(7.5% * var(--seed-k)), transparent);
+    --color-fill-pressed: color-mix(in srgb, var(--seed-fg) 11%, transparent);
+    --color-fill-strong: color-mix(in srgb, var(--seed-fg) 16%, transparent);
+    --color-card: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    --color-tile: color-mix(in srgb, var(--seed-fg) 4.5%, transparent);
+    --color-tile-hover: color-mix(in srgb, var(--seed-fg) 7%, transparent);
+    --color-address: var(--lift);
+    --color-address-hover: var(--lift-pressed);
+    --shadow-card:
+      0 0 0 0.5px color-mix(in srgb, var(--seed-fg) calc(7% * var(--seed-k)), transparent),
+      0 1px 1.5px color-mix(in srgb, var(--seed-fg) 3%, transparent);
+    --color-border: color-mix(in srgb, var(--seed-fg) calc(7% * var(--seed-k)), transparent);
+    --color-border-strong: color-mix(
+      in srgb,
+      var(--seed-fg) calc(13% * var(--seed-k)),
+      transparent
+    );
+    --row-hover-ink: color-mix(in srgb, var(--seed-fg) 4%, transparent);
+    --row-active-ink: color-mix(in srgb, var(--seed-fg) calc(7.5% * var(--seed-k)), transparent);
+    --row-pressed-ink: color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --row-rim-ink: inset 0 0 0 1px color-mix(in srgb, var(--seed-fg) 3%, transparent);
+    --row-hover: var(--row-hover-ink);
+    --row-active: var(--row-active-ink);
+    --row-pressed: var(--row-pressed-ink);
+    --row-rim: var(--row-rim-ink);
+    --segment-thumb: rgb(255 255 255 / 42%);
+    --shadow-segment-thumb:
+      0 0 0 0.5px color-mix(in srgb, var(--seed-fg) 5%, transparent),
+      0 1px 2px color-mix(in srgb, var(--seed-fg) 5%, transparent);
+    --segment-thumb-card: var(--color-float);
+    --shadow-segment-thumb-card:
+      0 0 0 0.5px color-mix(in srgb, var(--seed-fg) 8%, transparent),
+      0 1px 3px color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --scroll-thumb: color-mix(in srgb, var(--seed-fg) 20%, transparent);
+    --scroll-thumb-hover: color-mix(in srgb, var(--seed-fg) 34%, transparent);
+    --color-label-secondary: color-mix(in oklab, var(--seed-fg) 69%, var(--seed-bg));
+    --color-muted: color-mix(in srgb, var(--seed-fg) calc(42% + 20% * var(--seed-k)), transparent);
+    --color-faint: color-mix(in srgb, var(--seed-fg) calc(18% + 24% * var(--seed-k)), transparent);
+    --color-control: var(--color-float);
+    --color-control-hover: color-mix(in oklab, var(--seed-fg) 2.5%, var(--color-float));
+    --color-control-pressed: color-mix(in oklab, var(--seed-fg) 6%, var(--color-float));
+    --color-field: color-mix(in srgb, var(--seed-fg) 6%, transparent);
+    --color-field-hover: color-mix(in srgb, var(--seed-fg) 9%, transparent);
+    --color-field-ring: color-mix(in srgb, var(--seed-fg) 14%, transparent);
+    --color-raise: color-mix(in srgb, var(--seed-fg) 7%, transparent);
+    --color-raise-active: color-mix(in srgb, var(--seed-fg) 10%, transparent);
+    --color-thumb: #fff;
+    --color-track: color-mix(in oklab, var(--seed-fg) calc(10.8% * var(--seed-k)), var(--seed-bg));
+    --color-lit: color-mix(in oklab, var(--seed-fg) 96%, var(--seed-bg));
+    --color-lit-hover: color-mix(in oklab, var(--seed-fg) 88%, var(--seed-bg));
+    --color-on-lit: var(--color-float);
+    --color-lit-soft: color-mix(in srgb, var(--color-lit) 12%, transparent);
+    --color-ring: color-mix(in srgb, var(--seed-fg) 40%, transparent);
+    --color-product-plate: var(--color-float);
+    --shadow-control:
+      0 0.5px 1.5px color-mix(in srgb, var(--seed-fg) 10%, transparent),
+      0 0 0 0.5px color-mix(in srgb, var(--seed-fg) 7%, transparent);
+  }
+
+  /* A preview shows its whole ladder at once, so it carries the ground and
+     ink it was set in rather than inheriting the window's. */
+  [data-theme-scope] {
+    background: var(--color-page);
+    color: var(--color-text);
+  }
+}

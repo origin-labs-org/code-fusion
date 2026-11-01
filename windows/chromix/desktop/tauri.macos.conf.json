@@ -1,0 +1,22 @@
+{
+  "bundle": {
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "dmg": {
+        "background": "installer/dmg-background.jpg",
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        },
+        "appPosition": {
+          "x": 205,
+          "y": 156
+        },
+        "applicationFolderPosition": {
+          "x": 455,
+          "y": 156
+        }
+      }
+    }
+  }
+}

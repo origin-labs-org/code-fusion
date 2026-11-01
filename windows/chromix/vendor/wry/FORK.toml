@@ -1,0 +1,108 @@
+schema = 1
+fork = "Zephium Wry native security adapter"
+reviewed_on = "2026-08-28"
+production_status = "pre-production; packaged hostile tests and an external native-boundary audit remain required"
+
+[upstream]
+repository = "https://github.com/tauri-apps/wry"
+version = "0.55.1"
+commit = "fe9e7fb73bb6ad2637cb0b4b1685676c86970aeb"
+
+[reproducibility]
+standalone_manifest = "Cargo.toml"
+standalone_lockfile = "Cargo.lock"
+application_lockfile = "../../Cargo.lock"
+
+[[patch_sets]]
+name = "deny-by-default permissions and IPC"
+paths = ["src/lib.rs", "src/permissions.rs", "src/android", "src/webkitgtk", "src/webview2", "src/wkwebview"]
+
+[[patch_sets]]
+name = "GTK process, private-profile, and composition isolation"
+paths = ["src/error.rs", "src/web_context.rs", "src/webkitgtk/web_context.rs", "src/webkitgtk/mod.rs"]
+
+[[patch_sets]]
+name = "WebView2 staged construction and teardown"
+paths = ["src/native_cleanup.rs", "src/webview2/mod.rs", "src/error.rs", "src/lib.rs"]
+
+[[patch_sets]]
+name = "host-owned page-close lifecycle"
+paths = ["src/lib.rs", "src/webview2/mod.rs", "src/webkitgtk/mod.rs"]
+
+[[patch_sets]]
+name = "bounded native input and primitive evaluation contracts"
+paths = ["src/native_admission.rs", "src/native_bounds.rs", "src/webkitgtk", "src/webview2", "src/wkwebview"]
+
+[[patch_sets]]
+name = "retained AppKit host-window ownership"
+paths = ["src/lib.rs", "src/wkwebview/mod.rs"]
+
+[[patch_sets]]
+name = "WebKit callback and prompt hardening"
+paths = ["src/wkwebview"]
+
+[[patch_sets]]
+name = "bounded NSString dialog inputs before Rust allocation"
+paths = ["src/wkwebview/script_dialog.rs", "src/wkwebview/class/wry_web_view_ui_delegate.rs"]
+
+[[patch_sets]]
+name = "WebKit frame-scoped extension resource admission"
+paths = ["src/wkwebview/navigation.rs"]
+
+[[patch_sets]]
+name = "deny-by-default native media, preview, fullscreen, and file-drag surfaces"
+paths = ["src/native_bounds.rs", "src/webkitgtk/mod.rs", "src/wkwebview"]
+
+[[patch_sets]]
+name = "thread-affine asynchronous protocol completion"
+paths = ["src/lib.rs", "src/webkitgtk/web_context.rs", "src/webview2/mod.rs", "src/wkwebview/class/url_scheme_handler.rs", "src/wkwebview/util.rs"]
+
+[[patch_sets]]
+name = "identity-bearing main-frame navigation lifecycle"
+paths = ["src/lib.rs", "src/webview2/mod.rs", "src/webkitgtk/mod.rs", "src/wkwebview/mod.rs", "src/wkwebview/navigation.rs", "src/wkwebview/class/wry_navigation_delegate.rs"]
+
+[[patch_sets]]
+name = "commit-time presentation and input guard plus bounded native title snapshot"
+paths = ["src/lib.rs", "src/web_context.rs", "src/webview2/mod.rs", "src/webkitgtk/mod.rs", "src/wkwebview/mod.rs", "src/wkwebview/navigation.rs"]
+
+[[patch_sets]]
+name = "opt-in main-thread native file upload completion"
+paths = ["src/lib.rs", "src/file_upload.rs", "src/wkwebview/mod.rs", "src/wkwebview/class/wry_web_view_ui_delegate.rs"]
+
+[[patch_sets]]
+name = "owned native macOS download handoff and attachment response policy"
+paths = ["src/lib.rs", "src/wkwebview/mod.rs", "src/wkwebview/download.rs", "src/wkwebview/navigation.rs", "src/wkwebview/class/wry_download_delegate.rs", "Cargo.toml"]
+
+[[patch_sets]]
+name = "bounded opt-in native WebKit file-drop fallback"
+paths = ["src/wkwebview/drag_drop.rs"]
+
+[release_gates]
+standalone_fmt = "cargo fmt --manifest-path vendor/wry/Cargo.toml -- --check"
+standalone_check = "cargo check --manifest-path vendor/wry/Cargo.toml --locked --all-targets"
+standalone_clippy = "cargo clippy --manifest-path vendor/wry/Cargo.toml --locked --all-targets -- -D warnings"
+linux_guarded_presentation = "xvfb-run -a cargo test --manifest-path vendor/wry/Cargo.toml --locked --lib web_context::tests::guarded_webkitgtk_construction_commit_and_first_map_are_native_and_fail_closed -- --ignored --exact"
+native_platforms = ["windows", "macos", "linux"]
+packaged_hostile_tests = "required on supported Windows, macOS, and Fedora release artifacts"
+external_native_boundary_audit = "required before stable"
+
+[maintenance]
+procedure = "REBASE.md"
+minimum_reviewers = 2
+update_policy = "complete upstream diff and explicit disposition of every patch set"
+
+[[patch_sets]]
+name = "native new-tab adoption and context-menu download handoff"
+paths = ["src/lib.rs", "src/webview2/mod.rs", "src/webkitgtk/mod.rs", "src/wkwebview/mod.rs", "src/wkwebview/navigation.rs", "src/wkwebview/class/wry_navigation_delegate.rs", "src/wkwebview/class/wry_web_view_ui_delegate.rs"]
+
+[[patch_sets]]
+name = "optional aggregate content-rule load counts"
+paths = ["src/lib.rs", "src/wkwebview/mod.rs", "src/wkwebview/class/wry_navigation_delegate.rs"]
+
+[[patch_sets]]
+name = "extension-independent retained-controller initialization"
+paths = ["src/lib.rs", "src/native_controller_init.rs", "src/webview2/mod.rs"]
+
+[[patch_sets]]
+name = "MSRV-compatible native class bundle identity"
+paths = ["src/wkwebview/class/wry_web_view.rs"]

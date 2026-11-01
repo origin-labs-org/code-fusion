@@ -1,0 +1,8 @@
+{
+  "codename": "Zingma",
+  "alias": "Lite",
+  "windowTitle": "Zingma",
+  "folder": "windows/zingma",
+  "contents": "Empty - only window.json. Seat reserved for Qoder's native built-in Quest/agents window.",
+  "status": "empty"
+}

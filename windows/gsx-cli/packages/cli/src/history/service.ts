@@ -1,0 +1,353 @@
+import { Context, Effect, Layer } from "effect"
+import { and, asc, desc, eq, sql } from "drizzle-orm"
+import { Database } from "../storage"
+import { MessageTable, PartTable } from "../session/session.sql"
+import { detail, page, summary } from "./media"
+import { projection } from "./projection"
+import type { PartID } from "../session/schema"
+import type { MessageID } from "../session/schema"
+import { Bus } from "../bus"
+import { Instance } from "../project/instance"
+import { buildFtsQuery } from "./fts-query"
+import { basePartId } from "./chunk"
+import { layer as writerLayer, Service as WriterService } from "./writer"
+
+export type SearchHit = {
+  part_id: string
+  session_id: string
+  message_id: string
+  project_id: string
+  tool_name: string | null
+  snippet: string
+  score: number
+  time_created: number
+}
+
+export type MessagePart = {
+  part_id: string
+  type: string
+  role: "user" | "assistant"
+  tool_name: string | null
+  text: string
+}
+
+export type MessageContext = {
+  message_id: string
+  matched: boolean
+  time_created: number
+  parts: MessagePart[]
+}
+
+export interface Interface {
+  readonly get: (input: {
+    part_id: string
+    offset?: number
+    length?: number
+  }) => Effect.Effect<(ReturnType<typeof page> & ReturnType<typeof detail>) | undefined, Error>
+
+  readonly search: (input: {
+    query: string
+    scope?: "project" | "global"
+    session_id?: string
+    tool_name?: string
+    time_after?: number
+    time_before?: number
+    limit?: number
+  }) => Effect.Effect<SearchHit[]>
+
+  readonly around: (input: {
+    message_id: string
+    before?: number
+    after?: number
+  }) => Effect.Effect<{ session_id: string; messages: MessageContext[] }>
+}
+
+export class Service extends Context.Service<Service, Interface>()("@opencode/History") {}
+
+const HARD_CAP = 50
+
+type Row = {
+  part_id: string
+  session_id: string
+  message_id: string
+  project_id: string
+  tool_name: string | null
+  snippet: string
+  score: number
+  time_created: number
+}
+
+export const defaultLayer: Layer.Layer<Service | WriterService, never, never> = Layer.suspend(() =>
+  Layer.mergeAll(layer, writerLayer).pipe(Layer.provide(Bus.defaultLayer)),
+)
+
+export const layer = Layer.effect(
+  Service,
+  Effect.gen(function* () {
+    const search = Effect.fn("History.search")(function* (input: Parameters<Interface["search"]>[0]) {
+      const { fts: ftsQuery } = buildFtsQuery(input.query)
+      if (!ftsQuery) return []
+
+      const limit = Math.min(input.limit ?? 10, HARD_CAP)
+      const conditions: string[] = []
+      const params: (string | number)[] = []
+
+      const scope = input.scope ?? "project"
+      if (scope === "project") {
+        conditions.push("history_fts.project_id = ?")
+        params.push(Instance.project.id)
+      }
+
+      if (input.session_id) {
+        conditions.push("history_fts.session_id = ?")
+        params.push(input.session_id)
+      }
+      if (input.tool_name) {
+        conditions.push("history_fts.tool_name = ?")
+        params.push(input.tool_name)
+      }
+      if (input.time_after !== undefined) {
+        conditions.push("history_fts.time_created >= ?")
+        params.push(input.time_after)
+      }
+      if (input.time_before !== undefined) {
+        conditions.push("history_fts.time_created <= ?")
+        params.push(input.time_before)
+      }
+
+      const whereClause = conditions.length ? `AND ${conditions.join(" AND ")}` : ""
+      // Debt history-search-overfetch-after-v6: legacy multi-row FTS bodies may remain
+      // until migration v6 finishes. Over-fetch so one part cannot fill LIMIT before
+      // dedupe. When v6 is done on a DB (or once fleet v6 coverage is complete), tighten
+      // fetchLimit back to `limit` — tracked in docs/compose/spec/history-chunk-large-bodies.md.
+      const fetchLimit = Math.min(limit * 24, HARD_CAP * 24)
+      // CROSS JOIN fixes the loop order in SQLite: MATCH once, then rowid lookup.
+      // Node SQLite may otherwise scan a project first and rerun MATCH per row.
+      const sqlText = `
+        SELECT history_fts.part_id, history_fts.session_id, history_fts.message_id,
+               history_fts.project_id, history_fts.tool_name,
+               history_fts.time_created,
+               history_fts.body AS body_full,
+               bm25(history_fts_idx) AS score
+        FROM history_fts_idx
+        CROSS JOIN history_fts ON history_fts.rowid = history_fts_idx.rowid
+        WHERE 1=1
+          ${ftsQuery ? "AND history_fts_idx MATCH ?" : ""}
+          ${whereClause}
+        ORDER BY score
+        LIMIT ?
+      `
+      // `prepare` rather than `query`: both bun:sqlite and node:sqlite expose it with the same
+      // `.all(...positionalParams)` shape, so this path works under either driver (`#db`
+      // resolves to node:sqlite outside Bun). See the same note in memory/service.ts.
+      const rows = Database.Client()
+        .$client.prepare(sqlText)
+        .all(ftsQuery, ...params, fetchLimit) as Row[]
+      const seen = new Set<string>()
+      const hits = []
+      for (const r of rows) {
+        const partId = basePartId(r.part_id)
+        if (seen.has(partId)) continue
+        seen.add(partId)
+        const bodyFull = String((r as { body_full?: string }).body_full ?? "")
+        // C15: locate with FTS-like tokens (AND/punct phrases; Han isolated; NFD map).
+        const map: number[] = []
+        const chars: string[] = []
+        for (let i = 0; i < bodyFull.length; i++) {
+          const folded = (bodyFull[i] ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+          for (const c of folded) { chars.push(c); map.push(i) }
+        }
+        const hayN = chars.join("")
+        const qn = input.query.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        const segments = qn.split(/[、，,。.；;：:！!？?（）()【】\[\]「」“”"'|/\\]+/).map((s) => s.trim()).filter(Boolean)
+        let hitAt = -1
+        const tokenizePhrase = (w: string) =>
+          w.split(/(?<=\p{Script=Han})|(?=\p{Script=Han})|_/u).filter(Boolean)
+        const findSeq = (tokens: string[]) => {
+          const isHan = (s: string) => s.length === 1 && /\p{Script=Han}/u.test(s)
+          const re = new RegExp(
+            tokens.map((w, i) => {
+              const body = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+              const sep = i === 0 ? "" : isHan(tokens[i - 1]!) || isHan(w) ? "[^\\p{L}\\p{N}]*" : "[^\\p{L}\\p{N}]+"
+              return sep + body
+            }).join(""),
+            "giu",
+          )
+          const badEdge = (c: string | undefined) => !!c && /[\p{L}\p{N}]/u.test(c) && !/\p{Script=Han}/u.test(c)
+          let m: RegExpExecArray | null
+          while ((m = re.exec(hayN))) {
+            const s = m.index
+            const e = s + m[0].length
+            const first = tokens[0]!
+            const last = tokens[tokens.length - 1]!
+            if (!isHan(first) && badEdge(hayN[s - 1])) continue
+            if (!isHan(last) && badEdge(hayN[e])) continue
+            return map[s] ?? -1
+          }
+          return -1
+        }
+        // Structure matches buildFtsQuery: punct segments → AND; each space-separated
+        // word is one phrase. Han–Han may run together; Latin tokens need a real break.
+        for (const seg of segments) {
+          const words = seg.match(/[\p{L}\p{N}_]+/gu) ?? []
+          if (!words.length) continue
+          if (segments.length >= 2 || words.length === 1 || !/\s/.test(seg)) {
+            // one phrase (punct segment or single/contiguous word group)
+            const at = findSeq(tokenizePhrase(words.join("_")))
+            if (at >= 0 && (hitAt < 0 || at < hitAt)) hitAt = at
+          } else {
+            // space-separated multi-word AND: each word is its own phrase
+            for (const w of words) {
+              const at = findSeq(tokenizePhrase(w))
+              if (at >= 0 && (hitAt < 0 || at < hitAt)) hitAt = at
+            }
+          }
+        }
+        const winStart = Math.max(0, hitAt - 200)
+        const snippet = bodyFull.slice(winStart, winStart + 1000)
+        hits.push({
+          part_id: partId,
+          session_id: r.session_id,
+          message_id: r.message_id,
+          project_id: r.project_id,
+          tool_name: r.tool_name,
+          snippet: summary(snippet),
+          score: -r.score,
+          time_created: r.time_created,
+        })
+        if (hits.length >= limit) break
+      }
+      return hits
+    })
+
+    const around = Effect.fn("History.around")(function* (input: Parameters<Interface["around"]>[0]) {
+      const before = input.before ?? 5
+      const after = input.after ?? 5
+      const anchor = Database.use((db) =>
+        db
+          .select({
+            id: MessageTable.id,
+            session_id: MessageTable.session_id,
+            time_created: MessageTable.time_created,
+          })
+          .from(MessageTable)
+          .where(eq(MessageTable.id, input.message_id as MessageID))
+          .get(),
+      )
+      if (!anchor) return { session_id: "", messages: [] }
+
+      const beforeRows = Database.use((db) =>
+        db
+          .select({
+            id: MessageTable.id,
+            time_created: MessageTable.time_created,
+            role: sql<string>`json_extract(${MessageTable.data}, '$.role')`,
+          })
+          .from(MessageTable)
+          .where(
+            and(
+              eq(MessageTable.session_id, anchor.session_id),
+              sql`(${MessageTable.time_created} < ${anchor.time_created} OR (${MessageTable.time_created} = ${anchor.time_created} AND ${MessageTable.id} <= ${anchor.id}))`,
+            ),
+          )
+          .orderBy(desc(MessageTable.time_created), desc(MessageTable.id))
+          .limit(before + 1)
+          .all(),
+      )
+      const afterRows = Database.use((db) =>
+        db
+          .select({
+            id: MessageTable.id,
+            time_created: MessageTable.time_created,
+            role: sql<string>`json_extract(${MessageTable.data}, '$.role')`,
+          })
+          .from(MessageTable)
+          .where(
+            and(
+              eq(MessageTable.session_id, anchor.session_id),
+              sql`(${MessageTable.time_created} > ${anchor.time_created} OR (${MessageTable.time_created} = ${anchor.time_created} AND ${MessageTable.id} > ${anchor.id}))`,
+            ),
+          )
+          .orderBy(asc(MessageTable.time_created), asc(MessageTable.id))
+          .limit(after)
+          .all(),
+      )
+
+      const messages = [...beforeRows.reverse(), ...afterRows]
+      if (messages.length === 0) return { session_id: anchor.session_id, messages: [] }
+      const parts = Database.use((db) =>
+        db
+          .select(projection(true))
+          .from(PartTable)
+          .where(
+            and(
+              eq(PartTable.session_id, anchor.session_id),
+              sql`${PartTable.message_id} IN (${sql.join(
+                messages.map((m) => sql`${m.id}`),
+                sql`, `,
+              )})`,
+            ),
+          )
+          .orderBy(asc(PartTable.message_id), asc(PartTable.id))
+          .all(),
+      )
+
+      const byMessage = new Map<string, typeof parts>()
+      for (const p of parts) {
+        const list = byMessage.get(p.message_id) ?? []
+        list.push(p)
+        byMessage.set(p.message_id, list)
+      }
+      // Non-LLM search projection: PartID-asc is fine. Compose head order is a
+      // MessageV2 hydrate invariant for prompt/fork prefixes (see
+      // promoteComposeProtocolFirst); history summaries do not feed those paths.
+
+      const out: MessageContext[] = messages.map((m) => {
+        const role: "user" | "assistant" = m.role === "user" ? "user" : "assistant"
+        const partsHere = (byMessage.get(m.id) ?? []).map((p) => {
+          const d = p.data as {
+            type: string
+            text?: string
+            tool?: string
+            state?: { input?: unknown; output?: unknown; error?: string }
+          }
+          const text = detail(d, false).text
+          return {
+            part_id: p.id,
+            type: d.type,
+            role,
+            tool_name: d.type === "tool" ? (d.tool ?? null) : null,
+            text: summary(text),
+          }
+        })
+        return {
+          message_id: m.id,
+          matched: m.id === input.message_id,
+          time_created: m.time_created,
+          parts: partsHere,
+        }
+      })
+
+      return { session_id: anchor.session_id, messages: out }
+    })
+
+    const get = Effect.fn("History.get")(function* (input: Parameters<Interface["get"]>[0]) {
+      const row = Database.use((db) =>
+        db
+          .select({ data: PartTable.data })
+          .from(PartTable)
+          .where(eq(PartTable.id, basePartId(input.part_id) as PartID))
+          .get(),
+      )
+      if (!row) return undefined
+      const result = detail(row.data)
+      const slice = yield* Effect.try({
+        try: () => page(result.text, input.offset, input.length),
+        catch: (error) => (error instanceof Error ? error : new Error(String(error))),
+      })
+      return { ...result, ...slice }
+    })
+
+    return Service.of({ search, around, get })
+  }),
+)

@@ -1,0 +1,8 @@
+{
+  "codename": "Chromix",
+  "alias": "#",
+  "windowTitle": "Chromix",
+  "folder": "windows/chromix",
+  "contents": "Zephium browser source - package name 'zephium', crates/, desktop/, eval/; 3,691 files.",
+  "status": "present"
+}

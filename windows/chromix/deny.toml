@@ -1,0 +1,57 @@
+[graph]
+all-features = false
+
+[advisories]
+version = 2
+yanked = "deny"
+unmaintained = "all"
+unsound = "all"
+unused-ignored-advisory = "deny"
+ignore = [
+    # The gtk-rs GTK3 "unmaintained" advisories (RUSTSEC-2024-0411..0420) were
+    # withdrawn on 2026-08-14. The GTK3 stack is Linux-only and stays in the
+    # graph until the planned GTK4 / WebKitGTK 6 port.
+    { id = "RUSTSEC-2024-0429", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unsound glib 0.18 VariantStrIter API is transitive through the Linux-only GTK3 stack and is not used directly; fixed only in glib 0.20, remove with GTK4 migration" },
+    # Tauri/Specta transitives with no safe upgrade in the current release
+    # line. Keeping exact IDs makes every new advisory fail the gate.
+    { id = "RUSTSEC-2026-0370", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unmaintained zvariant is transitive through zbus, built only for Linux (single-instance D-Bus and a desktop dev-dependency), which is not a release target; no maintained release exists" },
+    { id = "RUSTSEC-2026-0371", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unmaintained zbus_names is transitive through zbus, built only for Linux (single-instance D-Bus and a desktop dev-dependency), which is not a release target; no maintained release exists" },
+    { id = "RUSTSEC-2026-0372", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unmaintained zvariant_derive is transitive through zbus, built only for Linux (single-instance D-Bus and a desktop dev-dependency), which is not a release target; no maintained release exists" },
+    { id = "RUSTSEC-2024-0436", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unmaintained paste proc-macro is transitive through Specta and Tauri; no patched release exists" },
+    { id = "RUSTSEC-2024-0370", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; unmaintained proc-macro-error is transitive through Linux-only GTK3 glib-macros; no patched release exists" },
+    { id = "RUSTSEC-2025-0075", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; transitive through Tauri urlpattern; awaiting upstream replacement" },
+    { id = "RUSTSEC-2025-0080", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; transitive through Tauri urlpattern; awaiting upstream replacement" },
+    { id = "RUSTSEC-2025-0081", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; transitive through Tauri urlpattern; awaiting upstream replacement" },
+    { id = "RUSTSEC-2025-0098", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; transitive through Tauri urlpattern; awaiting upstream replacement" },
+    { id = "RUSTSEC-2025-0100", reason = "owner=security; expires=2026-12-31; expires-unix=1798675200; transitive through Tauri urlpattern; awaiting upstream replacement" },
+]
+
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "MPL-2.0",
+    "CC0-1.0",
+    "Unicode-3.0",
+    "CDLA-Permissive-2.0",
+]
+
+[[licenses.clarify]]
+crate = "ring"
+expression = "MIT AND ISC AND OpenSSL"
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+required-git-spec = "rev"
