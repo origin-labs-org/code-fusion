@@ -1,0 +1,39 @@
+{
+  "name": "Launcher Desktop",
+  "windowTitle": "Launcher",
+  "folder": "launcher",
+  "role": "Starts any part. No product logic of its own.",
+  "status": "shell",
+  "entry": "launcher/index.html",
+  "parts": [
+    "Ingot",
+    "Onyx",
+    "Chromix",
+    "Codeix",
+    "GSX-CLI",
+    "Zingma",
+    "Sonar",
+    "Zenix CC"
+  ],
+  "aliases": {
+    "ladder": [
+      "Lite",
+      "Plus",
+      "Pro",
+      "Studio",
+      "Max",
+      "Ultra"
+    ],
+    "retired": [
+      "Core"
+    ],
+    "resolve": {
+      "Lite": "Zingma",
+      "Plus": "Sonar",
+      "Pro": "Codeix",
+      "Studio": "Onyx",
+      "Max": "Ingot",
+      "Ultra": "Zenix CC"
+    }
+  }
+}

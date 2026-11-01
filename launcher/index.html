@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Launcher</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --surface: #161a21;
+        --border: #262c36;
+        --text: #e6e8ec;
+        --muted: #97a0ae;
+        --accent: #ff6a00;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      main { width: min(980px, 94vw); padding: 28px 0; }
+      h1 { margin: 0; font-size: 22px; }
+      header p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 22px; }
+      article {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .name { font-weight: 600; font-size: 16px; }
+      .alias { color: var(--accent); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+      .folder { color: var(--muted); font-size: 11px; font-family: ui-monospace, monospace; }
+      .contents { color: var(--muted); font-size: 12px; line-height: 1.55; flex: 1; }
+      .status {
+        align-self: flex-start;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .status.present { border-color: #1f6f3f; color: #3ecf7a; }
+      footer { margin-top: 22px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+      code { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Launcher Desktop</h1>
+        <p>
+          Starts any part. Contents are listed as found on disk.
+          <br />Aliases: <strong>#</strong> = retired (no part) · Lite → Zingma · Plus → Sonar ·
+          Pro → Codeix · Studio → Onyx · Max → Ingot · Ultra → Zenix CC
+        </p>
+      </header>
+
+      <section class="grid">
+        <article>
+          <span class="name">Ingot</span>
+          <span class="alias">alias: Max</span>
+          <span class="folder">windows/ingot</span>
+          <span class="contents">Monorepo tree — apps/, packages/, config/, docs/, node_modules; 160,239 files (3.9 GB). Role is NOT decided.</span>
+          <span class="status present">present</span>
+        </article>
+        <article>
+          <span class="name">Onyx</span>
+          <span class="alias">alias: Studio</span>
+          <span class="folder">windows/onyx</span>
+          <span class="contents">Reverse-engineered Qoder desktop build — CodeFusion.exe plus SOURCE/; 4,715 files (943 MB).</span>
+          <span class="status present">present</span>
+        </article>
+        <article>
+          <span class="name">Chromix</span>
+          <span class="alias">alias: #</span>
+          <span class="folder">windows/chromix</span>
+          <span class="contents">Zephium browser source — package name "zephium", crates/, desktop/, eval/; 3,691 files.</span>
+          <span class="status present">present</span>
+        </article>
+        <article>
+          <span class="name">Codeix</span>
+          <span class="alias">alias: Pro</span>
+          <span class="folder">windows/codeix</span>
+          <span class="contents">Two OpenAI Codex MSIX packages (ui-old, ui-new) and a toggle; 2 files (1.6 GB).</span>
+          <span class="status present">present</span>
+        </article>
+        <article>
+          <span class="name">GSX-CLI</span>
+          <span class="alias">alias: #</span>
+          <span class="folder">windows/gsx-cli</span>
+          <span class="contents">opencode workspace — packages/, bun.lock; 2,060 files. Holds MiMoCode source code from Xiaomi.</span>
+          <span class="status present">present</span>
+        </article>
+        <article>
+          <span class="name">Zingma</span>
+          <span class="alias">alias: Lite</span>
+          <span class="folder">windows/zingma</span>
+          <span class="contents">Empty — only window.json. Seat reserved for Qoder's native built-in Quest/agents window.</span>
+          <span class="status empty">empty</span>
+        </article>
+        <article>
+          <span class="name">Sonar</span>
+          <span class="alias">alias: Plus</span>
+          <span class="folder">windows/sonar</span>
+          <span class="contents">Empty — only window.json. Seat for the reverse-engineered DeepSeek Harness (DSH).</span>
+          <span class="status empty">empty</span>
+        </article>
+        <article>
+          <span class="name">Zenix CC</span>
+          <span class="alias">alias: Ultra</span>
+          <span class="folder">windows/zenix-cc</span>
+          <span class="contents">Empty — only window.json. Seat for native Claude Desktop.</span>
+          <span class="status empty">empty</span>
+        </article>
+      </section>
+
+      <footer>
+        Registry: <code>architecture/windows.json</code>. List parts with
+        <code>launcher\launch.ps1</code>.
+      </footer>
+    </main>
+  </body>
+</html>
