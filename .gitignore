@@ -94,7 +94,9 @@ windows/onyx/**/*.node
 *.tgz
 *.7z
 *.rar
-*.bundle
+# (*.bundle removed: it also matched the .bundle DIRECTORY that holds
+# gsx-cli's builtin skill bundle - real source. No *.bundle files exist
+# in the tree; if one is ever added, ignore it by exact path.)
 
 # ---------- graphify artifacts ----------
 # Generated knowledge-graph output. 1.7 GB of derived data.
