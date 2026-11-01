@@ -1,8 +1,0 @@
-- dialog " API Key ":
-  - heading " API Key " [level=2]
-  - paragraph:  DeepSeek ，。
-  - text: API 
-  - textbox "API ":
-    - /placeholder:  API 
-  - button ""
-  - button "" [disabled]

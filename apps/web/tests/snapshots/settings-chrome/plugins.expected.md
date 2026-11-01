@@ -1,6 +1,0 @@
-- listitem:
-  - button "ui-settings, , ":
-    - strong: ui-settings
-    - img ""
-    - text: 
-    - img

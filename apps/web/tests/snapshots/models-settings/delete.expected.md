@@ -1,7 +1,0 @@
-- dialog " minimax-cn？":
-  - heading " minimax-cn？" [level=2]
-  - button "":
-    - img
-  - paragraph:  minimax-cn  API 。
-  - button ""
-  - button " minimax-cn"

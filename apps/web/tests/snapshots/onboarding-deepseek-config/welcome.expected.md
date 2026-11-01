@@ -1,5 +1,0 @@
-- dialog "":
-  - heading "" [level=2]
-  - paragraph: CodeFusion  0.1  Harness ，，。 CodeFusion  API 、。
-  - paragraph: ，、、、，。 Harness  CF 。
-  - button ""
