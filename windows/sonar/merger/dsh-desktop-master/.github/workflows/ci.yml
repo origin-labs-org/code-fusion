@@ -1,0 +1,326 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  # Keep required checks conclusive for documentation-only changes. Workflow
+  # path filters can leave required checks pending, so classify inside the run.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      product: ${{ steps.scope.outputs.product }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # GitHub's pull-request merge ref can retain the base branch's
+          # submodule gitlink when the PR advances it to a descendant. Check
+          # out the actual PR head so pinned submodules match upstream.json.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - name: Classify changed paths
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node --test scripts/bilingual-docs.test.mjs
+          node scripts/verify-bilingual-docs.mjs
+          node --test scripts/market-dependency-direction.test.mjs
+          node scripts/verify-market-dependency-direction.mjs
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            product=true
+          else
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+            product="$(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA" | node scripts/classify-ci-changes.mjs)"
+          fi
+          echo "product=$product" >> "$GITHUB_OUTPUT"
+
+  # Product gate: a documentation-only change already passed diff validation in `changes`.
+  check:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Documentation-only gate
+        if: needs.changes.outputs.product == 'false'
+        run: echo "Documentation-only change; product build and tests are not required."
+      - uses: actions/checkout@v6
+        if: needs.changes.outputs.product == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        if: needs.changes.outputs.product == 'true'
+        with:
+          node-version: 22.23.2
+      - if: needs.changes.outputs.product == 'true'
+        run: corepack enable
+      - name: Resolve Yarn cache folder
+        if: needs.changes.outputs.product == 'true'
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        if: needs.changes.outputs.product == 'true'
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-${{ runner.os }}-${{ runner.arch }}-
+      - if: needs.changes.outputs.product == 'true'
+        run: yarn install --immutable
+      - name: Compare the Beta and Next upstream releases
+        if: needs.changes.outputs.product == 'true'
+        id: upstream-families
+        run: |
+          node -e "const { beta: { runtimePackageVersion: beta }, next: { runtimePackageVersion: next } } = require('./upstream.json').channels; console.log('differ=' + String(beta !== next)); console.error('Beta follows ' + beta + ', Next ' + next)" >> "$GITHUB_OUTPUT"
+      - name: Narrow Beta check on pull requests
+        # Parity with Next only stands in for Beta's own check while both follow one upstream release.
+        if: needs.changes.outputs.product == 'true' && github.event_name == 'pull_request' && steps.upstream-families.outputs.differ != 'true'
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs'
+          // Pull requests already verify source/test parity between Next and Beta via
+          // verify-desktop-variants and run the full Next check + Playwright suite.
+          // Run Beta's build, frontend, and variant-specific tests on PRs while keeping
+          // the full Beta check on master pushes and leaving Beta's package.json intact.
+          const rootPath = 'package.json'
+          const rootManifest = JSON.parse(readFileSync(rootPath, 'utf8'))
+          const betaFull = '"yarn workspace dsh-plugin-desktop-beta check"'
+          const betaPr = '"yarn workspace dsh-plugin-desktop-beta build && yarn workspace dsh-plugin-desktop-beta verify:frontend && yarn workspace dsh-plugin-desktop-beta exec vitest run tests/package.spec.ts tests/data-directory.spec.ts tests/updates.spec.ts"'
+          if (!rootManifest.scripts.check.includes(betaFull)) throw new Error('Beta check not found in root package.json')
+          rootManifest.scripts.check = rootManifest.scripts.check.replace(betaFull, betaPr)
+          writeFileSync(rootPath, `${JSON.stringify(rootManifest, null, 2)}\n`)
+          NODE
+      - if: needs.changes.outputs.product == 'true'
+        run: yarn check
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        if: needs.changes.outputs.product == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock') }}
+      - name: Install Chromium for Next window regression
+        if: needs.changes.outputs.product == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: yarn workspace dsh-desktop-next exec playwright install chromium
+      - name: Verify Next window controls, onboarding, protocol, and sidebar Browser in parallel
+        if: needs.changes.outputs.product == 'true'
+        run: |
+          node scripts/run-parallel.mjs \
+            "yarn workspace dsh-desktop-next verify:window-controls" \
+            "yarn workspace dsh-desktop-next verify:onboarding" \
+            "xvfb-run --auto-servernum yarn workspace dsh-desktop-next verify:protocol --no-sandbox" \
+            "xvfb-run --auto-servernum yarn workspace dsh-desktop-next verify:sidebar-browser --no-sandbox"
+      - name: Verify Beta window controls, onboarding, protocol, and sidebar Browser on its own upstream release
+        if: needs.changes.outputs.product == 'true' && steps.upstream-families.outputs.differ == 'true'
+        run: |
+          node scripts/run-parallel.mjs \
+            "yarn workspace dsh-plugin-desktop-beta verify:window-controls" \
+            "yarn workspace dsh-plugin-desktop-beta verify:onboarding" \
+            "xvfb-run --auto-servernum yarn workspace dsh-plugin-desktop-beta verify:protocol --no-sandbox" \
+            "xvfb-run --auto-servernum yarn workspace dsh-plugin-desktop-beta verify:sidebar-browser --no-sandbox"
+
+  # Windows-only logic and unsigned NSIS/portable builds on a real Windows runner:
+  # updates, window options, pwsh sandbox, volume diagnostics, and packaging.
+  # The package gate runs once; both artifacts reuse its build output.
+  desktop-windows:
+    needs: changes
+    if: needs.changes.outputs.product == 'true'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [dsh-plugin-desktop-beta]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - name: Resolve Yarn cache folder
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$env:GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-${{ runner.os }}-${{ runner.arch }}-
+      - name: Cache primary runtime and Electron Builder downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ${{ matrix.workspace }}/.desktop-build/downloads
+            ${{ matrix.workspace }}/.desktop-build/runtime
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-${{ hashFiles('yarn.lock', 'deepseek-harness/scripts/primary-runtime/lock.json', format('{0}/package.json', matrix.workspace)) }}
+          restore-keys: |
+            packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-
+      - run: yarn install --immutable
+      # Typecheck is platform-neutral and already gated by `check`.
+      - run: yarn workspace ${{ matrix.workspace }} check:win-package:platform
+      - name: Build Windows installer
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+          # CI artifacts are never published; skipping compression saves minutes.
+          DSH_WINDOWS_PACKAGE_COMPRESSION: store
+        run: yarn workspace ${{ matrix.workspace }} dist:win
+      - name: Build Windows portable archive
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+          DSH_WINDOWS_PACKAGE_COMPRESSION: store
+          DSH_WINDOWS_REUSE_UNPACKED: '1'
+        run: yarn workspace ${{ matrix.workspace }} dist:win-portable
+
+  # macOS-only universal packaging smoke on a real macOS runner: the signed
+  # release is built manually on a credentialed machine, so an unsigned DMG
+  # here catches Intel and Apple Silicon packaging regressions before a manual
+  # release. No signing secrets ever reach this job.
+  # Linux x64 distribution artifacts: unsigned AppImage and Debian package
+  # built on a stock ubuntu runner, mirroring the Windows packaging job.
+  desktop-linux:
+    needs: changes
+    if: needs.changes.outputs.product == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [dsh-plugin-desktop-beta]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - name: Resolve Yarn cache folder
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-${{ runner.os }}-${{ runner.arch }}-
+      - name: Cache primary runtime and Electron Builder downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ${{ matrix.workspace }}/.desktop-build/downloads
+            ${{ matrix.workspace }}/.desktop-build/runtime
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/.cache/node-gyp
+          key: packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-${{ hashFiles('yarn.lock', 'deepseek-harness/scripts/primary-runtime/lock.json', format('{0}/package.json', matrix.workspace)) }}
+          restore-keys: |
+            packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-
+      - run: yarn install --immutable
+      - run: yarn workspace ${{ matrix.workspace }} check:linux-package:platform
+      - name: Build Linux AppImage and Debian package
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+          DSH_LINUX_PACKAGE_COMPRESSION: store
+        run: yarn workspace ${{ matrix.workspace }} dist:linux
+
+  desktop-macos:
+    needs: changes
+    if: needs.changes.outputs.product == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [dsh-plugin-desktop-beta]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - name: Resolve Yarn cache folder
+        id: yarn-cache
+        run: echo "dir=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml') }}
+          restore-keys: |
+            yarn-${{ runner.os }}-${{ runner.arch }}-
+      - name: Cache primary runtime and Electron Builder downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ${{ matrix.workspace }}/.desktop-build/downloads
+            ${{ matrix.workspace }}/.desktop-build/runtime
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~/Library/Caches/node-gyp
+          key: packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-${{ github.event_name == 'pull_request' && 'arm64' || 'universal' }}-${{ hashFiles('yarn.lock', 'deepseek-harness/scripts/primary-runtime/lock.json', format('{0}/package.json', matrix.workspace)) }}
+          restore-keys: |
+            packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-${{ github.event_name == 'pull_request' && 'arm64' || 'universal' }}-
+            packaging-downloads-${{ runner.os }}-${{ runner.arch }}-${{ matrix.workspace }}-
+      - run: yarn install --immutable
+      - run: yarn workspace ${{ matrix.workspace }} check:mac-package:platform
+      - name: Build macOS smoke artifact
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+          # The universal merge alone takes 9-17 minutes, so pull requests
+          # package only the runner's native arm64 app. Pushes to master and
+          # manual runs keep the full universal DMG.
+          DSH_MAC_SMOKE_ARCH: ${{ github.event_name == 'pull_request' && 'arm64' || 'universal' }}
+          DSH_MAC_PACKAGE_COMPRESSION: store
+        run: yarn workspace ${{ matrix.workspace }} dist:mac-smoke
+
+  # Upstream toolchain smoke: the portable-shell scripts must resolve the
+  # pinned submodule's own Yarn/pnpm release on Windows.
+  upstream-command-windows:
+    needs: changes
+    if: needs.changes.outputs.product == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.2
+      - run: corepack enable
+      - run: yarn upstream:version

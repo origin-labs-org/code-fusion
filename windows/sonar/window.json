@@ -1,0 +1,8 @@
+{
+  "codename": "Sonar",
+  "alias": "Plus",
+  "windowTitle": "Sonar",
+  "folder": "windows/sonar",
+  "contents": "Empty - only window.json. Seat for the reverse-engineered DeepSeek Harness (DSH).",
+  "status": "empty"
+}
