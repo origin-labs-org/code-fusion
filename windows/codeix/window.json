@@ -3,6 +3,6 @@
   "alias": "Pro",
   "windowTitle": "Codeix",
   "folder": "windows/codeix",
-  "contents": "Two OpenAI Codex MSIX packages (ui-old, ui-new) and a toggle; 2 files (1.6 GB).",
+  "contents": "Two OpenAI Codex MSIX packages (ui-old 26.707.3748.0, ui-new 26.1021.3705.0); installers stay local (1.59 GB, git-ignored). Launcher selects which to run.",
   "status": "present"
 }

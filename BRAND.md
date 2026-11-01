@@ -22,7 +22,7 @@ instead of inventing them.
 | **Ingot** | `windows/ingot` | present | Monorepo tree — `apps/`, `packages/`, `config/`, `docs/`, `node_modules`; 160,239 files (3.9 GB) |
 | **Onyx** | `windows/onyx` | present | Reverse-engineered Qoder desktop build — `CodeFusion.exe` plus `SOURCE/`; 4,715 files (943 MB) |
 | **Chromix** | `windows/chromix` | present | Zephium browser source — package name `zephium`, `crates/`, `desktop/`, `eval/`; 3,691 files |
-| **Codeix** | `windows/codeix` | present | Two OpenAI Codex MSIX packages (`ui-old`, `ui-new`) and a toggle; 2 files (1.6 GB) |
+| **Codeix** | `windows/codeix` | present | Two OpenAI Codex MSIX packages (`ui-old` 26.707.3748.0, `ui-new` 26.1021.3705.0); installers stay local (1.59 GB, git-ignored) |
 | **GSX-CLI** | `windows/gsx-cli` | present | opencode workspace — package name `opencode`, `packages/`, `bun.lock`; 2,060 files (MiMoCode's source-code by Xiomi) |
 | **Zingma** | `windows/zingma` | empty | only `window.json` — seat for Qoder's native Quest/agents window |
 | **Sonar** | `windows/sonar` | empty | only `window.json` — seat for the reverse-engineered DeepSeek Harness (DSH) |
