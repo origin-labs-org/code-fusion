@@ -1,0 +1,18 @@
+- dialog "":
+  - heading "" [level=2]
+  - button "":
+    - img
+  - paragraph: ，。
+  - button ""
+  - list:
+    - listitem:
+      - checkbox "MiniMax-M2.7"
+      - text: MiniMax-M2.7
+    - listitem:
+      - checkbox "MiniMax-M2.7-highspeed"
+      - text: MiniMax-M2.7-highspeed
+    - listitem:
+      - checkbox "MiniMax-M3"
+      - text: MiniMax-M3
+  - button ""
+  - button ""

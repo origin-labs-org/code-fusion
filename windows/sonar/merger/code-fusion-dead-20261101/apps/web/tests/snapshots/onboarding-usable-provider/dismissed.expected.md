@@ -1,0 +1,71 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph:  API 。
+  - list:
+    - listitem:
+      - text: DeepSeek
+      - img "API "
+      - button " DeepSeek (deepseek-official)": 
+  - text: 
+  - combobox "":
+    - option "amazon-bedrock"
+    - option "ant-ling"
+    - option "anthropic"
+    - option "azure-openai-responses"
+    - option "cerebras"
+    - option "cloudflare-ai-gateway"
+    - option "cloudflare-workers-ai"
+    - option "deepseek"
+    - option "fireworks"
+    - option "github-copilot"
+    - option "google"
+    - option "google-vertex"
+    - option "groq"
+    - option "huggingface"
+    - option "kimi-coding"
+    - option "minimax"
+    - option "minimax-cn" [selected]
+    - option "mistral"
+    - option "moonshotai"
+    - option "moonshotai-cn"
+    - option "nvidia"
+    - option "openai"
+    - option "openai-codex"
+    - option "opencode"
+    - option "opencode-go"
+    - option "openrouter"
+    - option "qwen-token-plan"
+    - option "qwen-token-plan-cn"
+    - option "together"
+    - option "vercel-ai-gateway"
+    - option "xai"
+    - option "xiaomi"
+    - option "xiaomi-token-plan-ams"
+    - option "xiaomi-token-plan-cn"
+    - option "xiaomi-token-plan-sgp"
+    - option "zai"
+    - option "zai-coding-cn"
+  - text: API 
+  - textbox "API ":
+    - /placeholder:  API ，
+  - group: 
+  - button ""
+  - button ""

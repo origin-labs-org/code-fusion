@@ -1,0 +1,34 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph:  API 。
+  - status:  minimax-cn。
+  - list:
+    - listitem:
+      - text: minimax-cn
+      - img "API "
+      - button " minimax-cn": 
+      - button " minimax-cn": 
+  - button "":
+    - img
+    - text: 
+  - button "":
+    - img
+    - text: 

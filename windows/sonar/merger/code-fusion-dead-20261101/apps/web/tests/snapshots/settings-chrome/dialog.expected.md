@@ -1,0 +1,45 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - text: Agent  。。
+  - button "":
+    - text: 
+    - img
+  - text:  
+  - button "Workspace Write":
+    - text: Workspace Write
+    - img
+  - text: 
+  - button "":
+    - text: 
+    - img
+  - text: 
+  - button "":
+    - img
+    - text: 
+  - button "":
+    - img
+    - text: 
+  - button "" [pressed]:
+    - img
+    - text: 
+  - text:  Enter  ；Cmd/Ctrl+Enter 
+  - button "":
+    - text: 
+    - img

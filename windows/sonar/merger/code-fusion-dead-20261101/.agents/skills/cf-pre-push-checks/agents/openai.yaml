@@ -1,0 +1,4 @@
+interface:
+  display_name: "CF Pre-Push Checks"
+  short_description: "Run the relevant CodeFusion checks before push"
+  default_prompt: "Use $cf-pre-push-checks before pushing this CodeFusion branch."

@@ -1,0 +1,43 @@
+{
+  "name": "@origin-ai/cf-god-runtime",
+  "description": "GOD Runtime for CF: ProviderRegistry, 4-level abstraction, 2-stage router, scheduler, discussion coordinator, and arbiter",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/mad/god-runtime"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@origin-ai/cf-brand": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*"
+  },
+  "devDependencies": {
+    "@origin-ai/cf-brand": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*"
+  }
+}

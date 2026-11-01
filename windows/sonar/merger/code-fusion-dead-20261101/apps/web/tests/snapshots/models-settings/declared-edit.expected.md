@@ -1,0 +1,68 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph:  API 。
+  - list:
+    - listitem:
+      - text: minimax-cn
+      - img "API "
+      - button " minimax-cn": 
+      - button " minimax-cn": 
+    - listitem:
+      - text: Acme Gateway 
+      - button " Acme Gateway (acme-gateway)": 
+      - button " Acme Gateway (acme-gateway)": 
+      - text: Acme Gateway acme-gateway API 
+      - textbox "API ":
+        - /placeholder:  API ，
+      - group:
+        - text:  
+        - textbox "":
+          - /placeholder: acme-gateway
+          - text: Acme Gateway
+        - text: API 
+        - textbox "API ":
+          - /placeholder: https://gateway.acme.example/v1
+          - text: https://gateway.acme.example/v1
+        - text: API 
+        - combobox "API ":
+          - option "openai-completions" [selected]
+          - option "openai-responses"
+          - option "anthropic-messages"
+        - region "":
+          - text:  
+          - button ""
+          - button ""
+          - textbox " ID 1":
+            - /placeholder:  ID
+            - text: acme-large
+          - textbox " 1":
+            - /placeholder: 
+          - button " 1"
+          - button " 1"
+          - button ""
+      - button ""
+      - button ""
+  - button "":
+    - img
+    - text: 
+  - button "":
+    - img
+    - text: 

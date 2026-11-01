@@ -1,0 +1,63 @@
+# Test-only composition of the Bundle-supplied default and two named Codex instances.
+# The owning e2e applies the package's real patch and never invokes the model or Codex.
+- id: fixture
+  name: './fixture.ts'
+
+- id: subagent
+  name: '@origin-ai/cf-subagent'
+
+- id: subprocess
+  name: '@origin-ai/cf-subprocess-local'
+
+- id: subagent-codex-primary
+  name: '@origin-ai/cf-subagent-codex'
+  config:
+    providerName: codex-primary
+
+- id: subagent-codex-secondary
+  name: '@origin-ai/cf-subagent-codex'
+  config:
+    providerName: codex-secondary
+
+- id: tool-subagent-codex
+  name: '@origin-ai/cf-tool-subagent'
+  config:
+    provider: codex
+    toolName: subagent_codex
+    backgroundMode: one-shot
+    maxDepth: 'provider-managed'
+
+- id: tool-subagent-codex-primary
+  name: '@origin-ai/cf-tool-subagent'
+  config:
+    provider: codex-primary
+    toolName: subagent_codex_primary
+    backgroundMode: one-shot
+    maxDepth: 'provider-managed'
+
+- id: tool-subagent-codex-secondary
+  name: '@origin-ai/cf-tool-subagent'
+  config:
+    provider: codex-secondary
+    toolName: subagent_codex_secondary
+    backgroundMode: one-shot
+    maxDepth: 'provider-managed'
+
+- id: agent-spine
+  name: '@origin-ai/cf-agent-spine-demo'
+  config:
+    agents:
+      - id: main
+        provider: mock
+        model: mock-delegate
+        cwd: !!js process.cwd()
+    persona: 'This composition test must not start a model turn.'
+    workspaceContext: false
+
+- id: persistence
+  name: '@origin-ai/cf-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+
+- id: checkpoint-policy
+  name: '@origin-ai/cf-session-checkpoint-policy'

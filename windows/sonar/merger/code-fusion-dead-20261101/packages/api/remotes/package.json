@@ -1,0 +1,100 @@
+{
+  "name": "@origin-ai/cf-api-remotes",
+  "description": "Remote BFF assembly and Host Agent/Session lookup policy",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/api/remotes"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "cf": {
+    "client": {
+      "inject": [
+        "@origin-ai/cf-api-gateway"
+      ],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "dependencies": {
+    "@origin-ai/cf-typert-protocol": "*"
+  },
+  "peerDependencies": {
+    "@origin-ai/cf-agent": "*",
+    "@origin-ai/cf-agent-presets": "*",
+    "@origin-ai/cf-api-gateway": "*",
+    "@origin-ai/cf-commands": "*",
+    "@deepseek-ai/cordis-host-runner": "*",
+    "@origin-ai/cf-credentials": "*",
+    "@origin-ai/cf-file-reference": "*",
+    "@origin-ai/cf-goal": "*",
+    "@origin-ai/cf-host-plugin-inventory": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@origin-ai/cf-llm": "*",
+    "@origin-ai/cf-message-feedback": "*",
+    "@origin-ai/cf-session": "*",
+    "@origin-ai/cf-session-persistence": "*",
+    "@origin-ai/cf-session-reference": "*",
+    "@origin-ai/cf-settings": "*",
+    "@origin-ai/cf-typert-registry": "*",
+    "@deepseek-ai/cordis": "*"
+  },
+  "devDependencies": {
+    "@origin-ai/cf-agent": "*",
+    "@origin-ai/cf-agent-presets": "*",
+    "@origin-ai/cf-api-gateway": "*",
+    "@origin-ai/cf-commands": "*",
+    "@deepseek-ai/cordis-host-runner": "*",
+    "@origin-ai/cf-credentials": "*",
+    "@origin-ai/cf-file-reference": "*",
+    "@origin-ai/cf-goal": "*",
+    "@origin-ai/cf-host-plugin-inventory": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@origin-ai/cf-llm": "*",
+    "@origin-ai/cf-message-feedback": "*",
+    "@origin-ai/cf-session": "*",
+    "@origin-ai/cf-session-persistence": "*",
+    "@origin-ai/cf-session-reference": "*",
+    "@origin-ai/cf-settings": "*",
+    "@origin-ai/cf-typert-registry": "*",
+    "@deepseek-ai/cordis": "*"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "name": "@origin-ai/cf-client-ui-brand-official",
+  "description": "Official CodeFusion brand occupants for the Web client's sidebar and conversation Hero slots",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/client/ui-brand-official"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "cf": {
+    "client": {
+      "inject": [
+        "@origin-ai/cf-client-runtime",
+        "@origin-ai/cf-client-ui-conversation",
+        "@origin-ai/cf-client-ui-sidebar"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@origin-ai/cf-client-runtime": "*",
+    "@origin-ai/cf-client-ui-conversation": "*",
+    "@origin-ai/cf-client-ui-sidebar": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*"
+  },
+  "devDependencies": {
+    "@origin-ai/cf-client-runtime": "*",
+    "@origin-ai/cf-client-ui-conversation": "*",
+    "@origin-ai/cf-client-ui-primitives": "*",
+    "@origin-ai/cf-client-ui-sidebar": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "~18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ]
+}

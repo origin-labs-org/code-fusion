@@ -1,0 +1,7 @@
+- dialog " minimax-cn？":
+  - heading " minimax-cn？" [level=2]
+  - button "":
+    - img
+  - paragraph:  minimax-cn ；（），。
+  - button ""
+  - button " minimax-cn"

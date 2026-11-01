@@ -1,0 +1,55 @@
+{
+  "name": "@origin-ai/cf-subprocess-local",
+  "description": "Local-subprocess implementation of the CodeFusion subprocess seam",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/subprocess/subprocess-local"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "scripts/ensure-spawn-helper.mjs",
+    "lib/types/**/*.d.ts"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/ensure-spawn-helper.mjs"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@origin-ai/cf-invariants": "*",
+    "@origin-ai/cf-subprocess": "*",
+    "@origin-ai/cf-timeout": "*",
+    "@deepseek-ai/cordis": "*"
+  },
+  "dependencies": {
+    "koffi": "^3.1.0",
+    "node-pty": "1.2.0-beta.15"
+  },
+  "devDependencies": {
+    "@origin-ai/cf-invariants": "*",
+    "@origin-ai/cf-loader-smoke": "*",
+    "@origin-ai/cf-subprocess": "*",
+    "@origin-ai/cf-timeout": "*",
+    "@deepseek-ai/cordis": "*"
+  }
+}

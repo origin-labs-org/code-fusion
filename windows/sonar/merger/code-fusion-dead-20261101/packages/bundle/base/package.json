@@ -1,0 +1,128 @@
+{
+  "name": "@origin-ai/cf-base",
+  "description": "The shared cf core as a profile bundle: every profile's first patch layer, inserting the base plugin rows over the empty profile root",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/bundle/base"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "cf": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis-plugin-hmr": "*",
+    "@deepseek-ai/cordis-plugin-timer": "*",
+    "@origin-ai/cf-agent": "*",
+    "@origin-ai/cf-agent-default-model": "*",
+    "@origin-ai/cf-agent-loop": "*",
+    "@origin-ai/cf-attachment-local": "*",
+    "@origin-ai/cf-shell-env": "*",
+    "@origin-ai/cf-bash-sandbox": "*",
+    "@origin-ai/cf-command-compact": "*",
+    "@origin-ai/cf-command-feedback": "*",
+    "@origin-ai/cf-command-goal": "*",
+    "@origin-ai/cf-commands": "*",
+    "@origin-ai/cf-compaction-basic": "*",
+    "@origin-ai/cf-compaction-tool-result-pruner": "*",
+    "@origin-ai/cf-credentials-local": "*",
+    "@origin-ai/cf-fs-local": "*",
+    "@origin-ai/cf-fs-observation-policy": "*",
+    "@origin-ai/cf-fs-sandbox": "*",
+    "@origin-ai/cf-goal": "*",
+    "@origin-ai/cf-goal-round-driver": "*",
+    "@origin-ai/cf-api-gateway": "*",
+    "@origin-ai/cf-llm": "*",
+    "@origin-ai/cf-llm-deepseek": "*",
+    "@origin-ai/cf-llm-pi-ai": "*",
+    "@origin-ai/cf-llm-retry": "*",
+    "@origin-ai/cf-permission-presets": "*",
+    "@origin-ai/cf-plan-mode": "*",
+    "@origin-ai/cf-pwsh-sandbox": "*",
+    "@origin-ai/cf-repeat-tool-reminder": "*",
+    "@origin-ai/cf-sandbox-local": "*",
+    "@origin-ai/cf-sandbox-policy": "*",
+    "@origin-ai/cf-session": "*",
+    "@origin-ai/cf-session-checkpoint-policy": "*",
+    "@origin-ai/cf-session-persistence-jsonl": "*",
+    "@origin-ai/cf-session-projection": "*",
+    "@origin-ai/cf-session-query-sqlite": "*",
+    "@origin-ai/cf-session-telemetry-otel": "*",
+    "@origin-ai/cf-session-title": "*",
+    "@origin-ai/cf-session-title-first-prompt-llm": "*",
+    "@origin-ai/cf-settings-file": "*",
+    "@origin-ai/cf-skill": "*",
+    "@origin-ai/cf-skill-badge": "*",
+    "@origin-ai/cf-skill-filesystem": "*",
+    "@origin-ai/cf-spill-local": "*",
+    "@origin-ai/cf-spill-policy": "*",
+    "@origin-ai/cf-subagent": "*",
+    "@origin-ai/cf-subagent-fork-in-process": "*",
+    "@origin-ai/cf-subagent-spawn-in-process": "*",
+    "@origin-ai/cf-subprocess-local": "*",
+    "@origin-ai/cf-system-prompt": "*",
+    "@origin-ai/cf-jobs-local": "*",
+    "@origin-ai/cf-tool-call-timeout-policy": "*",
+    "@origin-ai/cf-token-meter": "*",
+    "@origin-ai/cf-tool-bash": "*",
+    "@origin-ai/cf-tool-fs": "*",
+    "@origin-ai/cf-tool-fs-search": "*",
+    "@origin-ai/cf-tool-goal": "*",
+    "@origin-ai/cf-tool-pwsh": "*",
+    "@origin-ai/cf-tool-ralph": "*",
+    "@origin-ai/cf-tool-skill": "*",
+    "@origin-ai/cf-tool-str-replace-editor": "*",
+    "@origin-ai/cf-tool-subagent": "*",
+    "@origin-ai/cf-tool-subagent-control": "*",
+    "@origin-ai/cf-tool-subagent-report": "*",
+    "@origin-ai/cf-tool-jobs": "*",
+    "@origin-ai/cf-tool-todo": "*",
+    "@origin-ai/cf-tool-web": "*",
+    "@origin-ai/cf-tool-workflow": "*",
+    "@origin-ai/cf-tools": "*",
+    "@origin-ai/cf-typert-loader": "*",
+    "@origin-ai/cf-typert-registry": "*",
+    "@origin-ai/cf-user-approval": "*",
+    "@origin-ai/cf-user-questions": "*",
+    "@origin-ai/cf-web": "*",
+    "@origin-ai/cf-web-search-deepseek": "*",
+    "@origin-ai/cf-workflow-worker-thread": "*",
+    "@origin-ai/cf-agent-instructions": "*"
+  },
+  "peerDependencies": {
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*"
+  },
+  "devDependencies": {
+    "@origin-ai/cf-invariants": "*",
+    "@deepseek-ai/cordis": "*"
+  }
+}

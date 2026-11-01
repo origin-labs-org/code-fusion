@@ -1,0 +1,37 @@
+# Keyless real-Loader composition for workspace-instruction resume
+# reconciliation. The test seeds one persisted baseline, changes AGENTS.md
+# while the session is offline, then resumes through the public agent service.
+
+- id: persistence
+  name: '@origin-ai/cf-session-persistence-jsonl'
+  config:
+    root: './.sessions'
+    compression: none
+
+- id: replay
+  name: '@origin-ai/cf-llm-replay'
+  config:
+    file: !!js process.env.CF_SNAPSHOT_FILE
+    overrideFile: !!js process.env.CF_SNAPSHOT_OVERRIDE
+
+- id: fs-local
+  name: '@origin-ai/cf-fs-local'
+  config:
+    cwd: !!js process.cwd()
+
+- id: agent
+  name: '@origin-ai/cf-agent-spine-demo'
+  config:
+    agents: []
+    workspaceContext:
+      maxBytes: 65536
+      cfHome: !!js process.cwd() + '/.cf'
+    skills:
+      enabled: false
+    toolBash: false
+    toolJobs: false
+    goals: false
+
+# Await the persisted resume before the headless driver inspects root agents.
+- id: resumed-agent
+  name: './tests/fixtures/workspace-context-resume-agent.ts'

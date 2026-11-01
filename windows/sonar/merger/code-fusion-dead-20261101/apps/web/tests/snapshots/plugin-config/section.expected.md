@@ -1,0 +1,38 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph: 。
+  - tablist "":
+    - tab "" [selected]
+    - tab ""
+  - tabpanel "":
+    - list:
+      - listitem:
+        - 'button ": "':
+          - text:   agent 。
+          - img
+      - listitem:
+        - 'button ": Agent "':
+          - text: Agent  Agent 。
+          - img
+      - listitem:
+        - 'button ": "':
+          - text:  DeepSeek 。
+          - img

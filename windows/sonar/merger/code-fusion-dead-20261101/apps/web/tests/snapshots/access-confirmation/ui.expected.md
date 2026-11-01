@@ -1,0 +1,10 @@
+- dialog " Full access？":
+  - heading " Full access？" [level=2]
+  - button "Close":
+    - img
+  - img
+  - paragraph:  Full access ，agent ，，、。。
+  - checkbox "，"
+  - text: ，
+  - button ""
+  - button " Full access" [disabled]

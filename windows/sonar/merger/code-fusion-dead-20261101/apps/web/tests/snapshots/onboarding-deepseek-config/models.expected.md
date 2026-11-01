@@ -1,0 +1,85 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph:  API 。
+  - list:
+    - listitem:
+      - text: DeepSeek
+      - img "API "
+      - button " DeepSeek (deepseek-official)": 
+      - text: DeepSeek deepseek-official API 
+      - textbox "API ":
+        - /placeholder: ——
+      - group:
+        - text:  API 
+        - textbox "API ":
+          - /placeholder: https://api.deepseek.com
+        - region "":
+          - text:  
+          - button ""
+          - textbox " ID 1":
+            - /placeholder:  ID
+            - text: deepseek-v4-pro
+          - textbox " 1":
+            - /placeholder: 
+            - text: DeepSeek-V4-Pro
+          - button " 1":
+            - img
+          - button " 1":
+            - img
+          - textbox " ID 2":
+            - /placeholder:  ID
+            - text: deepseek-v4-flash-vision-exp
+          - textbox " 2":
+            - /placeholder: 
+            - text: DeepSeek-V4-Flash-Vision-Exp
+          - button " 2":
+            - img
+          - button " 2":
+            - img
+          - textbox " ID 3":
+            - /placeholder:  ID
+            - text: private-preview
+          - textbox " 3":
+            - /placeholder: 
+            - text: Private Preview
+          - button " 3" [expanded]:
+            - img
+          - button " 3":
+            - img
+          - text: 
+          - textbox " 3":
+            - /placeholder: 1M
+            - text: "131072"
+          - text:  token 
+          - textbox " token  3":
+            - /placeholder: 256K
+            - text: 64K
+          - button "":
+            - img
+            - text: 
+      - button ""
+      - button ""
+  - button "":
+    - img
+    - text: 
+  - button "":
+    - img
+    - text: 

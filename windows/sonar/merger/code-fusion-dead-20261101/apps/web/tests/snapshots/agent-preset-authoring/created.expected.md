@@ -1,0 +1,84 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "Agent " [level=2]
+  - paragraph:  Agent  —— 、。，「」 Agent 。
+  - heading "" [level=3]
+  - list:
+    - listitem:
+      - 'button ": " [disabled] [pressed]':
+        - text:     Agent，、Shell、、Skills、、、。
+        - code: standard
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": PTC "':
+        - text: PTC   ， Code Mode SDK ， TypeScript 。
+        - code: code
+      - 'button ": PTC "':
+        - img
+        - text: 
+      - 'button ": PTC "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": "':
+        - text:    bash  str_replace_editor  Agent。
+        - code: minimal
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": "':
+        - text:    Agent preset：，、 preset 。
+        - code: cordis
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+  - heading "" [level=3]
+  - list:
+    - listitem:
+      - 'button ": "':
+        - text:    bash  str_replace_editor  Agent。
+        - code: my-agent
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+      - paragraph:
+        - text: ：
+        - code: {{presetRoot}}/my-agent
+  - button "「」":
+    - img
+    - text: 「」

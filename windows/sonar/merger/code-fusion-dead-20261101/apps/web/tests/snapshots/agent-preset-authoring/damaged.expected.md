@@ -1,0 +1,96 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "Agent " [level=2]
+  - paragraph:  Agent  —— 、。，「」 Agent 。
+  - heading "" [level=3]
+  - list:
+    - listitem:
+      - 'button ": " [disabled] [pressed]':
+        - text:     Agent，、Shell、、Skills、、、。
+        - code: standard
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": PTC "':
+        - text: PTC   ， Code Mode SDK ， TypeScript 。
+        - code: code
+      - 'button ": PTC "':
+        - img
+        - text: 
+      - 'button ": PTC "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": "':
+        - text:    bash  str_replace_editor  Agent。
+        - code: minimal
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": "':
+        - text:    Agent preset：，、 preset 。
+        - code: cordis
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": "':
+        - img
+        - text: 
+  - heading "" [level=3]
+  - list:
+    - listitem:
+      - 'button ": broken-yaml" [disabled]':
+        - text: broken-yaml   。
+        - alert: "the composition is not valid YAML: unexpected end of the stream within a flow collection (3:1)"
+        - code: broken-yaml
+      - 'button ": broken-yaml"':
+        - img
+        - text: 
+      - 'button ": broken-yaml" [disabled]':
+        - img
+        - text: ，
+      - 'button ": broken-yaml"':
+        - img
+        - text: 
+    - listitem:
+      - 'button ": " [disabled]':
+        - text:    composition 。
+        - alert: the composition file agent.cordis.yml is missing — the directory still occupies the id; delete it or restore the file
+        - code: ghost
+      - 'button ": "':
+        - img
+        - text: 
+      - 'button ": " [disabled]':
+        - img
+        - text: ，
+      - 'button ": "':
+        - img
+        - text: 
+  - button "「」":
+    - img
+    - text: 「」

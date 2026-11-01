@@ -1,0 +1,74 @@
+{
+  "name": "@origin-ai/cf-client-ui-attachment",
+  "description": "Dynamic attachment presentation plugin for conversation input and message-image slots",
+  "version": "0.1.1-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/origin-labs-ai/code-fusion.git",
+    "directory": "packages/client/ui-attachment"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/types/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "cf": {
+    "client": {
+      "inject": [
+        "@origin-ai/cf-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "clsx": "^2.0.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@types/react": "~18.3.1",
+    "@types/react-dom": "~18.3.0",
+    "@origin-ai/cf-client-runtime": "*",
+    "@origin-ai/cf-client-ui-conversation": "*",
+    "@origin-ai/cf-client-ui-primitives": "*",
+    "@origin-ai/cf-client-ui-slots": "*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@origin-ai/cf-attachment": "*"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@origin-ai/cf-invariants": "*",
+    "@origin-ai/cf-client-runtime": "*",
+    "@origin-ai/cf-client-ui-conversation": "*",
+    "@origin-ai/cf-attachment": "*"
+  }
+}

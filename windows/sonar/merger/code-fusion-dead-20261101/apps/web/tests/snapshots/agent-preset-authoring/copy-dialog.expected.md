@@ -1,0 +1,14 @@
+- dialog " ·  ":
+  - heading " ·  " [level=2]
+  - button "":
+    - img
+  - paragraph: 。，；。
+  - text: 
+  - textbox "":
+    - /placeholder: my-agent
+  - text: 
+  - textbox "":
+    - /placeholder: ，
+  - alert: 。
+  - button ""
+  - button "" [disabled]

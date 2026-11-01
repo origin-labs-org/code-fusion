@@ -1,0 +1,37 @@
+- dialog "":
+  - navigation:
+    - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "":
+      - img
+      - text: 
+    - button "Agent ":
+      - img
+      - text: Agent 
+  - button ""
+  - button "":
+    - img
+    - text: 
+  - heading "" [level=2]
+  - paragraph:  API 。
+  - list:
+    - listitem:
+      - text: minimax-cn
+      - img "API "
+      - button " minimax-cn": 
+      - button " minimax-cn": 
+    - listitem:
+      - text: Acme Gateway 
+      - button " Acme Gateway (acme-gateway)": 
+      - button " Acme Gateway (acme-gateway)": 
+  - button "":
+    - img
+    - text: 
+  - button "":
+    - img
+    - text: 
